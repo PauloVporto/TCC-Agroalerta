@@ -1,0 +1,63 @@
+{
+  "categorias": {
+    "geada": ["protecao_termica"],
+    "estiagem": ["irrigacao", "hidrogel"],
+    "excesso_chuva": ["fungicida"],
+    "vento_forte": [],
+    "chuva_colheita": []
+  },
+  "insumos": [
+    {
+      "id": "fung001",
+      "categoria": "fungicida",
+      "nome": "Fungicida à base de cobre",
+      "unidade": "litro",
+      "ofertas": [
+        { "fornecedor": "Agropecuária Sul de Minas", "cidade": "Santa Rita do Sapucaí", "preco": 68.9 },
+        { "fornecedor": "CoopMinas Insumos", "cidade": "Pouso Alegre", "preco": 64.5 },
+        { "fornecedor": "AgroBoa Vista", "cidade": "Varginha", "preco": 71.2 }
+      ]
+    },
+    {
+      "id": "irr001",
+      "categoria": "irrigacao",
+      "nome": "Kit gotejamento (100m)",
+      "unidade": "kit",
+      "ofertas": [
+        { "fornecedor": "Hidroagro Equipamentos", "cidade": "Pouso Alegre", "preco": 349.0 },
+        { "fornecedor": "Agropecuária Sul de Minas", "cidade": "Santa Rita do Sapucaí", "preco": 379.9 }
+      ]
+    },
+    {
+      "id": "hid001",
+      "categoria": "hidrogel",
+      "nome": "Polímero hidroretentor (hidrogel)",
+      "unidade": "kg",
+      "ofertas": [
+        { "fornecedor": "CoopMinas Insumos", "cidade": "Pouso Alegre", "preco": 89.0 },
+        { "fornecedor": "AgroBoa Vista", "cidade": "Varginha", "preco": 94.5 }
+      ]
+    },
+    {
+      "id": "prot001",
+      "categoria": "protecao_termica",
+      "nome": "Manta de proteção contra geada",
+      "unidade": "m²",
+      "ofertas": [
+        { "fornecedor": "Agropecuária Sul de Minas", "cidade": "Santa Rita do Sapucaí", "preco": 12.3 },
+        { "fornecedor": "CoopMinas Insumos", "cidade": "Pouso Alegre", "preco": 11.8 }
+      ]
+    },
+    {
+      "id": "fert001",
+      "categoria": "fertilizante",
+      "nome": "NPK 20-05-20",
+      "unidade": "saca 50kg",
+      "ofertas": [
+        { "fornecedor": "CoopMinas Insumos", "cidade": "Pouso Alegre", "preco": 168.0 },
+        { "fornecedor": "AgroBoa Vista", "cidade": "Varginha", "preco": 175.5 },
+        { "fornecedor": "Agropecuária Sul de Minas", "cidade": "Santa Rita do Sapucaí", "preco": 171.9 }
+      ]
+    }
+  ]
+}

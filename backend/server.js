@@ -1,0 +1,54 @@
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+
+const { router: talhoesRouter } = require("./routes/talhoes");
+const alertasRouter = require("./routes/alertas");
+const insumosRouter = require("./routes/insumos");
+const mercadoRouter = require("./routes/mercado");
+const authRouter = require("./routes/auth");
+const { culturasSuportadas } = require("./services/rules");
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use(cors());
+app.use(express.json());
+
+// Log simples de requisições (útil pra depurar durante o desenvolvimento)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toLocaleTimeString("pt-BR")}] ${req.method} ${req.path}`);
+  next();
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    modoClima: process.env.OPENWEATHER_API_KEY ? "real" : "simulado",
+    modoIA: process.env.ANTHROPIC_API_KEY ? "real" : "simulado",
+    modoMapas: process.env.GOOGLE_MAPS_API_KEY ? "real" : "simulado",
+  });
+});
+
+app.get("/api/culturas", (req, res) => {
+  res.json(culturasSuportadas());
+});
+
+app.use("/api/auth", authRouter);
+app.use("/api/talhoes", talhoesRouter);
+app.use("/api/alertas", alertasRouter);
+app.use("/api/insumos", insumosRouter);
+app.use("/api/mercado", mercadoRouter);
+
+app.use((req, res) => {
+  res.status(404).json({ erro: "Rota não encontrada" });
+});
+
+app.listen(PORT, () => {
+  console.log("");
+  console.log("  AgroAlerta - backend rodando em http://localhost:" + PORT);
+  console.log("  Modo clima: " + (process.env.OPENWEATHER_API_KEY ? "REAL (OpenWeatherMap)" : "SIMULADO"));
+  console.log("  Modo IA:    " + (process.env.ANTHROPIC_API_KEY ? "REAL (Anthropic)" : "SIMULADO"));
+  console.log("  Modo mapas: " + (process.env.GOOGLE_MAPS_API_KEY ? "REAL (Google Maps)" : "SIMULADO"));
+  console.log("");
+});

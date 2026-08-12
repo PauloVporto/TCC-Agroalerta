@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgroAlerta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- TELA DE LOGIN / REGISTRO -->
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-panel">
+      <div class="auth-brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="30" height="30">
+            <path d="M16 3C11 8 8 13 8 18a8 8 0 0 0 16 0c0-5-3-10-8-15z" fill="currentColor"/>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <span class="brand-name">AgroAlerta</span>
+          <span class="brand-sub">Monitoramento climático &amp; mercado agrícola</span>
+        </div>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab is-active" data-form="login">Entrar</button>
+        <button class="auth-tab" data-form="registro">Criar conta</button>
+      </div>
+
+      <form id="formLogin" class="auth-form is-active">
+        <label class="field">
+          <span>E-mail</span>
+          <input type="email" name="email" placeholder="voce@email.com" required />
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <input type="password" name="senha" placeholder="••••••••" required />
+        </label>
+        <p class="auth-error" id="loginErro"></p>
+        <button type="submit" class="btn btn-primary auth-submit">Entrar</button>
+      </form>
+
+      <form id="formRegistro" class="auth-form">
+        <label class="field">
+          <span>Nome</span>
+          <input type="text" name="nome" placeholder="Seu nome" required />
+        </label>
+        <label class="field">
+          <span>E-mail</span>
+          <input type="email" name="email" placeholder="voce@email.com" required />
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <input type="password" name="senha" placeholder="mínimo 6 caracteres" required minlength="6" />
+        </label>
+        <p class="auth-error" id="registroErro"></p>
+        <button type="submit" class="btn btn-primary auth-submit">Criar conta</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="app" id="appRoot" hidden>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="26" height="26">
+            <path d="M16 3C11 8 8 13 8 18a8 8 0 0 0 16 0c0-5-3-10-8-15z" fill="currentColor"/>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <span class="brand-name">AgroAlerta</span>
+          <span class="brand-sub">Café &amp; Soja · Sul de Minas</span>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <button class="nav-item is-active" data-view="talhoes">Talhões &amp; Alertas</button>
+        <button class="nav-item" data-view="insumos">Insumos</button>
+        <button class="nav-item" data-view="mercado">Mercado</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-box">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <div class="user-info">
+            <span class="user-name" id="userName">—</span>
+            <button class="user-logout" id="btnLogout">Sair</button>
+          </div>
+        </div>
+        <div class="status-title">Fontes de dados</div>
+        <div class="status-row"><span>Clima</span><span class="status-pill" id="statusClima">—</span></div>
+        <div class="status-row"><span>IA (mercado)</span><span class="status-pill" id="statusIA">—</span></div>
+        <div class="status-row"><span>Mapas</span><span class="status-pill" id="statusMapas">—</span></div>
+      </div>
+    </aside>
+
+    <main class="content">
+
+      <!-- VIEW: TALHÕES + ALERTAS -->
+      <section class="view is-active" id="view-talhoes">
+        <header class="view-header">
+          <div>
+            <h1>Talhões &amp; Alertas</h1>
+            <p class="view-desc">Monitoramento climático por talhão, com alertas gerados a partir de regras agronômicas para café e soja.</p>
+          </div>
+          <button class="btn btn-primary" id="btnNovoTalhao">+ Novo talhão</button>
+        </header>
+
+        <div class="talhoes-layout">
+          <div class="talhoes-list" id="talhoesList">
+            <!-- preenchido via JS -->
+          </div>
+
+          <div class="talhao-detail-wrap">
+            <div class="map-card">
+              <div id="mapaTalhoes" class="mapa-container"></div>
+              <div class="mapa-fallback" id="mapaFallback" hidden>
+                Configure a <code>GOOGLE_MAPS_BROWSER_KEY</code> em <code>frontend/config.js</code> para ativar o mapa.
+              </div>
+            </div>
+            <div class="talhao-detail" id="talhaoDetail">
+              <div class="empty-state">
+                <p>Selecione um talhão à esquerda para ver o clima e os alertas.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: INSUMOS -->
+      <section class="view" id="view-insumos">
+        <header class="view-header">
+          <div>
+            <h1>Comparador de insumos</h1>
+            <p class="view-desc">Preços simulados de fornecedores da região, com recomendação de compra gerada por IA a partir do cenário atual de mercado.</p>
+          </div>
+        </header>
+
+        <div class="filter-row" id="insumosFiltro">
+          <button class="chip is-active" data-categoria="">Todos</button>
+        </div>
+
+        <div class="card insight-card" id="insightCompraCard" hidden>
+          <div class="card-label">
+            Insight de compra · <span id="insightCategoriaNome"></span>
+            <span class="badge" id="insightFonte">—</span>
+          </div>
+          <p class="analysis-text" id="insightTexto">Gerando recomendação…</p>
+          <div class="factors" id="insightFontesLista"></div>
+        </div>
+
+        <div class="insumos-grid" id="insumosGrid">
+          <!-- preenchido via JS -->
+        </div>
+      </section>
+
+      <!-- VIEW: MERCADO -->
+      <section class="view" id="view-mercado">
+        <header class="view-header">
+          <div>
+            <h1>Mercado</h1>
+            <p class="view-desc">Histórico de preço e leitura de tendência gerada por IA com busca em tempo real: clima nas regiões produtoras, câmbio, comércio internacional, frete e política agrícola.</p>
+          </div>
+          <div class="segmented" id="mercadoTabs">
+            <button class="segmented-item is-active" data-cultura="cafe">Café</button>
+            <button class="segmented-item" data-cultura="soja">Soja</button>
+            <button class="segmented-item" data-cultura="milho">Milho</button>
+            <button class="segmented-item" data-cultura="cana">Cana</button>
+            <button class="segmented-item" data-cultura="feijao">Feijão</button>
+          </div>
+        </header>
+
+        <div class="mercado-layout">
+          <div class="card chart-card">
+            <div class="card-label">Histórico de preço · últimos 90 dias</div>
+            <canvas id="chartMercado" width="700" height="280"></canvas>
+            <div class="chart-meta" id="chartMeta"></div>
+          </div>
+
+          <div class="card analysis-card">
+            <div class="card-label">
+              Leitura de tendência
+              <span class="badge" id="analiseFonte">—</span>
+            </div>
+            <p class="analysis-text" id="analiseTexto">Carregando análise…</p>
+            <div class="factors" id="analiseFatores"></div>
+            <div class="fontes-lista" id="analiseFontesLinks"></div>
+            <button class="btn btn-ghost" id="btnRegerarAnalise">Regenerar análise</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: NOVO TALHÃO -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Novo talhão</h2>
+        <button class="modal-close" id="btnFecharModal" aria-label="Fechar">×</button>
+      </div>
+      <form id="formTalhao" class="modal-body">
+        <label class="field">
+          <span>Nome do talhão</span>
+          <input type="text" name="nome" placeholder="Ex: Sítio das Palmeiras - Talhão 2" required />
+        </label>
+        <label class="field">
+          <span>Cultura</span>
+          <select name="cultura" required>
+            <option value="cafe">Café</option>
+            <option value="soja">Soja</option>
+            <option value="milho">Milho</option>
+            <option value="cana">Cana-de-açúcar</option>
+            <option value="feijao">Feijão</option>
+          </select>
+        </label>
+        <label class="field" id="campoFase">
+          <span>Fase atual</span>
+          <select name="fase" required></select>
+        </label>
+        <label class="field">
+          <span>Endereço / localização</span>
+          <input type="text" name="endereco" placeholder="Ex: Zona rural, Santa Rita do Sapucaí, MG" required />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="btnCancelarModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Cadastrar talhão</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
