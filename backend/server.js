@@ -8,6 +8,7 @@ const insumosRouter = require("./routes/insumos");
 const mercadoRouter = require("./routes/mercado");
 const authRouter = require("./routes/auth");
 const { culturasSuportadas } = require("./services/rules");
+const { inicializarBanco } = require("./services/db");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -44,11 +45,19 @@ app.use((req, res) => {
   res.status(404).json({ erro: "Rota não encontrada" });
 });
 
-app.listen(PORT, () => {
-  console.log("");
-  console.log("  AgroAlerta - backend rodando em http://localhost:" + PORT);
-  console.log("  Modo clima: " + (process.env.OPENWEATHER_API_KEY ? "REAL (OpenWeatherMap)" : "SIMULADO"));
-  console.log("  Modo IA:    " + (process.env.ANTHROPIC_API_KEY ? "REAL (Anthropic)" : "SIMULADO"));
-  console.log("  Modo mapas: " + (process.env.GOOGLE_MAPS_API_KEY ? "REAL (Google Maps)" : "SIMULADO"));
-  console.log("");
+async function iniciar() {
+  await inicializarBanco();
+  app.listen(PORT, () => {
+    console.log("");
+    console.log("  AgroAlerta - backend rodando em http://localhost:" + PORT);
+    console.log("  Modo clima: " + (process.env.OPENWEATHER_API_KEY ? "REAL (OpenWeatherMap)" : "SIMULADO"));
+    console.log("  Modo IA:    " + (process.env.ANTHROPIC_API_KEY ? "REAL (Anthropic)" : "SIMULADO"));
+    console.log("  Modo mapas: " + (process.env.GOOGLE_MAPS_API_KEY ? "REAL (Google Maps)" : "SIMULADO"));
+    console.log("");
+  });
+}
+
+iniciar().catch((erro) => {
+  console.error("Não foi possível conectar ao PostgreSQL:", erro.message);
+  process.exit(1);
 });

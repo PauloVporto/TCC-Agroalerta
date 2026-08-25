@@ -183,8 +183,82 @@ document.getElementById("nav").addEventListener("click", (e) => {
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
   document.getElementById("view-" + view).classList.add("is-active");
 
+  if (view === "configuracoes") carregarConfiguracoes();
   if (view === "insumos" && !state.insumosCarregados) carregarInsumos();
   if (view === "mercado" && !state.mercadoCarregado) carregarMercado(state.culturaMercadoAtual);
+});
+
+// ---------- CONFIGURAÇÕES DO USUÁRIO ----------
+
+let configuracoesCarregadas = false;
+
+async function carregarConfiguracoes() {
+  if (configuracoesCarregadas) return;
+  const resp = await apiFetch("/auth/configuracoes");
+  if (!resp.ok) return;
+  const dados = await resp.json();
+  const perfil = document.getElementById("formPerfil");
+  perfil.nome.value = dados.nome;
+  perfil.email.value = dados.email;
+  const preferencias = document.getElementById("formPreferencias");
+  preferencias.culturaFavorita.value = dados.culturaFavorita;
+  preferencias.unidadeTemperatura.value = dados.unidadeTemperatura;
+  preferencias.notificacoes.checked = dados.notificacoes;
+  configuracoesCarregadas = true;
+}
+
+function feedbackConfiguracao(id, mensagem, erro = false) {
+  const el = document.getElementById(id);
+  el.textContent = mensagem;
+  el.classList.toggle("is-error", erro);
+}
+
+document.getElementById("formPerfil").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const dados = Object.fromEntries(new FormData(e.target).entries());
+  const resp = await apiFetch("/auth/perfil", {
+    method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados),
+  });
+  const corpo = await resp.json();
+  if (!resp.ok) return feedbackConfiguracao("perfilFeedback", corpo.erro, true);
+  state.usuario = corpo;
+  sessionStorage.setItem("agroalerta_usuario", JSON.stringify(corpo));
+  document.getElementById("userName").textContent = corpo.nome;
+  document.getElementById("userAvatar").textContent = corpo.nome.charAt(0).toUpperCase();
+  feedbackConfiguracao("perfilFeedback", "Perfil atualizado.");
+});
+
+document.getElementById("formPreferencias").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const dados = Object.fromEntries(new FormData(e.target).entries());
+  dados.notificacoes = e.target.notificacoes.checked;
+  const resp = await apiFetch("/auth/preferencias", {
+    method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados),
+  });
+  const corpo = await resp.json();
+  feedbackConfiguracao("preferenciasFeedback", resp.ok ? "Preferências salvas." : corpo.erro, !resp.ok);
+});
+
+document.getElementById("formSenha").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const dados = Object.fromEntries(new FormData(e.target).entries());
+  const resp = await apiFetch("/auth/senha", {
+    method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados),
+  });
+  const corpo = await resp.json();
+  if (resp.ok) e.target.reset();
+  feedbackConfiguracao("senhaFeedback", resp.ok ? corpo.mensagem : corpo.erro, !resp.ok);
+});
+
+document.getElementById("btnExcluirConta").addEventListener("click", async () => {
+  if (!confirm("Excluir sua conta e todos os talhões permanentemente?")) return;
+  const resp = await apiFetch("/auth/conta", { method: "DELETE" });
+  if (resp.ok) {
+    limparSessao();
+    mostrarLogin();
+  } else {
+    alert("Não foi possível excluir a conta agora.");
+  }
 });
 
 // ---------- STATUS (rodapé da sidebar) ----------

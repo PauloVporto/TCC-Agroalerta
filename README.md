@@ -24,6 +24,23 @@ agroalerta/
 
 ## Como rodar
 
+### Docker (backend + PostgreSQL + frontend)
+
+Com Docker Desktop instalado:
+
+```bash
+docker compose up --build
+```
+
+O frontend fica em `http://localhost:5173`, a API em `http://localhost:3001` e
+os dados do PostgreSQL são mantidos no volume `postgres_data`. Para desligar:
+
+```bash
+docker compose down
+```
+
+Use `docker compose down -v` apenas quando quiser apagar também os dados do banco.
+
 ### 1. Backend
 
 ```bash
@@ -101,7 +118,7 @@ reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 - Cadastro e login com e-mail/senha (senha armazenada com hash `scrypt`, nunca em texto puro)
 - Sessão via token, guardado no `sessionStorage` do navegador (expira ao fechar a aba)
 - Cada usuário só vê e gerencia os próprios talhões — isolamento aplicado no backend, não só na interface
-- **Limitação conhecida (documentar no TCC)**: usuários e sessões ficam em memória; reiniciar o backend apaga todas as contas. Evoluir para um banco real remove essa limitação.
+- Usuários, sessões e talhões são persistidos no PostgreSQL; reiniciar os containers não apaga os dados enquanto o volume do banco for mantido.
 
 ## Módulos implementados
 
@@ -117,7 +134,7 @@ reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 
 ## Próximos passos sugeridos (para o desenvolvimento do TCC)
 
-- [ ] Trocar o armazenamento em memória (talhões e usuários) por um banco real (SQLite é o mais simples)
+- [x] Persistir usuários, sessões e talhões em PostgreSQL
 - [ ] Revisar as faixas usadas no motor de regras (`rules.js`) com fontes agronômicas específicas (Embrapa/Epamig) por cultura e citá-las no referencial teórico
 - [ ] Ajustar a lista de notícias curadas em `services/market.js` para refletir o cenário real na data da defesa
 - [ ] Testar a geocodificação e o mapa com endereços reais da região quando as chaves do Google Maps estiverem configuradas

@@ -79,6 +79,7 @@
         <button class="nav-item is-active" data-view="talhoes">Talhões &amp; Alertas</button>
         <button class="nav-item" data-view="insumos">Insumos</button>
         <button class="nav-item" data-view="mercado">Mercado</button>
+        <button class="nav-item" data-view="configuracoes">Configurações</button>
       </nav>
 
       <div class="sidebar-footer">
@@ -125,6 +126,56 @@
                 <p>Selecione um talhão à esquerda para ver o clima e os alertas.</p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: CONFIGURAÇÕES -->
+      <section class="view" id="view-configuracoes">
+        <header class="view-header">
+          <div>
+            <h1>Configurações</h1>
+            <p class="view-desc">Gerencie seus dados, preferências de monitoramento e segurança da conta.</p>
+          </div>
+        </header>
+
+        <div class="settings-grid">
+          <form class="card settings-card" id="formPerfil">
+            <h2>Dados do perfil</h2>
+            <label class="field"><span>Nome</span><input name="nome" required /></label>
+            <label class="field"><span>E-mail</span><input type="email" name="email" required /></label>
+            <p class="form-feedback" id="perfilFeedback"></p>
+            <button class="btn btn-primary" type="submit">Salvar perfil</button>
+          </form>
+
+          <form class="card settings-card" id="formPreferencias">
+            <h2>Preferências</h2>
+            <label class="field"><span>Cultura favorita</span>
+              <select name="culturaFavorita">
+                <option value="cafe">Café</option><option value="soja">Soja</option>
+                <option value="milho">Milho</option><option value="cana">Cana-de-açúcar</option><option value="feijao">Feijão</option>
+              </select>
+            </label>
+            <label class="field"><span>Unidade de temperatura</span>
+              <select name="unidadeTemperatura"><option value="celsius">Celsius (°C)</option><option value="fahrenheit">Fahrenheit (°F)</option></select>
+            </label>
+            <label class="settings-check"><input type="checkbox" name="notificacoes" /> <span>Receber notificações de alertas</span></label>
+            <p class="form-feedback" id="preferenciasFeedback"></p>
+            <button class="btn btn-primary" type="submit">Salvar preferências</button>
+          </form>
+
+          <form class="card settings-card" id="formSenha">
+            <h2>Segurança</h2>
+            <label class="field"><span>Senha atual</span><input type="password" name="senhaAtual" required /></label>
+            <label class="field"><span>Nova senha</span><input type="password" name="novaSenha" minlength="6" required /></label>
+            <p class="form-feedback" id="senhaFeedback"></p>
+            <button class="btn btn-primary" type="submit">Alterar senha</button>
+          </form>
+
+          <div class="card settings-card settings-danger">
+            <h2>Excluir conta</h2>
+            <p>Esta ação remove permanentemente seu perfil, sessões e talhões cadastrados.</p>
+            <button class="btn btn-danger" id="btnExcluirConta" type="button">Excluir minha conta</button>
           </div>
         </div>
       </section>

@@ -9,7 +9,7 @@ router.use(exigirAutenticacao);
 
 // GET /api/alertas/:talhaoId - retorna os alertas atuais para um talhão do usuário logado
 router.get("/:talhaoId", async (req, res) => {
-  const talhao = buscarTalhaoPorId(req.params.talhaoId);
+  const talhao = await buscarTalhaoPorId(req.params.talhaoId);
 
   if (!talhao) {
     return res.status(404).json({ erro: "Talhão não encontrado" });
