@@ -195,9 +195,7 @@ function gerarAnaliseSimulada(cultura, variacaoPercentual, precoAtual, noticias)
     tendencia +
     " (" +
     variacaoPercentual +
-    "%). Entre os fatores observados estão: " +
-    noticias.slice(0, 2).join("; ") +
-    ". [Análise gerada em modo simulado - configure ANTHROPIC_API_KEY para análises com busca real na web.]";
+    "%).";
 
   return {
     cultura,

@@ -49,6 +49,10 @@ const state = {
   talhoes: [],
   talhaoSelecionadoId: null,
   culturaMercadoAtual: "cafe",
+  mercadoPeriodoAtual: "6meses",
+  mercadoAnoAtual: new Date().getFullYear(),
+  mercadoHistoricoCompleto: null,
+  mercadoUnidade: "",
   authToken: null,
   usuario: null,
 };
@@ -182,6 +186,8 @@ document.getElementById("nav").addEventListener("click", (e) => {
   const view = btn.dataset.view;
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
   document.getElementById("view-" + view).classList.add("is-active");
+
+  document.querySelector(".content").classList.toggle("content--full", view === "mercado");
 
   if (view === "configuracoes") carregarConfiguracoes();
   if (view === "insumos" && !state.insumosCarregados) carregarInsumos();
@@ -546,16 +552,42 @@ document.getElementById("mercadoTabs").addEventListener("click", (e) => {
   const btn = e.target.closest(".segmented-item");
   if (!btn) return;
 
-  document.querySelectorAll(".segmented-item").forEach((b) => b.classList.remove("is-active"));
+  document.querySelectorAll("#mercadoTabs .segmented-item").forEach((b) => b.classList.remove("is-active"));
   btn.classList.add("is-active");
 
   state.culturaMercadoAtual = btn.dataset.cultura;
   carregarMercado(state.culturaMercadoAtual);
 });
 
+document.getElementById("periodoFiltros").addEventListener("click", (e) => {
+  const btn = e.target.closest(".segmented-item");
+  if (!btn) return;
+
+  document.querySelectorAll("#periodoFiltros .segmented-item").forEach((b) => b.classList.remove("is-active"));
+  btn.classList.add("is-active");
+
+  state.mercadoPeriodoAtual = btn.dataset.periodo;
+  renderizarGrafico();
+});
+
+document.getElementById("anoSelect").addEventListener("change", (e) => {
+  state.mercadoAnoAtual = Number(e.target.value);
+  renderizarGrafico();
+});
+
 document.getElementById("btnRegerarAnalise").addEventListener("click", () => {
   carregarAnalise(state.culturaMercadoAtual);
 });
+
+popularAnoSelect();
+
+function popularAnoSelect() {
+  const select = document.getElementById("anoSelect");
+  const anoAtual = new Date().getFullYear();
+  const anos = [anoAtual, anoAtual - 1, anoAtual - 2];
+  select.innerHTML = anos.map((a) => `<option value="${a}">${a}</option>`).join("");
+  select.value = String(state.mercadoAnoAtual);
+}
 
 async function carregarMercado(cultura) {
   state.mercadoCarregado = true;
@@ -565,7 +597,9 @@ async function carregarMercado(cultura) {
 async function carregarHistorico(cultura) {
   const resp = await fetch(API_BASE + "/mercado/" + cultura + "/historico");
   const dados = await resp.json();
-  desenharGrafico(dados.historico, dados.unidade);
+  state.mercadoHistoricoCompleto = dados.historico;
+  state.mercadoUnidade = dados.unidade;
+  renderizarGrafico();
 }
 
 async function carregarAnalise(cultura) {
@@ -573,14 +607,22 @@ async function carregarAnalise(cultura) {
   document.getElementById("analiseFatores").innerHTML = "";
   document.getElementById("analiseFontesLinks").innerHTML = "";
   document.getElementById("analiseFonte").textContent = "—";
+  document.getElementById("analiseTendencia").textContent = "—";
+  document.getElementById("analiseTendencia").className = "trend-figure";
+  document.getElementById("analiseAvisoSimulado").hidden = true;
 
   try {
     const resp = await fetch(API_BASE + "/mercado/" + cultura + "/analise");
     const dados = await resp.json();
 
+    const elTendencia = document.getElementById("analiseTendencia");
+    elTendencia.textContent = formatarPercentual(dados.variacaoPercentual);
+    elTendencia.classList.add(dados.variacaoPercentual >= 0 ? "up" : "down");
+
     document.getElementById("analiseTexto").textContent = dados.resumo;
     document.getElementById("analiseFonte").textContent =
       dados.gerarPor === "ia_com_busca" ? "IA + busca na web" : "modo simulado";
+    document.getElementById("analiseAvisoSimulado").hidden = dados.gerarPor !== "simulado";
 
     document.getElementById("analiseFatores").innerHTML = dados.fatoresConsiderados
       .map((f) => `<div class="factor-item">${f}</div>`)
@@ -590,6 +632,11 @@ async function carregarAnalise(cultura) {
   } catch (erro) {
     document.getElementById("analiseTexto").textContent = "Não foi possível gerar a análise agora.";
   }
+}
+
+function formatarPercentual(valor) {
+  const sinal = valor > 0 ? "+" : "";
+  return sinal + valor.toFixed(1).replace(".", ",") + "%";
 }
 
 function renderizarFontes(fontes) {
@@ -606,69 +653,257 @@ function renderizarFontes(fontes) {
 }
 
 
-function desenharGrafico(historico, unidade) {
+function paraTimestamp(iso) {
+  return new Date(iso + "T00:00:00Z").getTime();
+}
+
+function paraISO(timestamp) {
+  return new Date(timestamp).toISOString().slice(0, 10);
+}
+
+function filtrarHistorico(historico, periodo, ano) {
+  const doAno = historico.filter((p) => p.data.startsWith(ano + "-"));
+  if (periodo === "ano" || doAno.length === 0) return doAno;
+
+  // janelas móveis (semana, mês, 90 dias...) são ancoradas no último ponto
+  // disponível dentro do ano selecionado, não no ano mais recente com dado.
+  const corte = new Date(paraTimestamp(doAno[doAno.length - 1].data));
+  if (periodo === "7") corte.setUTCDate(corte.getUTCDate() - 7);
+  else if (periodo === "mes") corte.setUTCMonth(corte.getUTCMonth() - 1);
+  else if (periodo === "90") corte.setUTCDate(corte.getUTCDate() - 90);
+  else if (periodo === "3meses") corte.setUTCMonth(corte.getUTCMonth() - 3);
+  else if (periodo === "6meses") corte.setUTCMonth(corte.getUTCMonth() - 6);
+
+  const corteTs = corte.getTime();
+  return doAno.filter((p) => paraTimestamp(p.data) >= corteTs);
+}
+
+let mercadoChart = null;
+
+function renderizarGrafico() {
+  const historicoCompleto = state.mercadoHistoricoCompleto;
   const canvas = document.getElementById("chartMercado");
-  const ctx = canvas.getContext("2d");
-  const w = canvas.width;
-  const h = canvas.height;
-  const padding = { top: 16, right: 16, bottom: 28, left: 56 };
+  const vazio = document.getElementById("chartVazio");
+  const meta = document.getElementById("chartMeta");
+  if (!historicoCompleto) return;
 
-  ctx.clearRect(0, 0, w, h);
+  const filtrado = filtrarHistorico(historicoCompleto, state.mercadoPeriodoAtual, state.mercadoAnoAtual);
 
-  const precos = historico.map((p) => p.preco);
-  const min = Math.min(...precos) * 0.98;
-  const max = Math.max(...precos) * 1.02;
-
-  const escalaX = (i) => padding.left + (i / (historico.length - 1)) * (w - padding.left - padding.right);
-  const escalaY = (v) => h - padding.bottom - ((v - min) / (max - min)) * (h - padding.top - padding.bottom);
-
-  // Grade horizontal
-  ctx.strokeStyle = "#E2DCC9";
-  ctx.lineWidth = 1;
-  ctx.font = "11px IBM Plex Mono, monospace";
-  ctx.fillStyle = "#6B6559";
-  const passos = 4;
-  for (let i = 0; i <= passos; i++) {
-    const valor = min + ((max - min) / passos) * i;
-    const y = escalaY(valor);
-    ctx.beginPath();
-    ctx.moveTo(padding.left, y);
-    ctx.lineTo(w - padding.right, y);
-    ctx.stroke();
-    ctx.fillText(valor.toFixed(0), 6, y + 4);
+  if (filtrado.length === 0) {
+    if (mercadoChart) {
+      mercadoChart.destroy();
+      mercadoChart = null;
+    }
+    canvas.hidden = true;
+    vazio.hidden = false;
+    meta.innerHTML = "";
+    return;
   }
 
-  // Linha de preço
-  ctx.beginPath();
-  historico.forEach((ponto, i) => {
-    const x = escalaX(i);
-    const y = escalaY(ponto.preco);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+  canvas.hidden = false;
+  vazio.hidden = true;
+
+  const pontos = filtrado.map((p) => ({ x: paraTimestamp(p.data), y: p.preco }));
+
+  if (mercadoChart) mercadoChart.destroy();
+
+  mercadoChart = new Chart(canvas.getContext("2d"), {
+    type: "line",
+    data: {
+      datasets: [
+        {
+          data: pontos,
+          borderColor: "#6B3F2A",
+          backgroundColor: "rgba(107, 63, 42, 0.08)",
+          fill: true,
+          tension: 0.15,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointHoverBackgroundColor: "#6B3F2A",
+          pointHoverBorderColor: "#FBFAF5",
+          pointHoverBorderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: {
+          type: "linear",
+          bounds: "data",
+          grid: { display: false },
+          ticks: {
+            color: "#4A4438",
+            font: { family: "IBM Plex Mono", size: 11 },
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 8,
+            callback: (valor) => formatarData(paraISO(valor)),
+          },
+        },
+        y: {
+          grid: { color: "#E2DCC9" },
+          ticks: { color: "#4A4438", font: { family: "IBM Plex Mono", size: 11 } },
+        },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#26221D",
+          padding: 10,
+          titleFont: { family: "IBM Plex Mono", size: 11 },
+          bodyFont: { family: "IBM Plex Sans", size: 12.5 },
+          callbacks: {
+            title: (items) => formatarData(paraISO(items[0].parsed.x)),
+            label: (item) => "R$ " + item.parsed.y.toFixed(2) + " · " + state.mercadoUnidade,
+          },
+        },
+      },
+    },
   });
-  ctx.strokeStyle = "#6B3F2A";
-  ctx.lineWidth = 2;
-  ctx.stroke();
 
-  // Área sob a linha
-  ctx.lineTo(escalaX(historico.length - 1), h - padding.bottom);
-  ctx.lineTo(escalaX(0), h - padding.bottom);
-  ctx.closePath();
-  ctx.fillStyle = "rgba(107, 63, 42, 0.08)";
-  ctx.fill();
-
-  const meta = document.getElementById("chartMeta");
-  const primeiro = historico[0];
-  const ultimo = historico[historico.length - 1];
+  const primeiro = filtrado[0];
+  const ultimo = filtrado[filtrado.length - 1];
   meta.innerHTML = `
     <span>${formatarData(primeiro.data)} · R$ ${primeiro.preco.toFixed(2)}</span>
-    <span>${formatarData(ultimo.data)} · R$ ${ultimo.preco.toFixed(2)} (${unidade})</span>
+    <span>${formatarData(ultimo.data)} · R$ ${ultimo.preco.toFixed(2)} (${state.mercadoUnidade})</span>
   `;
 }
 
 function formatarData(iso) {
   const [ano, mes, dia] = iso.split("-");
   return dia + "/" + mes;
+}
+
+// ---------- SIMULADOR (venda x insumos) ----------
+
+const simState = {
+  precoAtual: 0,
+  unidade: "",
+  insumos: null,
+};
+
+const modalSimulador = document.getElementById("modalSimulador");
+
+document.getElementById("btnSimulador").addEventListener("click", abrirSimulador);
+document.getElementById("btnFecharSimulador").addEventListener("click", fecharSimulador);
+modalSimulador.addEventListener("click", (e) => {
+  if (e.target === modalSimulador) fecharSimulador();
+});
+
+document.getElementById("simuladorTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".segmented-item");
+  if (!btn) return;
+
+  document.querySelectorAll("#simuladorTabs .segmented-item").forEach((b) => b.classList.remove("is-active"));
+  btn.classList.add("is-active");
+
+  const aba = btn.dataset.simtab;
+  document.getElementById("painelVenda").hidden = aba !== "venda";
+  document.getElementById("painelInsumos").hidden = aba !== "insumos";
+});
+
+document.getElementById("simCultura").addEventListener("change", () => carregarPrecoSimulador());
+document.getElementById("simQuantidade").addEventListener("input", recalcularSimulador);
+
+async function abrirSimulador() {
+  document.getElementById("simCultura").value = state.culturaMercadoAtual;
+  modalSimulador.classList.add("is-open");
+
+  const tarefas = [carregarPrecoSimulador()];
+  if (!simState.insumos) tarefas.push(carregarInsumosSimulador());
+  await Promise.all(tarefas);
+}
+
+function fecharSimulador() {
+  modalSimulador.classList.remove("is-open");
+}
+
+async function carregarPrecoSimulador() {
+  const cultura = document.getElementById("simCultura").value;
+  document.getElementById("simPrecoInfo").textContent = "Buscando preço atual…";
+
+  const resp = await fetch(API_BASE + "/mercado/" + cultura + "/historico");
+  const dados = await resp.json();
+  const ultimo = dados.historico[dados.historico.length - 1];
+
+  simState.precoAtual = ultimo.preco;
+  simState.unidade = dados.unidade;
+
+  document.getElementById("simQuantidadeLabel").textContent = "Quantidade a vender (" + dados.unidade + ")";
+  document.getElementById("simPrecoInfo").textContent =
+    "Preço usado: " + formatarMoeda(ultimo.preco) + " por " + dados.unidade + " (" + formatarData(ultimo.data) + ")";
+
+  recalcularSimulador();
+}
+
+async function carregarInsumosSimulador() {
+  const resp = await fetch(API_BASE + "/insumos");
+  simState.insumos = await resp.json();
+  renderizarListaInsumosSimulador();
+}
+
+function renderizarListaInsumosSimulador() {
+  const lista = document.getElementById("simInsumosLista");
+  lista.innerHTML = simState.insumos
+    .map(
+      (i) => `
+    <div class="sim-insumo-row">
+      <div class="sim-insumo-nome">
+        ${i.nome}
+        <span class="sim-insumo-unidade">melhor preço encontrado: ${formatarMoeda(i.melhorPreco.preco)} / ${i.unidade} (${i.melhorPreco.fornecedor})</span>
+      </div>
+      <div class="sim-insumo-inputs">
+        <label class="sim-insumo-campo">
+          <span>Preço (${i.unidade})</span>
+          <input type="number" class="sim-insumo-preco" min="0" step="0.01" value="${i.melhorPreco.preco}" />
+        </label>
+        <label class="sim-insumo-campo">
+          <span>Quantidade</span>
+          <input type="number" class="sim-insumo-qtd" min="0" step="1" value="0" />
+        </label>
+      </div>
+    </div>`
+    )
+    .join("");
+
+  lista.querySelectorAll(".sim-insumo-preco, .sim-insumo-qtd").forEach((input) => {
+    input.addEventListener("input", recalcularSimulador);
+  });
+}
+
+function recalcularSimulador() {
+  const cultura = document.getElementById("simCultura").value;
+  const quantidade = Number(document.getElementById("simQuantidade").value) || 0;
+  const receita = quantidade * simState.precoAtual;
+
+  document.getElementById("simReceitaDestaque").textContent = formatarMoeda(receita);
+  document.getElementById("simVendaResumo").textContent =
+    "Vendendo " + quantidade + " " + simState.unidade + " de " + (NOMES_CULTURA[cultura] || cultura).toLowerCase() +
+    " ao preço atual (" + formatarMoeda(simState.precoAtual) + "), você receberia aproximadamente " +
+    formatarMoeda(receita) + ".";
+
+  let custoInsumos = 0;
+  document.querySelectorAll(".sim-insumo-row").forEach((row) => {
+    const preco = Number(row.querySelector(".sim-insumo-preco").value) || 0;
+    const qtd = Number(row.querySelector(".sim-insumo-qtd").value) || 0;
+    custoInsumos += preco * qtd;
+  });
+
+  const margem = receita - custoInsumos;
+  document.getElementById("simMargemReceita").textContent = formatarMoeda(receita);
+  document.getElementById("simMargemCusto").textContent = "- " + formatarMoeda(custoInsumos);
+
+  const elMargem = document.getElementById("simMargemTotal");
+  elMargem.textContent = formatarMoeda(margem);
+  elMargem.className = "trend-figure " + (margem >= 0 ? "up" : "down");
+}
+
+function formatarMoeda(valor) {
+  return "R$ " + valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // ---------- MAPA (Google Maps) ----------
