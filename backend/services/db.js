@@ -32,6 +32,8 @@ async function inicializarBanco() {
       latitude DOUBLE PRECISION NOT NULL,
       longitude DOUBLE PRECISION NOT NULL,
       endereco_formatado TEXT,
+      poligono JSONB,
+      area_ha DOUBLE PRECISION,
       criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -82,6 +84,8 @@ async function inicializarBanco() {
   await pool.query(`
     ALTER TABLE sessoes
       ADD COLUMN IF NOT EXISTS expira_em TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '7 days');
+    ALTER TABLE talhoes ADD COLUMN IF NOT EXISTS poligono JSONB;
+    ALTER TABLE talhoes ADD COLUMN IF NOT EXISTS area_ha DOUBLE PRECISION;
   `);
 
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_talhoes_usuario ON talhoes (usuario_id);`);

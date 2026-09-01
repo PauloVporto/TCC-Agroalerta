@@ -7,6 +7,7 @@ const {
   NOMES_CULTURA,
   montarContextoLlm,
   promptAnaliseMercado,
+  promptProjecaoMercado,
   chamarClaudeComBusca,
   temChaveLlm,
 } = require("./llm");
@@ -17,29 +18,29 @@ const mercadoData = JSON.parse(
 
 const NOTICIAS_CURADAS_FALLBACK = {
   cafe: [
-    "Previsão de clima mais seco que a média nas principais regiões produtoras de Minas Gerais nas próximas semanas.",
-    "Estoques mundiais de café arábica seguem em nível historicamente baixo.",
-    "Câmbio (dólar) em leve alta, favorecendo exportadores.",
+    "Mercado interno: referência Cepea para arábica no Brasil, em R$/saca 60 kg.",
+    "Internacional: contrato ICE Nova York (KC) e paridade convertida pelo PTAX.",
+    "Câmbio e estoques mundiais de arábica pesam no prêmio/desconto do café brasileiro.",
   ],
   soja: [
-    "Boas condições de plantio relatadas nos EUA, favorecendo expectativa de safra recorde.",
-    "China mantém ritmo de importações estável em relação ao mês anterior.",
-    "Custo de fretes marítimos em leve queda no último mês.",
+    "Mercado interno: saca em reais no Brasil, influenciada por prêmio de porto e frete.",
+    "Internacional: CBOT Chicago; China segue como principal demanda de exportação.",
+    "PTAX define a paridade de exportação que o produtor compara com o preço local.",
   ],
   milho: [
-    "Safrinha de milho com boa evolução no Centro-Oeste, pressionando preços internos.",
-    "Demanda de etanol de milho segue aquecida em usinas do interior de Minas e Goiás.",
-    "Exportações de milho brasileiro em ritmo forte, sustentando preços no mercado externo.",
+    "Mercado interno: safrinha e etanol de milho pressionam ou sustentam o preço no Brasil.",
+    "Internacional: CBOT; exportação brasileira compete com EUA e Ucrânia.",
+    "Paridade cambial ajuda a decidir se vale vender no mercado interno ou exportar.",
   ],
   cana: [
-    "Moagem de cana-de-açúcar na região Sudeste segue dentro da média histórica para o período.",
-    "Preço do açúcar no mercado internacional em leve alta, favorecendo o mix das usinas.",
-    "Custo de fertilizantes nitrogenados estável no último trimestre.",
+    "Mercado interno: mix das usinas entre açúcar e etanol no Centro-Sul.",
+    "Internacional: açúcar #11 na ICE; paridade em R$/saca 50 kg via PTAX.",
+    "Câmbio e prêmio do cristal brasileiro definem a atratividade da exportação.",
   ],
   feijao: [
-    "Área plantada de feijão de segunda safra menor que no ano anterior em Minas Gerais.",
-    "Demanda interna aquecida por conta do período de entressafra.",
-    "Condições climáticas favoráveis à colheita nas principais regiões produtoras.",
+    "Feijão é mercado essencialmente interno (não há futuro líquido nas bolsas).",
+    "Preço ao produtor no Brasil depende de safra, entressafra e demanda doméstica.",
+    "Sem paridade internacional direta; o câmbio afeta só insumos importados.",
   ],
 };
 
@@ -68,19 +69,50 @@ async function obterHistorico(cultura) {
   const mercado = await buscarContextoMercado(cultura);
   return {
     ...base,
+    mercado: "brasil",
     fonteAoVivo: mercado.fonteMercado,
-    cotacaoAoVivo: mercado.cotacaoAoVivo
+    mercadoInterno: {
+      nome: "Mercado interno Brasil",
+      unidade: base.unidade,
+      fonte: base.fonte,
+      historico: base.historico,
+    },
+    internacional: mercado.internacional
       ? {
-          ticker: mercado.cotacaoAoVivo.ticker,
-          nome: mercado.cotacaoAoVivo.nome,
-          preco: mercado.cotacaoAoVivo.preco,
-          unidade: mercado.cotacaoAoVivo.unidade,
-          data: mercado.cotacaoAoVivo.data,
-          moeda: mercado.cotacaoAoVivo.moeda,
-          fonte: mercado.cotacaoAoVivo.fonte,
+          ticker: mercado.internacional.ticker,
+          nome: mercado.internacional.nome,
+          bolsa: mercado.internacional.bolsa,
+          preco: mercado.internacional.preco,
+          unidade: mercado.internacional.unidade,
+          data: mercado.internacional.data,
+          moeda: mercado.internacional.moeda,
+          fonte: mercado.internacional.fonte,
+          historico: mercado.internacional.historico,
+        }
+      : null,
+    paridade: mercado.paridade
+      ? {
+          nome: mercado.paridade.nome,
+          preco: mercado.paridade.preco,
+          unidade: mercado.paridade.unidade,
+          data: mercado.paridade.data,
+          fonte: mercado.paridade.fonte,
+          historico: mercado.paridade.historico,
+        }
+      : null,
+    cotacaoAoVivo: mercado.internacional
+      ? {
+          ticker: mercado.internacional.ticker,
+          nome: mercado.internacional.nome,
+          preco: mercado.internacional.preco,
+          unidade: mercado.internacional.unidade,
+          data: mercado.internacional.data,
+          moeda: mercado.internacional.moeda,
+          fonte: mercado.internacional.fonte,
         }
       : null,
     dolarPtax: mercado.dolar,
+    icBrAgro: mercado.icBrAgro,
   };
 }
 
@@ -96,8 +128,10 @@ async function persistirAnalise(analise) {
         JSON.stringify(analise.fontes || []),
         JSON.stringify({
           clima: analise.climaUsado,
-          cotacaoAoVivo: analise.cotacaoAoVivo,
+          internacional: analise.internacional,
+          paridade: analise.paridade,
           dolarPtax: analise.dolarPtax,
+          icBrAgro: analise.icBrAgro,
         }),
       ]
     );
@@ -152,8 +186,11 @@ async function gerarAnaliseTendencia(cultura) {
       geradoEm: new Date().toISOString(),
       contextoLlm: contexto,
       climaUsado: clima,
-      cotacaoAoVivo: mercado.cotacaoAoVivo,
+      cotacaoAoVivo: mercado.internacional,
+      internacional: mercado.internacional,
+      paridade: mercado.paridade,
       dolarPtax: mercado.dolar,
+      icBrAgro: mercado.icBrAgro,
     };
     await persistirAnalise(analise);
     return analise;
@@ -194,8 +231,101 @@ function gerarAnaliseSimulada(cultura, variacaoPercentual, precoAtual, noticias,
     geradoEm: new Date().toISOString(),
     contextoLlm: extras.contexto || "",
     climaUsado: extras.clima || null,
-    cotacaoAoVivo: extras.mercado ? extras.mercado.cotacaoAoVivo : null,
+    cotacaoAoVivo: extras.mercado ? extras.mercado.internacional : null,
+    internacional: extras.mercado ? extras.mercado.internacional : null,
+    paridade: extras.mercado ? extras.mercado.paridade : null,
     dolarPtax: extras.mercado ? extras.mercado.dolar : null,
+    icBrAgro: extras.mercado ? extras.mercado.icBrAgro : null,
+  };
+}
+
+function adicionarDias(iso, dias) {
+  const d = new Date(iso + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
+}
+
+function projetarPontos(historico, horizontes = [30, 60, 90]) {
+  const janela = (historico || []).slice(-30);
+  if (janela.length < 5) return [];
+  const n = janela.length;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumXX = 0;
+  janela.forEach((p, i) => {
+    sumX += i;
+    sumY += p.preco;
+    sumXY += i * p.preco;
+    sumXX += i * i;
+  });
+  const den = n * sumXX - sumX * sumX;
+  const b = den === 0 ? 0 : (n * sumXY - sumX * sumY) / den;
+  const a = (sumY - b * sumX) / n;
+  const ultimo = janela[n - 1];
+  return horizontes.map((dias) => ({
+    data: adicionarDias(ultimo.data, dias),
+    horizonteDias: dias,
+    preco: Number(Math.max(0, a + b * (n - 1 + dias)).toFixed(2)),
+    tipo: "projecao",
+  }));
+}
+
+async function gerarProjecao(cultura) {
+  const historico = await obterHistorico(cultura);
+  if (!historico) throw new Error("Cultura não suportada: " + cultura);
+  const interno = resumoSerie(serieInterna(cultura));
+  const pontos = projetarPontos(historico.historico);
+  const ancora = historico.paridade || historico.internacional;
+  const contexto = montarContextoLlm({
+    cultura,
+    clima: await buscarClimaAtual(SUL_DE_MINAS.latitude, SUL_DE_MINAS.longitude),
+    mercado: {
+      dolar: historico.dolarPtax,
+      internacional: historico.internacional,
+      paridade: historico.paridade,
+      icBrAgro: historico.icBrAgro,
+    },
+    historicoInterno: interno,
+  });
+
+  let resumo;
+  let gerarPor = "simulado";
+  let fontes = [];
+  if (temChaveLlm()) {
+    try {
+      const out = await chamarClaudeComBusca(promptProjecaoMercado(contexto, pontos), 500);
+      resumo = out.texto;
+      fontes = out.fontes;
+      gerarPor = "ia_projecao";
+    } catch (erro) {
+      console.error("[market] Projeção IA falhou:", erro.message);
+    }
+  }
+  if (!resumo) {
+    const d30 = pontos.find((p) => p.horizonteDias === 30);
+    resumo =
+      "Projeção estatística do mercado interno (últimos 30 pregões) aponta R$ " +
+      (d30 ? d30.preco.toFixed(2) : interno.precoAtual) +
+      " em 30 dias. " +
+      (ancora
+        ? "A âncora internacional/paridade está em " +
+          (historico.paridade ? "R$ " + historico.paridade.preco : historico.internacional.preco + " " + historico.internacional.unidade) +
+          "."
+        : "Sem contrato internacional; a projeção usa só o mercado interno.") +
+      " Use como cenário, não como garantia de preço.";
+  }
+
+  return {
+    cultura,
+    unidade: historico.unidade,
+    precoAtual: interno.precoAtual,
+    pontos,
+    ancora,
+    resumo,
+    gerarPor,
+    fontes,
+    geradoEm: new Date().toISOString(),
   };
 }
 
@@ -206,7 +336,10 @@ async function obterContextoIntegracao(cultura) {
   const clima = await buscarClimaAtual(SUL_DE_MINAS.latitude, SUL_DE_MINAS.longitude);
   const mercado = {
     dolar: historico.dolarPtax,
-    cotacaoAoVivo: historico.cotacaoAoVivo,
+    internacional: historico.internacional,
+    cotacaoAoVivo: historico.internacional,
+    paridade: historico.paridade,
+    icBrAgro: historico.icBrAgro,
   };
   return {
     cultura,
@@ -219,6 +352,12 @@ async function obterContextoIntegracao(cultura) {
 module.exports = {
   obterHistorico,
   gerarAnaliseTendencia,
+  gerarProjecao,
+  projetarPontos,
   obterContextoIntegracao,
   chamarClaudeComBusca,
+  resumoMercadoInterno: (cultura) => {
+    const base = serieInterna(cultura);
+    return base ? resumoSerie(base) : null;
+  },
 };

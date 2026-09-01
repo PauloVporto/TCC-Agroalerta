@@ -2,7 +2,7 @@
  * Camada de LLM do AgroAlerta.
  *
  * O modelo não busca clima/preço "no vazio": recebe um contexto montado
- * a partir das APIs do sistema (Open-Meteo + Yahoo Finance + PTAX) e,
+ * a partir das APIs (Open-Meteo, mercado interno, ICE/CBOT e PTAX) e,
  * quando há chave, complementar pesquisa na web.
  */
 
@@ -18,11 +18,11 @@ const NOMES_CULTURA = {
 
 function montarContextoLlm({ cultura, clima, mercado, historicoInterno }) {
   const nome = NOMES_CULTURA[cultura] || cultura;
-  const linhas = ["Cultura: " + nome];
+  const linhas = ["Cultura: " + nome, "Compare sempre o mercado interno brasileiro com o internacional."];
 
   if (clima) {
     linhas.push(
-      "Clima (fonte " +
+      "Clima no Sul de Minas (fonte " +
         (clima.fonte || "desconhecida") +
         "): temp. mínima " +
         clima.temperaturaMinima +
@@ -40,32 +40,19 @@ function montarContextoLlm({ cultura, clima, mercado, historicoInterno }) {
 
   if (mercado && mercado.dolar) {
     linhas.push(
-      "Câmbio PTAX: US$ 1 = R$ " + mercado.dolar.valor + " em " + mercado.dolar.data + "."
+      "Câmbio Brasil (PTAX): US$ 1 = R$ " + mercado.dolar.valor + " em " + mercado.dolar.data + "."
     );
   }
 
-  if (mercado && mercado.cotacaoAoVivo) {
-    const c = mercado.cotacaoAoVivo;
+  if (mercado && mercado.icBrAgro) {
     linhas.push(
-      "Cotação internacional (" +
-        c.fonte +
-        ", " +
-        c.ticker +
-        "): " +
-        c.preco +
-        " " +
-        c.unidade +
-        " em " +
-        c.data +
-        "."
+      "Índice IC-Br Agropecuária (BCB): " + mercado.icBrAgro.valor + " em " + mercado.icBrAgro.data + "."
     );
-  } else {
-    linhas.push("Cotação internacional indisponível para esta cultura (série interna apenas).");
   }
 
   if (historicoInterno) {
     linhas.push(
-      "Série interna de referência: " +
+      "Mercado interno Brasil (referência Cepea, R$/saca): " +
         historicoInterno.precoAtual +
         " " +
         historicoInterno.unidade +
@@ -75,16 +62,45 @@ function montarContextoLlm({ cultura, clima, mercado, historicoInterno }) {
     );
   }
 
+  const intern = mercado && (mercado.internacional || mercado.cotacaoAoVivo);
+  if (intern) {
+    linhas.push(
+      "Bolsa internacional (" +
+        (intern.bolsa || intern.fonte) +
+        ", " +
+        intern.ticker +
+        "): " +
+        intern.preco +
+        " " +
+        intern.unidade +
+        " em " +
+        intern.data +
+        "."
+    );
+  } else {
+    linhas.push("Sem contrato internacional líquido para esta cultura (típico do feijão). Use só o mercado interno.");
+  }
+
+  if (mercado && mercado.paridade) {
+    linhas.push(
+      "Paridade internacional em reais (contrato × PTAX): " +
+        mercado.paridade.preco +
+        " " +
+        mercado.paridade.unidade +
+        ". Compare com o preço interno e comente prêmio ou desconto do Brasil."
+    );
+  }
+
   return linhas.join("\n");
 }
 
 function promptAnaliseMercado(contexto) {
   return (
-    "Você é um analista de mercado agrícola brasileiro, escrevendo para um produtor rural do Sul de Minas Gerais. " +
-    "Use PRIMEIRO o contexto abaixo (clima da região via Open-Meteo e cotações via Yahoo Finance / Banco Central). " +
-    "Se precisar, pesquise na web fatos recentes para complementar — não substitua os números do contexto. " +
-    "Cubra, quando fizer sentido: clima nas regiões produtoras, câmbio, demanda internacional, frete e política agrícola. " +
-    "Escreva em português, até 6 frases, direto, sem inventar preços que não estejam no contexto.\n\n" +
+    "Você é um analista de mercado agrícola brasileiro, escrevendo para um produtor do Sul de Minas Gerais. " +
+    "Use PRIMEIRO o contexto (clima local, mercado interno em R$/saca, bolsa internacional e paridade cambial). " +
+    "Fale dos DOIS mercados: o que o produtor recebe no Brasil e o que a bolsa internacional + dólar estão sinalizando. " +
+    "Se fizer sentido, cite exportação, China/EUA, prêmio porto, frete e política agrícola. " +
+    "Não invente preços fora do contexto. Português, até 6 frases.\n\n" +
     "Contexto do sistema:\n" +
     contexto
   );
@@ -153,10 +169,56 @@ function temChaveLlm() {
   return Boolean(API_KEY);
 }
 
+function promptAlertaProdutor({ talhao, clima, previsao, alertas }) {
+  const dias = (previsao || [])
+    .slice(0, 7)
+    .map((d) => d.data + ": " + d.condicao + ", " + d.chuvaMm + " mm, min " + d.temperaturaMinima + "°C")
+    .join("; ");
+  const lista = (alertas || []).map((a) => a.titulo + " (" + a.nivel + "): " + a.mensagem).join(" | ") || "nenhum alerta do motor de regras";
+  return (
+    "Você é o AgroAlerta, assistente do produtor rural no Sul de Minas. " +
+    "Talhão mapeado: " +
+    talhao.nome +
+    " (" +
+    (NOMES_CULTURA[talhao.cultura] || talhao.cultura) +
+    ", fase " +
+    talhao.fase +
+    "). " +
+    "Clima agregado: mínima " +
+    clima.temperaturaMinima +
+    "°C, " +
+    clima.diasSemChuva +
+    " dias secos, chuva 7d " +
+    clima.chuvaAcumulada7dias +
+    " mm. " +
+    "Previsão diária: " +
+    dias +
+    ". Alertas agronômicos: " +
+    lista +
+    ". Escreva um recado de até 5 frases, em português, direto, sobre chuva, seca, geada e o que fazer agora. Não invente números fora do contexto."
+  );
+}
+
+function promptProjecaoMercado(contexto, pontos) {
+  const lista = (pontos || [])
+    .map((p) => p.horizonteDias + " dias: R$ " + p.preco)
+    .join("; ");
+  return (
+    "Você projeta preço agrícola para o produtor brasileiro. " +
+    "Números estatísticos (regressão sobre o mercado interno, âncora da bolsa/PTAX): " +
+    lista +
+    ". " +
+    contexto +
+    "\nExplique a projeção a 30, 60 e 90 dias comparando Brasil e internacional. Até 5 frases, sem inventar preços."
+  );
+}
+
 module.exports = {
   NOMES_CULTURA,
   montarContextoLlm,
   promptAnaliseMercado,
+  promptAlertaProdutor,
+  promptProjecaoMercado,
   chamarClaudeComBusca,
   temChaveLlm,
 };

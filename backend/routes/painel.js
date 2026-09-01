@@ -5,6 +5,7 @@ const { pool } = require("../services/db");
 const { buscarClimaAtual } = require("../services/weather");
 const { avaliarAlertas } = require("../services/rules");
 const { buscarContextoMercado } = require("../services/marketQuotes");
+const { resumoMercadoInterno } = require("../services/market");
 
 router.use(exigirAutenticacao);
 
@@ -40,14 +41,30 @@ router.get("/", async (req, res) => {
   culturas.forEach((cultura, i) => {
     const ctx = contextos[i];
     if (ctx.dolar) dolar = ctx.dolar;
-    cotacoes[cultura] = ctx.cotacaoAoVivo
-      ? {
-          preco: ctx.cotacaoAoVivo.preco,
-          unidade: ctx.cotacaoAoVivo.unidade,
-          data: ctx.cotacaoAoVivo.data,
-          ticker: ctx.cotacaoAoVivo.ticker,
-        }
-      : null;
+    const interno = resumoMercadoInterno(cultura);
+    cotacoes[cultura] = {
+      brasil: interno
+        ? {
+            nome: "Interno Brasil",
+            preco: interno.precoAtual,
+            unidade: interno.unidade,
+            variacaoPercentual: interno.variacaoPercentual,
+            fonte: "cepea-ref",
+          }
+        : null,
+      internacional: ctx.internacional
+        ? {
+            preco: ctx.internacional.preco,
+            unidade: ctx.internacional.unidade,
+            data: ctx.internacional.data,
+            ticker: ctx.internacional.ticker,
+            bolsa: ctx.internacional.bolsa,
+          }
+        : null,
+      paridade: ctx.paridade
+        ? { preco: ctx.paridade.preco, unidade: ctx.paridade.unidade, data: ctx.paridade.data }
+        : null,
+    };
   });
 
   res.json({
@@ -55,6 +72,7 @@ router.get("/", async (req, res) => {
     alertas: resumoAlertas,
     totalAlertas: resumoAlertas.reduce((acc, a) => acc + a.total, 0),
     dolar,
+    icBrAgro: contextos[0] ? contextos[0].icBrAgro : null,
     cotacoes,
   });
 });

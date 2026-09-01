@@ -41,13 +41,15 @@ test("LLM monta contexto com clima, dólar e cotação", () => {
     },
     mercado: {
       dolar: { valor: 5.4, data: "2026-08-31" },
-      cotacaoAoVivo: {
+      internacional: {
         fonte: "yahoo-finance",
+        bolsa: "ICE",
         ticker: "KC=F",
         preco: 320.5,
-        unidade: "USD cents/lb",
+        unidade: "US¢/lb",
         data: "2026-08-29",
       },
+      paridade: { preco: 2280.4, unidade: "R$/saca 60kg" },
     },
     historicoInterno: { precoAtual: 1730, unidade: "saca 60kg", variacaoPercentual: "1.2" },
   });
@@ -57,4 +59,6 @@ test("LLM monta contexto com clima, dólar e cotação", () => {
   assert.match(texto, /KC=F/);
   assert.match(texto, /PTAX/);
   assert.match(texto, /1730/);
+  assert.match(texto, /Mercado interno Brasil/);
+  assert.match(texto, /Paridade internacional/);
 });

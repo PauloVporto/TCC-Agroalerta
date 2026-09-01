@@ -31,7 +31,7 @@ app.get("/api/health", (req, res) => {
     status: "ok",
     modoClima: fonteClima === "simulado" ? "simulado" : "real",
     fonteClima,
-    modoMercado: "yahoo-finance+bcb-ptax",
+    modoMercado: "brasil+internacional",
     modoIA: temChaveLlm() ? "real" : "simulado",
     modoMapas: process.env.GOOGLE_MAPS_API_KEY ? "real" : "simulado",
   });
@@ -58,7 +58,7 @@ async function iniciar() {
     console.log("");
   console.log("  AgroAlerta - backend rodando em http://localhost:" + PORT);
   console.log("  Modo clima:   REAL (" + fonteClimaAtiva() + ")");
-  console.log("  Modo mercado: REAL (Yahoo Finance + BCB PTAX, com fallback interno)");
+  console.log("  Modo mercado: REAL (Brasil R$/saca + bolsas ICE/CBOT + PTAX)");
   console.log("  Modo IA:      " + (temChaveLlm() ? "REAL (Anthropic + contexto das APIs)" : "SIMULADO"));
   console.log("  Modo mapas:   " + (process.env.GOOGLE_MAPS_API_KEY ? "REAL (Google Maps)" : "SIMULADO"));
     console.log("");

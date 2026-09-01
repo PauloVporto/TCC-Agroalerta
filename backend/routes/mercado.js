@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { obterHistorico, gerarAnaliseTendencia, obterContextoIntegracao } = require("../services/market");
+const { obterHistorico, gerarAnaliseTendencia, obterContextoIntegracao, gerarProjecao } = require("../services/market");
 
 // GET /api/mercado/:cultura/historico - histórico de preços + cotação ao vivo
 router.get("/:cultura/historico", async (req, res) => {
@@ -26,6 +26,14 @@ router.get("/:cultura/analise", async (req, res) => {
     res.json(analise);
   } catch (erro) {
     console.error("[mercado] Erro ao gerar análise:", erro);
+    res.status(400).json({ erro: erro.message });
+  }
+});
+
+router.get("/:cultura/projecao", async (req, res) => {
+  try {
+    res.json(await gerarProjecao(req.params.cultura));
+  } catch (erro) {
     res.status(400).json({ erro: erro.message });
   }
 });

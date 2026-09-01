@@ -59,7 +59,7 @@ async function buscarOpenMeteo(latitude, longitude) {
       "wind_speed_10m_max",
     ].join(","),
     past_days: "7",
-    forecast_days: "7",
+    forecast_days: "14",
     timezone: "America/Sao_Paulo",
     wind_speed_unit: "kmh",
   });
@@ -107,6 +107,22 @@ function processarRespostaOpenMeteo(dados) {
 
   const ventoMaximoKmh = Math.round(Math.max(...ventos.filter((n) => typeof n === "number"), 0));
 
+  const previsao = idxsFuturo.map((i) => {
+    const chuvaMm = Number((chuvas[i] || 0).toFixed(1));
+    const probabilidadeChuva = typeof probs[i] === "number" ? probs[i] : 0;
+    let condicao = "estavel";
+    if (chuvaMm >= 8 || probabilidadeChuva >= 60) condicao = "chuva";
+    else if (chuvaMm < 0.5 && probabilidadeChuva < 35) condicao = "seco";
+    return {
+      data: datas[i],
+      temperaturaMinima: mins[i],
+      chuvaMm,
+      probabilidadeChuva,
+      ventoKmh: ventos[i] || 0,
+      condicao,
+    };
+  });
+
   return {
     temperaturaMinima,
     chuvaAcumulada7dias,
@@ -114,6 +130,7 @@ function processarRespostaOpenMeteo(dados) {
     probabilidadeChuva7dias,
     ventoMaximoKmh,
     fonte: "open-meteo",
+    previsao,
   };
 }
 
@@ -160,6 +177,23 @@ function processarRespostaOpenWeather(dados) {
   };
 }
 
+function previsaoSimulada(semente) {
+  const hoje = new Date();
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(hoje);
+    d.setDate(d.getDate() + i);
+    const chuvaMm = (semente * (i + 1)) % 18;
+    return {
+      data: d.toISOString().slice(0, 10),
+      temperaturaMinima: 8 + (semente % 10),
+      chuvaMm,
+      probabilidadeChuva: (semente * 11 + i * 7) % 100,
+      ventoKmh: 12 + (semente % 20),
+      condicao: chuvaMm >= 8 ? "chuva" : chuvaMm < 0.5 ? "seco" : "estavel",
+    };
+  });
+}
+
 function gerarClimaSimulado(latitude, longitude) {
   const semente = Math.abs(Math.round((latitude + longitude) * 1000)) % 100;
 
@@ -170,6 +204,7 @@ function gerarClimaSimulado(latitude, longitude) {
     probabilidadeChuva7dias: (semente * 7) % 100,
     ventoMaximoKmh: 15 + (semente % 50),
     fonte: "simulado",
+    previsao: previsaoSimulada(semente),
   };
 }
 

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { geocodificarEndereco } = require("../services/geocoding");
+const { geocodificarEndereco, areaHectares } = require("../services/geocoding");
 const { culturasSuportadas } = require("../services/rules");
 const { exigirAutenticacao } = require("../services/auth");
 const { pool } = require("../services/db");
@@ -14,6 +14,7 @@ router.get("/", async (req, res) => {
   const resultado = await pool.query(
     `SELECT id, usuario_id AS "usuarioId", nome, cultura, fase, endereco,
             latitude, longitude, endereco_formatado AS "enderecoFormatado",
+            poligono, area_ha AS "areaHa",
             criado_em AS "criadoEm"
      FROM talhoes WHERE usuario_id = $1 ORDER BY id`,
     [req.usuario.id]
@@ -24,11 +25,11 @@ router.get("/", async (req, res) => {
 // POST /api/talhoes - cadastra um novo talhão para o usuário logado
 // body: { nome, cultura, fase, endereco }
 router.post("/", async (req, res) => {
-  const { nome, cultura, fase, endereco } = req.body;
+  const { nome, cultura, fase, endereco, latitude, longitude, poligono } = req.body;
 
-  if (!nome || !cultura || !fase || !endereco) {
+  if (!nome || !cultura || !fase) {
     return res.status(400).json({
-      erro: "Campos obrigatórios: nome, cultura, fase, endereco",
+      erro: "Campos obrigatórios: nome, cultura, fase",
     });
   }
 
@@ -38,17 +39,44 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const coordenadas = await geocodificarEndereco(endereco);
+  const latNum = Number(latitude);
+  const lngNum = Number(longitude);
+  let coords;
+  if (Number.isFinite(latNum) && Number.isFinite(lngNum)) {
+    coords = {
+      latitude: latNum,
+      longitude: lngNum,
+      enderecoFormatado: endereco || "Área marcada no mapa",
+      fonte: "mapa",
+    };
+  } else if (endereco) {
+    coords = await geocodificarEndereco(endereco);
+  } else {
+    return res.status(400).json({ erro: "Marque o talhão no mapa ou informe um endereço." });
+  }
+
+  const areaHa = areaHectares(poligono);
 
   const resultado = await pool.query(
     `INSERT INTO talhoes
-       (usuario_id, nome, cultura, fase, endereco, latitude, longitude, endereco_formatado)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       (usuario_id, nome, cultura, fase, endereco, latitude, longitude, endereco_formatado, poligono, area_ha)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING id, usuario_id AS "usuarioId", nome, cultura, fase, endereco,
                latitude, longitude, endereco_formatado AS "enderecoFormatado",
+               poligono, area_ha AS "areaHa",
                criado_em AS "criadoEm"`,
-    [req.usuario.id, nome, cultura, fase, endereco, coordenadas.latitude,
-      coordenadas.longitude, coordenadas.enderecoFormatado]
+    [
+      req.usuario.id,
+      nome,
+      cultura,
+      fase,
+      endereco || coords.enderecoFormatado,
+      coords.latitude,
+      coords.longitude,
+      coords.enderecoFormatado,
+      poligono ? JSON.stringify(poligono) : null,
+      areaHa,
+    ]
   );
   res.status(201).json(resultado.rows[0]);
 });
@@ -106,6 +134,7 @@ async function buscarTalhaoPorId(id) {
   const resultado = await pool.query(
     `SELECT id, usuario_id AS "usuarioId", nome, cultura, fase, endereco,
             latitude, longitude, endereco_formatado AS "enderecoFormatado",
+            poligono, area_ha AS "areaHa",
             criado_em AS "criadoEm"
      FROM talhoes WHERE id = $1`,
     [Number(id)]

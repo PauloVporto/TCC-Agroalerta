@@ -110,7 +110,7 @@ as duas restrições no Console do Google para evitar uso indevido.
 O rodapé da sidebar no app mostra, em tempo real, se cada fonte está em
 modo **real** ou **simulado**.
 
-Decisões de API (Open-Meteo, Yahoo Finance, PTAX e LLM) estão em
+Decisões de API (Open-Meteo, mercado Brasil + internacional, PTAX e LLM) estão em
 [`docs/INTEGRACAO_APIS.md`](docs/INTEGRACAO_APIS.md).
 
 ⚠️ **Nunca** commite `backend/.env` nem `frontend/config.js` com chaves
@@ -132,7 +132,7 @@ reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 | 1. Monitoramento climático | Motor de regras que gera alertas por cultura/fase (café, soja, milho, cana, feijão) | `backend/services/rules.js` |
 | 2. Recomendação de insumos | Associa cada tipo de alerta a categorias de insumo | `backend/routes/insumos.js` |
 | 3. Comparação de preços | Ranking de fornecedores por menor preço | `backend/data/insumos.json` |
-| 4. Análise de mercado (IA + busca web) | Histórico de preço + leitura de tendência com busca em tempo real (clima, câmbio, exportação/importação, estoques, frete, política agrícola), para as 5 culturas | `backend/services/market.js` |
+| 4. Análise de mercado (Brasil + internacional) | Preço interno em R$/saca, bolsas ICE/CBOT, paridade cambial e leitura de tendência | `backend/services/market.js` |
 | Insight de compra de insumos (IA + busca web) | Recomendação sobre comprar agora ou esperar, considerando preços coletados e cenário de custo de matéria-prima/mercado | `backend/services/insumosIA.js` |
 | Mapa de talhões | Visualização geográfica dos talhões cadastrados (Google Maps) | `frontend/app.js` (`inicializarMapa`) |
 

@@ -51,7 +51,10 @@ const state = {
   culturaMercadoAtual: "cafe",
   mercadoPeriodoAtual: "6meses",
   mercadoAnoAtual: new Date().getFullYear(),
-  mercadoHistoricoCompleto: null,
+  mercadoVisao: "comparar",
+  mercadoBrasilCompleto: null,
+  mercadoInternacionalCompleto: null,
+  mercadoProjecao: null,
   mercadoUnidade: "",
   authToken: null,
   usuario: null,
@@ -191,7 +194,10 @@ document.getElementById("nav").addEventListener("click", (e) => {
   document.getElementById("sidebar").classList.remove("is-open");
 
   if (view === "painel") carregarPainel();
-  if (view === "talhoes") carregarTalhoes();
+  if (view === "talhoes") {
+    carregarTalhoes();
+    setTimeout(garantirMapaTalhoes, 150);
+  }
   if (view === "configuracoes") carregarConfiguracoes();
   if (view === "insumos" && !state.insumosCarregados) carregarInsumos();
   if (view === "mercado" && !state.mercadoCarregado) carregarMercado(state.culturaMercadoAtual);
@@ -280,8 +286,8 @@ async function carregarStatus() {
   try {
     const resp = await fetch(API_BASE + "/health");
     const dados = await resp.json();
-    definirPill("statusClima", dados.modoClima, dados.fonteClima);
-    definirPill("statusMercado", dados.modoMercado === "simulado" ? "simulado" : "real", dados.modoMercado);
+    definirPill("statusClima", dados.modoClima);
+    definirPill("statusMercado", dados.modoMercado === "simulado" ? "simulado" : "real");
     definirPill("statusIA", dados.modoIA);
     definirPill("statusMapas", dados.modoMapas);
   } catch (erro) {
@@ -298,7 +304,15 @@ function definirPill(id, modo, rotulo) {
 
 function rotuloGeracaoIA(gerarPor) {
   if (gerarPor === "ia_clima_mercado" || gerarPor === "ia_com_busca") return "IA + clima/mercado";
+  if (gerarPor === "ia_projecao") return "IA · projeção";
+  if (gerarPor === "ia_clima") return "IA · clima";
   return "modo simulado";
+}
+
+function rotuloBriefing(gerarPor) {
+  if (gerarPor === "ia_clima") return "IA";
+  if (gerarPor === "simulado") return "simulado";
+  return gerarPor || "—";
 }
 
 async function carregarPainel() {
@@ -319,9 +333,9 @@ async function carregarPainel() {
         <div class="kpi-hint">${dados.dolar ? dados.dolar.data : "sem cotação agora"}</div>
       </div>
       <div class="card kpi-card">
-        <div class="kpi-label">Fontes</div>
-        <div class="kpi-value" style="font-size:18px">Open-Meteo</div>
-        <div class="kpi-hint">Yahoo Finance + Banco Central</div>
+        <div class="kpi-label">IC-Br Agro</div>
+        <div class="kpi-value">${dados.icBrAgro ? Number(dados.icBrAgro.valor).toFixed(1) : "—"}</div>
+        <div class="kpi-hint">${dados.icBrAgro ? "índice BCB · " + dados.icBrAgro.data : "Brasil + bolsas"}</div>
       </div>
     `;
 
@@ -341,8 +355,15 @@ async function carregarPainel() {
       '<div class="painel-lista">' +
       Object.entries(dados.cotacoes)
         .map(([cultura, c]) => {
-          const valor = c ? c.preco + " " + c.unidade : "série interna";
-          return `<div class="painel-row"><span>${NOMES_CULTURA[cultura] || cultura}</span><span>${valor}</span></div>`;
+          const br = c && c.brasil ? "BR " + formatarMoeda(c.brasil.preco) : "BR —";
+          const ext =
+            c && c.internacional
+              ? "INT " + c.internacional.preco + " " + c.internacional.unidade
+              : "INT mercado interno";
+          return (
+            `<div class="painel-row painel-row-stack"><span>${NOMES_CULTURA[cultura] || cultura}</span>` +
+            `<span class="painel-cotacao-duo">${br}<br>${ext}</span></div>`
+          );
         })
         .join("") +
       "</div>";
@@ -400,6 +421,7 @@ function formatarFase(fase) {
 async function selecionarTalhao(id) {
   state.talhaoSelecionadoId = id;
   renderizarListaTalhoes();
+  atualizarMarcadoresMapa();
 
   const detalhe = document.getElementById("talhaoDetail");
   detalhe.innerHTML = '<div class="empty-state">Carregando clima e alertas…</div>';
@@ -413,8 +435,28 @@ async function selecionarTalhao(id) {
   }
 }
 
+function renderizarFaixaPrevisao(previsao) {
+  if (!previsao || previsao.length === 0) return "";
+  const rotulos = { chuva: "Chuva", seco: "Seco", estavel: "Estável" };
+  return (
+    '<div class="previsao-strip">' +
+    previsao
+      .slice(0, 7)
+      .map(
+        (d) =>
+          `<div class="previsao-dia previsao-${d.condicao}" title="${d.chuvaMm} mm · ${d.probabilidadeChuva || 0}% prob.">` +
+          `<span class="previsao-data">${formatarData(d.data)}</span>` +
+          `<span class="previsao-cond">${rotulos[d.condicao] || d.condicao}</span>` +
+          `<span class="previsao-mm">${d.chuvaMm} mm</span>` +
+          `</div>`
+      )
+      .join("") +
+    "</div>"
+  );
+}
+
 function renderizarDetalheTalhao(dados) {
-  const { talhao, clima, alertas } = dados;
+  const { talhao, clima, alertas, briefing, previsao } = dados;
   const detalhe = document.getElementById("talhaoDetail");
 
   const alertasHtml =
@@ -435,6 +477,17 @@ function renderizarDetalheTalhao(dados) {
           )
           .join("");
 
+  const areaHtml = talhao.areaHa
+    ? `<div class="detail-area">Área mapeada: <strong>${Number(talhao.areaHa).toFixed(2)} ha</strong></div>`
+    : "";
+
+  const briefingHtml = briefing
+    ? `<div class="briefing-card">
+        <div class="briefing-titulo">Recado para o produtor <span class="badge">${rotuloBriefing(briefing.gerarPor)}</span></div>
+        <p class="briefing-texto">${briefing.texto}</p>
+      </div>`
+    : "";
+
   detalhe.innerHTML = `
     <div class="detail-header">
       <div>
@@ -443,6 +496,10 @@ function renderizarDetalheTalhao(dados) {
       <span class="crop-dot ${talhao.cultura}"></span>
     </div>
     <div class="detail-sub">${NOMES_CULTURA[talhao.cultura] || talhao.cultura} · ${formatarFase(talhao.fase)} · fonte do clima: ${clima.fonte}</div>
+    ${areaHtml}
+    ${briefingHtml}
+    <div class="previsao-titulo">Previsão 7 dias (chuva / seco)</div>
+    ${renderizarFaixaPrevisao(previsao)}
 
     <div class="clima-grid">
       <div class="clima-metric">
@@ -487,6 +544,10 @@ preencherFases();
 
 document.getElementById("btnNovoTalhao").addEventListener("click", () => {
   modalOverlay.classList.add("is-open");
+  setTimeout(() => {
+    garantirMapaCadastro();
+    if (cadastroMapaState.mapa) cadastroMapaState.mapa.invalidateSize();
+  }, 150);
 });
 document.getElementById("btnFecharModal").addEventListener("click", fecharModal);
 document.getElementById("btnCancelarModal").addEventListener("click", fecharModal);
@@ -498,11 +559,21 @@ function fecharModal() {
   modalOverlay.classList.remove("is-open");
   formTalhao.reset();
   preencherFases();
+  limparCadastroMapa();
 }
 
 formTalhao.addEventListener("submit", async (e) => {
   e.preventDefault();
   const dados = Object.fromEntries(new FormData(formTalhao).entries());
+
+  if ((!dados.latitude || !dados.longitude) && !String(dados.endereco || "").trim()) {
+    alert("Marque o talhão no mapa ou informe um endereço.");
+    return;
+  }
+
+  if (cadastroMapaState.poligono && cadastroMapaState.poligono.length >= 3) {
+    dados.poligono = cadastroMapaState.poligono;
+  }
 
   const botao = formTalhao.querySelector('button[type="submit"]');
   botao.disabled = true;
@@ -624,6 +695,15 @@ document.getElementById("mercadoTabs").addEventListener("click", (e) => {
   carregarMercado(state.culturaMercadoAtual);
 });
 
+document.getElementById("visaoMercado").addEventListener("click", (e) => {
+  const btn = e.target.closest(".segmented-item");
+  if (!btn) return;
+  document.querySelectorAll("#visaoMercado .segmented-item").forEach((b) => b.classList.remove("is-active"));
+  btn.classList.add("is-active");
+  state.mercadoVisao = btn.dataset.visao;
+  renderizarGrafico();
+});
+
 document.getElementById("periodoFiltros").addEventListener("click", (e) => {
   const btn = e.target.closest(".segmented-item");
   if (!btn) return;
@@ -656,31 +736,81 @@ function popularAnoSelect() {
 
 async function carregarMercado(cultura) {
   state.mercadoCarregado = true;
-  await Promise.all([carregarHistorico(cultura), carregarAnalise(cultura)]);
+  await Promise.all([carregarHistorico(cultura), carregarAnalise(cultura), carregarProjecao(cultura)]);
 }
 
 async function carregarHistorico(cultura) {
   const resp = await fetch(API_BASE + "/mercado/" + cultura + "/historico");
   const dados = await resp.json();
-  state.mercadoHistoricoCompleto = dados.historico;
-  state.mercadoUnidade = dados.unidade;
-  const live = document.getElementById("cotacaoAoVivo");
-  if (dados.cotacaoAoVivo) {
-    live.hidden = false;
-    live.textContent =
-      "Cotação ao vivo (" +
-      dados.cotacaoAoVivo.fonte +
-      " · " +
-      dados.cotacaoAoVivo.ticker +
-      "): " +
-      dados.cotacaoAoVivo.preco +
-      " " +
-      dados.cotacaoAoVivo.unidade +
-      (dados.dolarPtax ? " · PTAX R$ " + Number(dados.dolarPtax.valor).toFixed(2) : "");
-  } else {
-    live.hidden = true;
-  }
+  state.mercadoBrasilCompleto = (dados.mercadoInterno && dados.mercadoInterno.historico) || dados.historico || [];
+  state.mercadoInternacionalCompleto = (dados.paridade && dados.paridade.historico) || [];
+  state.mercadoUnidade = (dados.paridade && dados.paridade.unidade) || dados.unidade;
+  renderizarCotasMercado(dados);
   renderizarGrafico();
+}
+
+function renderizarCotasMercado(dados) {
+  const box = document.getElementById("cotacoesMercado");
+  const cards = [];
+  const interno = dados.mercadoInterno || dados;
+  const ultimoBr = interno.historico && interno.historico[interno.historico.length - 1];
+  cards.push(
+    `<div class="quote-card"><div class="quote-kicker">Brasil</div>` +
+      `<div class="quote-value">${ultimoBr ? formatarMoeda(ultimoBr.preco) : "—"}</div>` +
+      `<div class="quote-meta">${interno.unidade || dados.unidade} · referência interna</div></div>`
+  );
+  if (dados.internacional) {
+    cards.push(
+      `<div class="quote-card"><div class="quote-kicker">Internacional · ${dados.internacional.bolsa || ""}</div>` +
+        `<div class="quote-value">${dados.internacional.preco} ${dados.internacional.unidade}</div>` +
+        `<div class="quote-meta">${dados.internacional.ticker} · ${dados.internacional.data}</div></div>`
+    );
+  }
+  if (dados.paridade) {
+    cards.push(
+      `<div class="quote-card"><div class="quote-kicker">Paridade em reais</div>` +
+        `<div class="quote-value">${formatarMoeda(dados.paridade.preco)}</div>` +
+        `<div class="quote-meta">${dados.paridade.unidade} · contrato × PTAX</div></div>`
+    );
+  }
+  if (dados.dolarPtax) {
+    cards.push(
+      `<div class="quote-card"><div class="quote-kicker">Dólar PTAX</div>` +
+        `<div class="quote-value">R$ ${Number(dados.dolarPtax.valor).toFixed(2)}</div>` +
+        `<div class="quote-meta">${dados.dolarPtax.data}</div></div>`
+    );
+  }
+  box.innerHTML = cards.join("");
+}
+
+async function carregarProjecao(cultura) {
+  document.getElementById("projecaoTexto").textContent = "Carregando projeção 30/60/90 dias…";
+  document.getElementById("projecaoPontos").innerHTML = "";
+
+  try {
+    const resp = await fetch(API_BASE + "/mercado/" + cultura + "/projecao");
+    const dados = await resp.json();
+    if (!resp.ok) throw new Error(dados.erro || "Falha na projeção");
+
+    state.mercadoProjecao = dados;
+    document.getElementById("projecaoTexto").textContent = dados.resumo;
+    document.getElementById("projecaoPontos").innerHTML = (dados.pontos || [])
+      .map(
+        (p) =>
+          `<div class="projecao-ponto">` +
+          `<span class="projecao-horizonte">${p.horizonteDias} dias</span>` +
+          `<span class="projecao-preco">${formatarMoeda(p.preco)}</span>` +
+          `<span class="projecao-data">${formatarData(p.data)}</span>` +
+          `</div>`
+      )
+      .join("");
+
+    renderizarGrafico();
+  } catch (erro) {
+    state.mercadoProjecao = null;
+    document.getElementById("projecaoTexto").textContent = "Não foi possível carregar a projeção agora.";
+    document.getElementById("projecaoPontos").innerHTML = "";
+  }
 }
 
 async function carregarAnalise(cultura) {
@@ -760,16 +890,45 @@ function filtrarHistorico(historico, periodo, ano) {
 
 let mercadoChart = null;
 
+function serieGrafico(historico, label, cor, fill) {
+  const filtrado = filtrarHistorico(historico || [], state.mercadoPeriodoAtual, state.mercadoAnoAtual);
+  return {
+    filtrado,
+    dataset: {
+      label,
+      data: filtrado.map((p) => ({ x: paraTimestamp(p.data), y: p.preco })),
+      borderColor: cor,
+      backgroundColor: fill,
+      fill: Boolean(fill),
+      tension: 0.15,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+    },
+  };
+}
+
 function renderizarGrafico() {
-  const historicoCompleto = state.mercadoHistoricoCompleto;
   const canvas = document.getElementById("chartMercado");
   const vazio = document.getElementById("chartVazio");
   const meta = document.getElementById("chartMeta");
-  if (!historicoCompleto) return;
+  if (!state.mercadoBrasilCompleto) return;
 
-  const filtrado = filtrarHistorico(historicoCompleto, state.mercadoPeriodoAtual, state.mercadoAnoAtual);
+  const visao = state.mercadoVisao;
+  const series = [];
+  if (visao === "brasil" || visao === "comparar") {
+    series.push(serieGrafico(state.mercadoBrasilCompleto, "Brasil (interno)", "#4C7A4F", "rgba(76, 122, 79, 0.08)"));
+  }
+  if ((visao === "internacional" || visao === "comparar") && state.mercadoInternacionalCompleto.length) {
+    series.push(serieGrafico(state.mercadoInternacionalCompleto, "Paridade internacional", "#6B3F2A", visao === "internacional" ? "rgba(107, 63, 42, 0.08)" : null));
+  }
 
-  if (filtrado.length === 0) {
+  const datasets = series.map((s) => s.dataset);
+  const projecaoDataset = montarDatasetProjecao(visao);
+  if (projecaoDataset) datasets.push(projecaoDataset);
+
+  const alguma = series.some((s) => s.filtrado.length > 0) || Boolean(projecaoDataset);
+  if (!alguma) {
     if (mercadoChart) {
       mercadoChart.destroy();
       mercadoChart = null;
@@ -782,30 +941,11 @@ function renderizarGrafico() {
 
   canvas.hidden = false;
   vazio.hidden = true;
-
-  const pontos = filtrado.map((p) => ({ x: paraTimestamp(p.data), y: p.preco }));
-
   if (mercadoChart) mercadoChart.destroy();
 
   mercadoChart = new Chart(canvas.getContext("2d"), {
     type: "line",
-    data: {
-      datasets: [
-        {
-          data: pontos,
-          borderColor: "#6B3F2A",
-          backgroundColor: "rgba(107, 63, 42, 0.08)",
-          fill: true,
-          tension: 0.15,
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-          pointHoverBackgroundColor: "#6B3F2A",
-          pointHoverBorderColor: "#FBFAF5",
-          pointHoverBorderWidth: 2,
-        },
-      ],
-    },
+    data: { datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -830,7 +970,7 @@ function renderizarGrafico() {
         },
       },
       plugins: {
-        legend: { display: false },
+        legend: { display: datasets.length > 1, position: "top", labels: { boxWidth: 12, font: { family: "IBM Plex Sans", size: 12 } } },
         tooltip: {
           backgroundColor: "#26221D",
           padding: 10,
@@ -838,19 +978,20 @@ function renderizarGrafico() {
           bodyFont: { family: "IBM Plex Sans", size: 12.5 },
           callbacks: {
             title: (items) => formatarData(paraISO(items[0].parsed.x)),
-            label: (item) => "R$ " + item.parsed.y.toFixed(2) + " · " + state.mercadoUnidade,
+            label: (item) => item.dataset.label + ": R$ " + item.parsed.y.toFixed(2),
           },
         },
       },
     },
   });
 
-  const primeiro = filtrado[0];
-  const ultimo = filtrado[filtrado.length - 1];
-  meta.innerHTML = `
-    <span>${formatarData(primeiro.data)} · R$ ${primeiro.preco.toFixed(2)}</span>
-    <span>${formatarData(ultimo.data)} · R$ ${ultimo.preco.toFixed(2)} (${state.mercadoUnidade})</span>
-  `;
+  const usada = series.find((s) => s.filtrado.length) || series[0];
+  const primeiro = usada.filtrado[0];
+  const ultimo = usada.filtrado[usada.filtrado.length - 1];
+  meta.innerHTML = primeiro
+    ? `<span>${formatarData(primeiro.data)} · ${formatarMoeda(primeiro.preco)}</span>
+       <span>${formatarData(ultimo.data)} · ${formatarMoeda(ultimo.preco)} (${state.mercadoUnidade})</span>`
+    : "";
 }
 
 function formatarData(iso) {
@@ -915,7 +1056,7 @@ async function carregarPrecoSimulador() {
 
   document.getElementById("simQuantidadeLabel").textContent = "Quantidade a vender (" + dados.unidade + ")";
   document.getElementById("simPrecoInfo").textContent =
-    "Preço usado: " + formatarMoeda(ultimo.preco) + " por " + dados.unidade + " (" + formatarData(ultimo.data) + ")";
+    "Preço interno Brasil: " + formatarMoeda(ultimo.preco) + " por " + dados.unidade + " (" + formatarData(ultimo.data) + ")";
 
   recalcularSimulador();
 }
@@ -986,82 +1127,315 @@ function formatarMoeda(valor) {
   return "R$ " + valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// ---------- MAPA (Google Maps) ----------
+// ---------- MAPAS (Leaflet) ----------
 
-const mapaState = { mapa: null, marcadores: [], carregando: false, disponivel: false };
+const CENTRO_SUL_MINAS = [-21.5, -45.7];
+const COR_CULTURA = {
+  cafe: "#6B3F2A",
+  soja: "#4C7A4F",
+  milho: "#C9A227",
+  cana: "#7CB342",
+  feijao: "#8D6E63",
+};
 
-function inicializarMapa() {
-  const chave = window.GOOGLE_MAPS_BROWSER_KEY;
+const mapaState = { mapa: null, camadas: [] };
 
-  if (!chave) {
-    document.getElementById("mapaFallback").hidden = false;
-    return;
-  }
-  if (mapaState.carregando || mapaState.disponivel) return;
+const cadastroMapaState = {
+  mapa: null,
+  marcador: null,
+  vertices: [],
+  poligono: null,
+  poligonoLayer: null,
+  polylineLayer: null,
+  modoDelimitar: false,
+};
 
-  mapaState.carregando = true;
-  const script = document.createElement("script");
-  script.src = "https://maps.googleapis.com/maps/api/js?key=" + chave + "&callback=__agroalertaMapaPronto";
-  script.async = true;
-  window.__agroalertaMapaPronto = criarMapa;
-  script.onerror = () => {
-    document.getElementById("mapaFallback").hidden = false;
-    document.getElementById("mapaFallback").textContent =
-      "Não foi possível carregar o Google Maps. Verifique a chave em config.js.";
-  };
-  document.head.appendChild(script);
+function criarTileLayer() {
+  return L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  });
 }
 
-function criarMapa() {
-  mapaState.disponivel = true;
-  mapaState.mapa = new google.maps.Map(document.getElementById("mapaTalhoes"), {
-    center: { lat: -21.5, lng: -45.7 }, // centro aproximado do Sul de Minas
-    zoom: 8,
-    mapId: "AGROALERTA_MAPA",
-    disableDefaultUI: true,
-    zoomControl: true,
-  });
+function parsePoligono(poligono) {
+  if (!poligono) return null;
+  if (typeof poligono === "string") {
+    try {
+      return JSON.parse(poligono);
+    } catch (erro) {
+      return null;
+    }
+  }
+  return Array.isArray(poligono) ? poligono : null;
+}
+
+function montarDatasetProjecao(visao) {
+  if (visao === "internacional" || !state.mercadoProjecao?.pontos?.length || !state.mercadoBrasilCompleto?.length) {
+    return null;
+  }
+  const ultimo = state.mercadoBrasilCompleto[state.mercadoBrasilCompleto.length - 1];
+  const pontos = [
+    { x: paraTimestamp(ultimo.data), y: ultimo.preco },
+    ...state.mercadoProjecao.pontos.map((p) => ({ x: paraTimestamp(p.data), y: p.preco })),
+  ];
+  return {
+    label: "Projeção 30/60/90d",
+    data: pontos,
+    borderColor: "#9B8B6E",
+    backgroundColor: "transparent",
+    borderDash: [6, 4],
+    tension: 0.1,
+    borderWidth: 2,
+    pointRadius: 4,
+    pointHoverRadius: 5,
+    pointBackgroundColor: "#9B8B6E",
+  };
+}
+
+function inicializarMapaTalhoes() {
+  if (mapaState.mapa) return;
+
+  const fallback = document.getElementById("mapaFallback");
+  if (typeof L === "undefined") {
+    fallback.hidden = false;
+    fallback.textContent = "Não foi possível carregar o mapa. Verifique sua conexão e recarregue a página.";
+    return;
+  }
+
+  const el = document.getElementById("mapaTalhoes");
+  mapaState.mapa = L.map(el, { zoomControl: true }).setView(CENTRO_SUL_MINAS, 8);
+  criarTileLayer().addTo(mapaState.mapa);
+  fallback.hidden = true;
   atualizarMarcadoresMapa();
 }
 
+function garantirMapaTalhoes() {
+  if (!mapaState.mapa) inicializarMapaTalhoes();
+  else mapaState.mapa.invalidateSize();
+  atualizarMarcadoresMapa();
+}
+
+function limparCamadasMapa() {
+  mapaState.camadas.forEach((c) => mapaState.mapa.removeLayer(c));
+  mapaState.camadas = [];
+}
+
 function atualizarMarcadoresMapa() {
-  if (!mapaState.disponivel) return;
+  if (!mapaState.mapa) return;
 
-  mapaState.marcadores.forEach((m) => m.setMap(null));
-  mapaState.marcadores = [];
-
-  const bounds = new google.maps.LatLngBounds();
+  limparCamadasMapa();
+  const bounds = L.latLngBounds();
 
   state.talhoes.forEach((talhao) => {
-    const posicao = { lat: talhao.latitude, lng: talhao.longitude };
-    const marcador = new google.maps.Marker({
-      position: posicao,
-      map: mapaState.mapa,
-      title: talhao.nome,
-      label: {
-        text: NOMES_CULTURA[talhao.cultura]?.charAt(0) || "?",
-        color: "#FBFAF5",
-        fontSize: "11px",
-        fontWeight: "600",
-      },
-    });
+    const cor = COR_CULTURA[talhao.cultura] || "#4C7A4F";
+    const selecionado = talhao.id === state.talhaoSelecionadoId;
+    const verts = parsePoligono(talhao.poligono);
 
-    marcador.addListener("click", () => selecionarTalhao(talhao.id));
-    mapaState.marcadores.push(marcador);
-    bounds.extend(posicao);
+    if (verts && verts.length >= 3) {
+      const latlngs = verts.map((p) => [p.lat, p.lng]);
+      const poly = L.polygon(latlngs, {
+        color: cor,
+        weight: selecionado ? 3 : 2,
+        fillColor: cor,
+        fillOpacity: selecionado ? 0.35 : 0.2,
+      })
+        .bindTooltip(talhao.nome)
+        .on("click", () => selecionarTalhao(talhao.id));
+      poly.addTo(mapaState.mapa);
+      mapaState.camadas.push(poly);
+      latlngs.forEach((ll) => bounds.extend(ll));
+    } else {
+      const marker = L.circleMarker([talhao.latitude, talhao.longitude], {
+        radius: selecionado ? 9 : 7,
+        color: cor,
+        weight: 2,
+        fillColor: cor,
+        fillOpacity: 0.85,
+      })
+        .bindTooltip(talhao.nome)
+        .on("click", () => selecionarTalhao(talhao.id));
+      marker.addTo(mapaState.mapa);
+      mapaState.camadas.push(marker);
+      bounds.extend([talhao.latitude, talhao.longitude]);
+    }
   });
 
-  if (state.talhoes.length > 0) {
-    mapaState.mapa.fitBounds(bounds);
-    if (state.talhoes.length === 1) mapaState.mapa.setZoom(11);
+  if (state.talhoes.length > 0 && bounds.isValid()) {
+    mapaState.mapa.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 });
   }
 }
+
+function garantirMapaCadastro() {
+  if (cadastroMapaState.mapa || typeof L === "undefined") return;
+
+  const el = document.getElementById("mapaCadastro");
+  cadastroMapaState.mapa = L.map(el, { zoomControl: true }).setView(CENTRO_SUL_MINAS, 10);
+  criarTileLayer().addTo(cadastroMapaState.mapa);
+
+  cadastroMapaState.mapa.on("click", (e) => {
+    if (cadastroMapaState.modoDelimitar) {
+      adicionarVerticeCadastro(e.latlng);
+    } else {
+      definirPontoCadastro(e.latlng);
+    }
+  });
+}
+
+function definirPontoCadastro(latlng) {
+  limparVerticesCadastro();
+  cadastroMapaState.poligono = null;
+
+  if (cadastroMapaState.marcador) {
+    cadastroMapaState.marcador.setLatLng(latlng);
+  } else {
+    cadastroMapaState.marcador = L.circleMarker(latlng, {
+      radius: 8,
+      color: "#4C7A4F",
+      weight: 2,
+      fillColor: "#4C7A4F",
+      fillOpacity: 0.9,
+    }).addTo(cadastroMapaState.mapa);
+  }
+
+  document.getElementById("talhaoLat").value = latlng.lat.toFixed(6);
+  document.getElementById("talhaoLng").value = latlng.lng.toFixed(6);
+  atualizarHintCadastro("Ponto marcado. Use “Delimitar área” para desenhar o polígono da lavoura.");
+}
+
+function adicionarVerticeCadastro(latlng) {
+  if (cadastroMapaState.marcador) {
+    cadastroMapaState.mapa.removeLayer(cadastroMapaState.marcador);
+    cadastroMapaState.marcador = null;
+  }
+
+  cadastroMapaState.vertices.push(latlng);
+  atualizarPreviewPoligonoCadastro();
+
+  const btn = document.getElementById("btnDelimitar");
+  if (cadastroMapaState.vertices.length >= 3) {
+    btn.textContent = "Fechar polígono";
+    atualizarHintCadastro("Clique em “Fechar polígono” ou no primeiro vértice para concluir a área.");
+  } else {
+    atualizarHintCadastro("Adicione pelo menos 3 pontos para fechar o polígono.");
+  }
+}
+
+function atualizarPreviewPoligonoCadastro() {
+  if (cadastroMapaState.polylineLayer) {
+    cadastroMapaState.mapa.removeLayer(cadastroMapaState.polylineLayer);
+  }
+  if (cadastroMapaState.vertices.length >= 2) {
+    cadastroMapaState.polylineLayer = L.polyline(cadastroMapaState.vertices, {
+      color: "#4C7A4F",
+      dashArray: "4 4",
+    }).addTo(cadastroMapaState.mapa);
+  }
+}
+
+function fecharPoligonoCadastro() {
+  if (cadastroMapaState.vertices.length < 3) return;
+
+  const verts = cadastroMapaState.vertices.map((ll) => ({ lat: ll.lat, lng: ll.lng }));
+  cadastroMapaState.poligono = verts;
+
+  if (cadastroMapaState.polylineLayer) {
+    cadastroMapaState.mapa.removeLayer(cadastroMapaState.polylineLayer);
+    cadastroMapaState.polylineLayer = null;
+  }
+  if (cadastroMapaState.poligonoLayer) {
+    cadastroMapaState.mapa.removeLayer(cadastroMapaState.poligonoLayer);
+  }
+
+  cadastroMapaState.poligonoLayer = L.polygon(cadastroMapaState.vertices, {
+    color: "#4C7A4F",
+    weight: 2,
+    fillColor: "#4C7A4F",
+    fillOpacity: 0.25,
+  }).addTo(cadastroMapaState.mapa);
+
+  const centro = cadastroMapaState.poligonoLayer.getBounds().getCenter();
+  document.getElementById("talhaoLat").value = centro.lat.toFixed(6);
+  document.getElementById("talhaoLng").value = centro.lng.toFixed(6);
+
+  cadastroMapaState.modoDelimitar = false;
+  document.getElementById("btnDelimitar").classList.remove("is-active");
+  document.getElementById("btnDelimitar").textContent = "Delimitar área";
+  atualizarHintCadastro("Área delimitada. Ajuste com “Limpar marca” se precisar refazer.");
+}
+
+function limparVerticesCadastro() {
+  cadastroMapaState.vertices = [];
+  if (cadastroMapaState.polylineLayer) {
+    cadastroMapaState.mapa.removeLayer(cadastroMapaState.polylineLayer);
+    cadastroMapaState.polylineLayer = null;
+  }
+}
+
+function limparCadastroMapa() {
+  cadastroMapaState.modoDelimitar = false;
+  cadastroMapaState.poligono = null;
+  cadastroMapaState.vertices = [];
+  document.getElementById("btnDelimitar").classList.remove("is-active");
+  document.getElementById("btnDelimitar").textContent = "Delimitar área";
+  document.getElementById("talhaoLat").value = "";
+  document.getElementById("talhaoLng").value = "";
+  atualizarHintCadastro('Clique no mapa para marcar o talhão. Com “Delimitar área”, clique em 3+ pontos e feche o polígono.');
+
+  if (!cadastroMapaState.mapa) return;
+
+  if (cadastroMapaState.marcador) {
+    cadastroMapaState.mapa.removeLayer(cadastroMapaState.marcador);
+    cadastroMapaState.marcador = null;
+  }
+  if (cadastroMapaState.poligonoLayer) {
+    cadastroMapaState.mapa.removeLayer(cadastroMapaState.poligonoLayer);
+    cadastroMapaState.poligonoLayer = null;
+  }
+  limparVerticesCadastro();
+}
+
+function atualizarHintCadastro(texto) {
+  const el = document.getElementById("mapaCadastroHint");
+  if (el) el.textContent = texto;
+}
+
+document.getElementById("btnDelimitar").addEventListener("click", () => {
+  garantirMapaCadastro();
+
+  if (cadastroMapaState.modoDelimitar && cadastroMapaState.vertices.length >= 3) {
+    fecharPoligonoCadastro();
+    return;
+  }
+
+  cadastroMapaState.modoDelimitar = !cadastroMapaState.modoDelimitar;
+  const btn = document.getElementById("btnDelimitar");
+  btn.classList.toggle("is-active", cadastroMapaState.modoDelimitar);
+
+  if (cadastroMapaState.modoDelimitar) {
+    btn.textContent = cadastroMapaState.vertices.length >= 3 ? "Fechar polígono" : "Delimitar área";
+    limparVerticesCadastro();
+    if (cadastroMapaState.poligonoLayer) {
+      cadastroMapaState.mapa.removeLayer(cadastroMapaState.poligonoLayer);
+      cadastroMapaState.poligonoLayer = null;
+    }
+    cadastroMapaState.poligono = null;
+    atualizarHintCadastro("Modo delimitar: clique no mapa para cada canto do talhão.");
+  } else {
+    btn.textContent = "Delimitar área";
+    limparVerticesCadastro();
+    atualizarHintCadastro("Clique no mapa para marcar um ponto ou reative a delimitação.");
+  }
+});
+
+document.getElementById("btnLimparMapa").addEventListener("click", () => {
+  garantirMapaCadastro();
+  limparCadastroMapa();
+});
 
 function iniciarApp() {
   carregarStatus();
   carregarPainel();
   carregarTalhoes();
-  inicializarMapa();
 }
 
 if (restaurarSessao()) {

@@ -6,6 +6,7 @@
   <title>AgroAlerta</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -107,18 +108,18 @@
         <header class="view-header">
           <div>
             <h1>Visão geral</h1>
-            <p class="view-desc">Clima (Open-Meteo), cotações (Yahoo Finance + PTAX) e o LLM que junta as duas fontes para o produtor.</p>
+            <p class="view-desc">Clima local, mercado interno em R$/saca, bolsas internacionais (ICE/CBOT) e câmbio PTAX.</p>
           </div>
         </header>
         <div class="painel-kpis" id="painelKpis"></div>
         <div class="painel-grid">
           <div class="card">
             <div class="card-label">Alertas por talhão</div>
-            <div id="painelAlertas"><p class="empty-state" style="min-height:80px">Carregando…</p></div>
+            <div id="painelAlertas"><p class="empty-state">Carregando…</p></div>
           </div>
           <div class="card">
-            <div class="card-label">Cotações ao vivo</div>
-            <div id="painelCotacoes"><p class="empty-state" style="min-height:80px">Carregando…</p></div>
+            <div class="card-label">Cotações Brasil × internacional</div>
+            <div id="painelCotacoes"><p class="empty-state">Carregando…</p></div>
           </div>
         </div>
       </section>
@@ -128,7 +129,7 @@
         <header class="view-header">
           <div>
             <h1>Talhões &amp; Alertas</h1>
-            <p class="view-desc">Monitoramento climático por talhão, com alertas gerados a partir de regras agronômicas para as cinco culturas.</p>
+            <p class="view-desc">Mapeie o talhão no mapa. A previsão de chuva e seca daquela área vira alerta para o produtor.</p>
           </div>
           <button class="btn btn-primary" id="btnNovoTalhao">+ Novo talhão</button>
         </header>
@@ -141,9 +142,7 @@
           <div class="talhao-detail-wrap">
             <div class="map-card">
               <div id="mapaTalhoes" class="mapa-container"></div>
-              <div class="mapa-fallback" id="mapaFallback" hidden>
-                Configure a <code>GOOGLE_MAPS_BROWSER_KEY</code> em <code>frontend/config.js</code> para ativar o mapa.
-              </div>
+              <div class="mapa-fallback" id="mapaFallback" hidden>Carregando mapa…</div>
             </div>
             <div class="talhao-detail" id="talhaoDetail">
               <div class="empty-state">
@@ -236,7 +235,7 @@
         <header class="view-header">
           <div>
             <h1>Mercado</h1>
-            <p class="view-desc">Histórico de preço e leitura de tendência gerada por IA com busca em tempo real: clima nas regiões produtoras, câmbio, comércio internacional, frete e política agrícola.</p>
+            <p class="view-desc">Mercado interno brasileiro (R$/saca) lado a lado com as bolsas internacionais e a paridade cambial — clima, câmbio, exportação e demanda.</p>
           </div>
           <div class="mercado-header-actions">
             <button class="btn btn-primary" id="btnSimulador">Simulador de venda</button>
@@ -255,6 +254,11 @@
             <div class="chart-card-header">
               <div class="card-label">Histórico de preço</div>
               <div class="chart-filters">
+                <div class="segmented segmented-sm" id="visaoMercado">
+                  <button class="segmented-item" data-visao="brasil">Brasil</button>
+                  <button class="segmented-item" data-visao="internacional">Internacional</button>
+                  <button class="segmented-item is-active" data-visao="comparar">Comparar</button>
+                </div>
                 <div class="segmented segmented-sm" id="periodoFiltros">
                   <button class="segmented-item" data-periodo="7">Semana</button>
                   <button class="segmented-item" data-periodo="mes">Mês</button>
@@ -268,10 +272,10 @@
             </div>
             <div class="chart-wrap">
               <canvas id="chartMercado"></canvas>
-              <div class="chart-empty" id="chartVazio" hidden>Sem dados simulados para este período ainda.</div>
+              <div class="chart-empty" id="chartVazio" hidden>Sem dados para este período ainda.</div>
             </div>
             <div class="chart-meta" id="chartMeta"></div>
-            <div class="live-quote" id="cotacaoAoVivo" hidden></div>
+            <div class="quote-grid" id="cotacoesMercado"></div>
           </div>
 
           <div class="card analysis-card">
@@ -299,6 +303,11 @@
                 <p class="analysis-note" id="analiseAvisoSimulado" hidden>
                   Análise gerada em modo simulado — configure ANTHROPIC_API_KEY para pesquisa em tempo real.
                 </p>
+                <div class="projecao-box">
+                  <div class="fontes-titulo">Projeção 30 / 60 / 90 dias</div>
+                  <p class="analysis-text" id="projecaoTexto">Carregando projeção…</p>
+                  <div id="projecaoPontos"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -310,7 +319,7 @@
 
   <!-- MODAL: NOVO TALHÃO -->
   <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
+    <div class="modal modal-wide">
       <div class="modal-header">
         <h2>Novo talhão</h2>
         <button class="modal-close" id="btnFecharModal" aria-label="Fechar">×</button>
@@ -335,9 +344,17 @@
           <select name="fase" required></select>
         </label>
         <label class="field">
-          <span>Endereço / localização</span>
-          <input type="text" name="endereco" placeholder="Ex: Zona rural, Santa Rita do Sapucaí, MG" required />
+          <span>Endereço (opcional se marcar no mapa)</span>
+          <input type="text" name="endereco" placeholder="Ex: Santa Rita do Sapucaí, MG" />
         </label>
+        <p class="mapa-hint" id="mapaCadastroHint">Clique no mapa para marcar o talhão. Com “Delimitar área”, clique em 3+ pontos e feche o polígono.</p>
+        <div id="mapaCadastro" class="mapa-cadastro"></div>
+        <div class="modal-actions" style="justify-content:flex-start">
+          <button type="button" class="btn btn-ghost" id="btnDelimitar">Delimitar área</button>
+          <button type="button" class="btn btn-ghost" id="btnLimparMapa">Limpar marca</button>
+        </div>
+        <input type="hidden" name="latitude" id="talhaoLat" />
+        <input type="hidden" name="longitude" id="talhaoLng" />
         <div class="modal-actions">
           <button type="button" class="btn btn-ghost" id="btnCancelarModal">Cancelar</button>
           <button type="submit" class="btn btn-primary">Cadastrar talhão</button>
@@ -413,6 +430,7 @@
     </div>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>

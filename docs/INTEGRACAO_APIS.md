@@ -7,10 +7,10 @@ Documento que registra as decisões do planejamento (`TCC_Planejamento_e_Pendenc
 ```
 Talhão (lat/lng) ──► Open-Meteo ──► motor de regras (alertas)
                                           │
-Cultura ──► Yahoo Finance + PTAX (BCB) ───┤
-                                          ▼
-                              LLM (Anthropic, opcional)
-                              contexto = clima + cotações + série interna
+Cultura ──► Mercado interno (R$/saca)     │
+         ──► Bolsas ICE/CBOT (Yahoo)      ├─► LLM
+         ──► Paridade (contrato × PTAX)   │
+         ──► IC-Br Agro (BCB)             │
 ```
 
 O modelo **não** inventa clima nem preço: o backend monta o contexto em `services/llm.js` com os números das APIs. Sem `ANTHROPIC_API_KEY`, a análise é simulada, mas o mesmo contexto continua visível para a banca (`contextoLlm`).
@@ -30,17 +30,19 @@ Dados usados pelo motor de regras: temperatura mínima, chuva dos 7 dias, dias s
 
 Provedor alternativo: `WEATHER_PROVIDER=openweather` + `OPENWEATHER_API_KEY`.
 
-## API de mercado agrícola — escolha: Yahoo Finance + PTAX
+## API de mercado agrícola — Brasil e internacional
 
-| Alternativa         | Por que não foi a principal                         |
-|---------------------|-----------------------------------------------------|
-| SAFRAS & Mercado    | Data feed comercial (contrato/pagamento)            |
-| Cedro Technologies  | API paga de cotações B3                             |
-| Agrolink            | Integração comercial                                |
-| **Yahoo Finance**   | Futuros públicos (café, soja, milho, açúcar)        |
-| **BCB PTAX**        | Dólar comercial, relevante para o agro exportador   |
+| Alternativa         | Papel no sistema                                      |
+|---------------------|-------------------------------------------------------|
+| SAFRAS / Cedro / Agrolink | Comerciais; fora do escopo gratuito do TCC     |
+| Série interna (Cepea) | Mercado interno Brasil, em R$/saca                 |
+| **Yahoo Finance**   | Futuros ICE (café, açúcar) e CBOT (soja, milho)       |
+| **BCB PTAX + SGS 1** | Câmbio para paridade de exportação em reais         |
+| **IC-Br Agro (SGS 27575)** | Índice de commodities agropecuárias no Brasil |
 
-Feijão não tem futuro líquido equivalente: permanece a série interna em `backend/data/mercado.json`.
+Feijão não tem futuro líquido nas bolsas: só mercado interno.
+
+A tela Mercado compara as duas pontas no mesmo gráfico (R$/saca): preço interno versus paridade internacional.
 
 ## Banco de dados
 
