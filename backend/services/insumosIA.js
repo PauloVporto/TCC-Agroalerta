@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { chamarClaudeComBusca } = require("./market");
+const { chamarClaudeComBusca } = require("./llm");
 
 const db = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "insumos.json"), "utf-8"));
 

@@ -282,6 +282,35 @@ button, input, select {
 .form-feedback { min-height: 18px; color: var(--soja); }
 .form-feedback.is-error { color: var(--risco-alto); }
 
+.painel-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.kpi-card { padding: 18px 20px; }
+.kpi-label { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--tinta-suave); }
+.kpi-value { font-family: var(--fonte-display); font-size: 28px; margin-top: 6px; }
+.kpi-hint { font-size: 12.5px; color: var(--tinta-suave); margin-top: 4px; }
+.painel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.painel-lista { display: flex; flex-direction: column; gap: 10px; }
+.painel-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borda);
+}
+.painel-row:last-child { border-bottom: 0; }
+.live-quote {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+  font-size: 13px;
+  color: var(--tinta-suave);
+}
+
 /* ---------- TELA DE LOGIN / REGISTRO ---------- */
 
 .auth-screen {
@@ -1063,6 +1092,7 @@ button, input, select {
   .modal-full { height: 92vh; }
   .clima-grid { grid-template-columns: repeat(2, 1fr); }
   .settings-grid { grid-template-columns: 1fr; }
+  .painel-kpis, .painel-grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

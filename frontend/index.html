@@ -62,7 +62,8 @@
   </div>
 
   <div class="app" id="appRoot" hidden>
-    <aside class="sidebar">
+    <button class="menu-toggle" id="btnMenu" type="button" aria-label="Abrir menu">☰</button>
+    <aside class="sidebar" id="sidebar">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 32 32" width="26" height="26">
@@ -71,12 +72,13 @@
         </span>
         <div class="brand-text">
           <span class="brand-name">AgroAlerta</span>
-          <span class="brand-sub">Café &amp; Soja · Sul de Minas</span>
+          <span class="brand-sub">Sul de Minas · 5 culturas</span>
         </div>
       </div>
 
       <nav class="nav" id="nav">
-        <button class="nav-item is-active" data-view="talhoes">Talhões &amp; Alertas</button>
+        <button class="nav-item is-active" data-view="painel">Visão geral</button>
+        <button class="nav-item" data-view="talhoes">Talhões &amp; Alertas</button>
         <button class="nav-item" data-view="insumos">Insumos</button>
         <button class="nav-item" data-view="mercado">Mercado</button>
         <button class="nav-item" data-view="configuracoes">Configurações</button>
@@ -92,19 +94,41 @@
         </div>
         <div class="status-title">Fontes de dados</div>
         <div class="status-row"><span>Clima</span><span class="status-pill" id="statusClima">—</span></div>
-        <div class="status-row"><span>IA (mercado)</span><span class="status-pill" id="statusIA">—</span></div>
+        <div class="status-row"><span>Mercado</span><span class="status-pill" id="statusMercado">—</span></div>
+        <div class="status-row"><span>IA</span><span class="status-pill" id="statusIA">—</span></div>
         <div class="status-row"><span>Mapas</span><span class="status-pill" id="statusMapas">—</span></div>
       </div>
     </aside>
 
     <main class="content">
 
+      <!-- VIEW: PAINEL -->
+      <section class="view is-active" id="view-painel">
+        <header class="view-header">
+          <div>
+            <h1>Visão geral</h1>
+            <p class="view-desc">Clima (Open-Meteo), cotações (Yahoo Finance + PTAX) e o LLM que junta as duas fontes para o produtor.</p>
+          </div>
+        </header>
+        <div class="painel-kpis" id="painelKpis"></div>
+        <div class="painel-grid">
+          <div class="card">
+            <div class="card-label">Alertas por talhão</div>
+            <div id="painelAlertas"><p class="empty-state" style="min-height:80px">Carregando…</p></div>
+          </div>
+          <div class="card">
+            <div class="card-label">Cotações ao vivo</div>
+            <div id="painelCotacoes"><p class="empty-state" style="min-height:80px">Carregando…</p></div>
+          </div>
+        </div>
+      </section>
+
       <!-- VIEW: TALHÕES + ALERTAS -->
-      <section class="view is-active" id="view-talhoes">
+      <section class="view" id="view-talhoes">
         <header class="view-header">
           <div>
             <h1>Talhões &amp; Alertas</h1>
-            <p class="view-desc">Monitoramento climático por talhão, com alertas gerados a partir de regras agronômicas para café e soja.</p>
+            <p class="view-desc">Monitoramento climático por talhão, com alertas gerados a partir de regras agronômicas para as cinco culturas.</p>
           </div>
           <button class="btn btn-primary" id="btnNovoTalhao">+ Novo talhão</button>
         </header>
@@ -247,6 +271,7 @@
               <div class="chart-empty" id="chartVazio" hidden>Sem dados simulados para este período ainda.</div>
             </div>
             <div class="chart-meta" id="chartMeta"></div>
+            <div class="live-quote" id="cotacaoAoVivo" hidden></div>
           </div>
 
           <div class="card analysis-card">

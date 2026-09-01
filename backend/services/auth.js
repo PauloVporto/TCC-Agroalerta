@@ -51,7 +51,10 @@ async function autenticar({ email, senha }) {
   }
 
   const token = crypto.randomBytes(32).toString("hex");
-  await pool.query("INSERT INTO sessoes (token, usuario_id) VALUES ($1, $2)", [token, usuario.id]);
+  await pool.query(
+    "INSERT INTO sessoes (token, usuario_id, expira_em) VALUES ($1, $2, NOW() + INTERVAL '7 days')",
+    [token, usuario.id]
+  );
 
   return { token, usuario: sanitizar(usuario) };
 }
@@ -64,7 +67,7 @@ async function usuarioPorToken(token) {
   const resultado = await pool.query(
     `SELECT u.id, u.nome, u.email, u.criado_em AS "criadoEm"
      FROM sessoes s JOIN usuarios u ON u.id = s.usuario_id
-     WHERE s.token = $1`,
+     WHERE s.token = $1 AND s.expira_em > NOW()`,
     [token]
   );
   return resultado.rows[0] ? sanitizar(resultado.rows[0]) : null;

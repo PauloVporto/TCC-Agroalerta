@@ -90,8 +90,9 @@ Para ligar os dados reais:
 
 | Variável | Serviço | Onde conseguir |
 |---|---|---|
-| `OPENWEATHER_API_KEY` | Previsão do tempo | https://openweathermap.org/api |
-| `ANTHROPIC_API_KEY` | Análise de tendência de mercado (IA) | https://console.anthropic.com |
+| `WEATHER_PROVIDER` | `openmeteo` (padrão, sem chave) ou `openweather` | — |
+| `OPENWEATHER_API_KEY` | Só se `WEATHER_PROVIDER=openweather` | https://openweathermap.org/api |
+| `ANTHROPIC_API_KEY` | Análise de tendência (IA) com contexto das APIs | https://console.anthropic.com |
 | `GOOGLE_MAPS_API_KEY` | Geocodificação de endereço do talhão (servidor) | https://console.cloud.google.com/apis/credentials |
 
 **Frontend** (`frontend/config.js`):
@@ -108,6 +109,9 @@ as duas restrições no Console do Google para evitar uso indevido.
 
 O rodapé da sidebar no app mostra, em tempo real, se cada fonte está em
 modo **real** ou **simulado**.
+
+Decisões de API (Open-Meteo, Yahoo Finance, PTAX e LLM) estão em
+[`docs/INTEGRACAO_APIS.md`](docs/INTEGRACAO_APIS.md).
 
 ⚠️ **Nunca** commite `backend/.env` nem `frontend/config.js` com chaves
 reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
@@ -132,11 +136,21 @@ reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 | Insight de compra de insumos (IA + busca web) | Recomendação sobre comprar agora ou esperar, considerando preços coletados e cenário de custo de matéria-prima/mercado | `backend/services/insumosIA.js` |
 | Mapa de talhões | Visualização geográfica dos talhões cadastrados (Google Maps) | `frontend/app.js` (`inicializarMapa`) |
 
+## Testes
+
+```bash
+cd backend
+npm test
+```
+
 ## Próximos passos sugeridos (para o desenvolvimento do TCC)
 
-- [x] Persistir usuários, sessões e talhões em PostgreSQL
+- [x] Escolher e integrar API de clima (Open-Meteo; OpenWeather opcional)
+- [x] Integrar mercado agrícola com fontes públicas (Yahoo Finance + PTAX)
+- [x] Estruturar o LLM com contexto das APIs (`services/llm.js`)
+- [x] Painel (visão geral), configurações de conta e persistência ampliada no PostgreSQL
+- [x] Testes do motor de regras, parser de clima e contexto do LLM
+- [x] Expiração de sessão (7 dias)
 - [ ] Revisar as faixas usadas no motor de regras (`rules.js`) com fontes agronômicas específicas (Embrapa/Epamig) por cultura e citá-las no referencial teórico
-- [ ] Ajustar a lista de notícias curadas em `services/market.js` para refletir o cenário real na data da defesa
 - [ ] Testar a geocodificação e o mapa com endereços reais da região quando as chaves do Google Maps estiverem configuradas
-- [ ] Escrever testes automatizados para o motor de regras e para o fluxo de autenticação (partes mais fáceis de testar e mais valorizadas na banca)
-- [ ] Considerar expirar/renovar tokens de sessão (hoje eles não expiram automaticamente)
+- [ ] Configurar `ANTHROPIC_API_KEY` para a defesa, se a banca for avaliar o modo IA real

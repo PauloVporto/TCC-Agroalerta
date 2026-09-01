@@ -7,8 +7,11 @@ const alertasRouter = require("./routes/alertas");
 const insumosRouter = require("./routes/insumos");
 const mercadoRouter = require("./routes/mercado");
 const authRouter = require("./routes/auth");
+const painelRouter = require("./routes/painel");
 const { culturasSuportadas } = require("./services/rules");
 const { inicializarBanco } = require("./services/db");
+const { fonteClimaAtiva } = require("./services/weather");
+const { temChaveLlm } = require("./services/llm");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,10 +26,13 @@ app.use((req, res, next) => {
 });
 
 app.get("/api/health", (req, res) => {
+  const fonteClima = fonteClimaAtiva();
   res.json({
     status: "ok",
-    modoClima: process.env.OPENWEATHER_API_KEY ? "real" : "simulado",
-    modoIA: process.env.ANTHROPIC_API_KEY ? "real" : "simulado",
+    modoClima: fonteClima === "simulado" ? "simulado" : "real",
+    fonteClima,
+    modoMercado: "yahoo-finance+bcb-ptax",
+    modoIA: temChaveLlm() ? "real" : "simulado",
     modoMapas: process.env.GOOGLE_MAPS_API_KEY ? "real" : "simulado",
   });
 });
@@ -40,6 +46,7 @@ app.use("/api/talhoes", talhoesRouter);
 app.use("/api/alertas", alertasRouter);
 app.use("/api/insumos", insumosRouter);
 app.use("/api/mercado", mercadoRouter);
+app.use("/api/painel", painelRouter);
 
 app.use((req, res) => {
   res.status(404).json({ erro: "Rota não encontrada" });
@@ -49,10 +56,11 @@ async function iniciar() {
   await inicializarBanco();
   app.listen(PORT, () => {
     console.log("");
-    console.log("  AgroAlerta - backend rodando em http://localhost:" + PORT);
-    console.log("  Modo clima: " + (process.env.OPENWEATHER_API_KEY ? "REAL (OpenWeatherMap)" : "SIMULADO"));
-    console.log("  Modo IA:    " + (process.env.ANTHROPIC_API_KEY ? "REAL (Anthropic)" : "SIMULADO"));
-    console.log("  Modo mapas: " + (process.env.GOOGLE_MAPS_API_KEY ? "REAL (Google Maps)" : "SIMULADO"));
+  console.log("  AgroAlerta - backend rodando em http://localhost:" + PORT);
+  console.log("  Modo clima:   REAL (" + fonteClimaAtiva() + ")");
+  console.log("  Modo mercado: REAL (Yahoo Finance + BCB PTAX, com fallback interno)");
+  console.log("  Modo IA:      " + (temChaveLlm() ? "REAL (Anthropic + contexto das APIs)" : "SIMULADO"));
+  console.log("  Modo mapas:   " + (process.env.GOOGLE_MAPS_API_KEY ? "REAL (Google Maps)" : "SIMULADO"));
     console.log("");
   });
 }

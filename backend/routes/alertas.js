@@ -4,6 +4,7 @@ const { buscarClimaAtual } = require("../services/weather");
 const { avaliarAlertas } = require("../services/rules");
 const { buscarTalhaoPorId } = require("./talhoes");
 const { exigirAutenticacao } = require("../services/auth");
+const { pool } = require("../services/db");
 
 router.use(exigirAutenticacao);
 
@@ -21,6 +22,23 @@ router.get("/:talhaoId", async (req, res) => {
   try {
     const clima = await buscarClimaAtual(talhao.latitude, talhao.longitude);
     const alertas = avaliarAlertas(talhao.cultura, talhao.fase, clima);
+
+    pool.query(
+      `INSERT INTO leituras_clima
+         (talhao_id, fonte, temperatura_minima, chuva_acumulada_7d, dias_sem_chuva,
+          probabilidade_chuva, vento_maximo_kmh, payload)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        talhao.id,
+        clima.fonte,
+        clima.temperaturaMinima,
+        clima.chuvaAcumulada7dias,
+        clima.diasSemChuva,
+        clima.probabilidadeChuva7dias,
+        clima.ventoMaximoKmh,
+        JSON.stringify(clima),
+      ]
+    ).catch((erro) => console.error("[alertas] Falha ao persistir leitura de clima:", erro.message));
 
     res.json({
       talhao: {

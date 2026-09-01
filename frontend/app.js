@@ -188,10 +188,17 @@ document.getElementById("nav").addEventListener("click", (e) => {
   document.getElementById("view-" + view).classList.add("is-active");
 
   document.querySelector(".content").classList.toggle("content--full", view === "mercado");
+  document.getElementById("sidebar").classList.remove("is-open");
 
+  if (view === "painel") carregarPainel();
+  if (view === "talhoes") carregarTalhoes();
   if (view === "configuracoes") carregarConfiguracoes();
   if (view === "insumos" && !state.insumosCarregados) carregarInsumos();
   if (view === "mercado" && !state.mercadoCarregado) carregarMercado(state.culturaMercadoAtual);
+});
+
+document.getElementById("btnMenu").addEventListener("click", () => {
+  document.getElementById("sidebar").classList.toggle("is-open");
 });
 
 // ---------- CONFIGURAÇÕES DO USUÁRIO ----------
@@ -273,7 +280,8 @@ async function carregarStatus() {
   try {
     const resp = await fetch(API_BASE + "/health");
     const dados = await resp.json();
-    definirPill("statusClima", dados.modoClima);
+    definirPill("statusClima", dados.modoClima, dados.fonteClima);
+    definirPill("statusMercado", dados.modoMercado === "simulado" ? "simulado" : "real", dados.modoMercado);
     definirPill("statusIA", dados.modoIA);
     definirPill("statusMapas", dados.modoMapas);
   } catch (erro) {
@@ -281,10 +289,68 @@ async function carregarStatus() {
   }
 }
 
-function definirPill(id, modo) {
+function definirPill(id, modo, rotulo) {
   const el = document.getElementById(id);
-  el.textContent = modo === "real" ? "real" : "simulado";
-  el.classList.toggle("real", modo === "real");
+  const real = modo && modo !== "simulado";
+  el.textContent = rotulo && real ? String(rotulo) : real ? "real" : "simulado";
+  el.classList.toggle("real", real);
+}
+
+function rotuloGeracaoIA(gerarPor) {
+  if (gerarPor === "ia_clima_mercado" || gerarPor === "ia_com_busca") return "IA + clima/mercado";
+  return "modo simulado";
+}
+
+async function carregarPainel() {
+  const kpis = document.getElementById("painelKpis");
+  const alertasEl = document.getElementById("painelAlertas");
+  const cotacoesEl = document.getElementById("painelCotacoes");
+  try {
+    const resp = await apiFetch("/painel");
+    const dados = await resp.json();
+    if (!resp.ok) throw new Error(dados.erro || "Falha ao carregar o painel");
+
+    kpis.innerHTML = `
+      <div class="card kpi-card"><div class="kpi-label">Talhões</div><div class="kpi-value">${dados.totalTalhoes}</div></div>
+      <div class="card kpi-card"><div class="kpi-label">Alertas ativos</div><div class="kpi-value">${dados.totalAlertas}</div></div>
+      <div class="card kpi-card">
+        <div class="kpi-label">Dólar PTAX</div>
+        <div class="kpi-value">${dados.dolar ? "R$ " + Number(dados.dolar.valor).toFixed(2) : "—"}</div>
+        <div class="kpi-hint">${dados.dolar ? dados.dolar.data : "sem cotação agora"}</div>
+      </div>
+      <div class="card kpi-card">
+        <div class="kpi-label">Fontes</div>
+        <div class="kpi-value" style="font-size:18px">Open-Meteo</div>
+        <div class="kpi-hint">Yahoo Finance + Banco Central</div>
+      </div>
+    `;
+
+    alertasEl.innerHTML = dados.alertas.length
+      ? '<div class="painel-lista">' +
+        dados.alertas
+          .map(
+            (a) =>
+              `<div class="painel-row"><span>${a.nome} · ${NOMES_CULTURA[a.cultura] || a.cultura}</span>` +
+              `<span class="nivel-tag ${a.maiorNivel || "baixo"}">${a.total} alerta${a.total === 1 ? "" : "s"}</span></div>`
+          )
+          .join("") +
+        "</div>"
+      : '<p class="empty-state">Cadastre um talhão para ver alertas climáticos aqui.</p>';
+
+    cotacoesEl.innerHTML =
+      '<div class="painel-lista">' +
+      Object.entries(dados.cotacoes)
+        .map(([cultura, c]) => {
+          const valor = c ? c.preco + " " + c.unidade : "série interna";
+          return `<div class="painel-row"><span>${NOMES_CULTURA[cultura] || cultura}</span><span>${valor}</span></div>`;
+        })
+        .join("") +
+      "</div>";
+  } catch (erro) {
+    kpis.innerHTML = "";
+    alertasEl.innerHTML = '<p class="empty-state">Não foi possível carregar a visão geral. Confira se o backend está no ar.</p>';
+    cotacoesEl.innerHTML = "";
+  }
 }
 
 // ---------- TALHÕES ----------
@@ -315,7 +381,7 @@ function renderizarListaTalhoes() {
         <div class="talhao-card-nome">${t.nome}</div>
         <div class="talhao-card-meta">
           <span class="crop-dot ${t.cultura}"></span>
-          ${t.cultura === "cafe" ? "Café" : "Soja"} · ${formatarFase(t.fase)}
+          ${NOMES_CULTURA[t.cultura] || t.cultura} · ${formatarFase(t.fase)}
         </div>
       </div>
     `
@@ -376,7 +442,7 @@ function renderizarDetalheTalhao(dados) {
       </div>
       <span class="crop-dot ${talhao.cultura}"></span>
     </div>
-    <div class="detail-sub">${talhao.cultura === "cafe" ? "Café" : "Soja"} · ${formatarFase(talhao.fase)} · fonte do clima: ${clima.fonte}</div>
+    <div class="detail-sub">${NOMES_CULTURA[talhao.cultura] || talhao.cultura} · ${formatarFase(talhao.fase)} · fonte do clima: ${clima.fonte}</div>
 
     <div class="clima-grid">
       <div class="clima-metric">
@@ -538,8 +604,7 @@ async function alternarInsightCompra(categoria) {
     if (!resp.ok) throw new Error(dados.erro || "Erro ao gerar recomendação");
 
     document.getElementById("insightTexto").textContent = dados.recomendacao;
-    document.getElementById("insightFonte").textContent =
-      dados.gerarPor === "ia_com_busca" ? "IA + busca na web" : "modo simulado";
+    document.getElementById("insightFonte").textContent = rotuloGeracaoIA(dados.gerarPor);
     document.getElementById("insightFontesLista").innerHTML = renderizarFontes(dados.fontes);
   } catch (erro) {
     document.getElementById("insightTexto").textContent = "Não foi possível gerar a recomendação agora.";
@@ -599,6 +664,22 @@ async function carregarHistorico(cultura) {
   const dados = await resp.json();
   state.mercadoHistoricoCompleto = dados.historico;
   state.mercadoUnidade = dados.unidade;
+  const live = document.getElementById("cotacaoAoVivo");
+  if (dados.cotacaoAoVivo) {
+    live.hidden = false;
+    live.textContent =
+      "Cotação ao vivo (" +
+      dados.cotacaoAoVivo.fonte +
+      " · " +
+      dados.cotacaoAoVivo.ticker +
+      "): " +
+      dados.cotacaoAoVivo.preco +
+      " " +
+      dados.cotacaoAoVivo.unidade +
+      (dados.dolarPtax ? " · PTAX R$ " + Number(dados.dolarPtax.valor).toFixed(2) : "");
+  } else {
+    live.hidden = true;
+  }
   renderizarGrafico();
 }
 
@@ -620,8 +701,7 @@ async function carregarAnalise(cultura) {
     elTendencia.classList.add(dados.variacaoPercentual >= 0 ? "up" : "down");
 
     document.getElementById("analiseTexto").textContent = dados.resumo;
-    document.getElementById("analiseFonte").textContent =
-      dados.gerarPor === "ia_com_busca" ? "IA + busca na web" : "modo simulado";
+    document.getElementById("analiseFonte").textContent = rotuloGeracaoIA(dados.gerarPor);
     document.getElementById("analiseAvisoSimulado").hidden = dados.gerarPor !== "simulado";
 
     document.getElementById("analiseFatores").innerHTML = dados.fatoresConsiderados
@@ -979,6 +1059,7 @@ function atualizarMarcadoresMapa() {
 
 function iniciarApp() {
   carregarStatus();
+  carregarPainel();
   carregarTalhoes();
   inicializarMapa();
 }
