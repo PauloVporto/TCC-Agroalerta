@@ -1,76 +1,27 @@
 const express = require("express");
 const router = express.Router();
-const fs = require("fs");
-const path = require("path");
 const { gerarInsightCompra } = require("../services/insumosIA");
+const { listarInsumos, insumosParaAlerta, catalogo } = require("../services/insumosCatalog");
+const { exigirAutenticacao, exigirPapel } = require("../services/auth");
+const { pool } = require("../services/db");
 
-const db = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "insumos.json"), "utf-8"));
-
-// GET /api/insumos - lista todos os insumos, com ofertas ordenadas por menor preço
-// Query opcional: ?categoria=fungicida
-router.get("/", (req, res) => {
-  const { categoria } = req.query;
-
-  let insumos = db.insumos;
-  if (categoria) {
-    insumos = insumos.filter((i) => i.categoria === categoria);
+router.get("/", async (req, res) => {
+  try {
+    res.json(await listarInsumos(req.query.categoria));
+  } catch (erro) {
+    console.error("[insumos] listar:", erro);
+    res.status(500).json({ erro: "Não foi possível listar os insumos." });
   }
-
-  const resultado = insumos.map((insumo) => {
-    const ofertasOrdenadas = [...insumo.ofertas].sort((a, b) => a.preco - b.preco);
-    return {
-      ...insumo,
-      ofertas: ofertasOrdenadas,
-      melhorPreco: ofertasOrdenadas[0],
-    };
-  });
-
-  res.json(resultado);
 });
 
-// GET /api/insumos/recomendados/:alertaId
-// Recomenda insumos com base no id de uma regra de alerta (ex: "cafe_geada")
-router.get("/recomendados/:alertaId", (req, res) => {
-  const mapaAlertaCategoria = {
-    cafe_geada: ["protecao_termica"],
-    cafe_estiagem: ["irrigacao", "hidrogel"],
-    cafe_excesso_chuva: ["fungicida"],
-    soja_estiagem: ["irrigacao", "hidrogel"],
-    soja_chuva_colheita: [],
-    soja_vento_forte: [],
-    milho_estiagem: ["irrigacao", "hidrogel"],
-    milho_vento_forte: [],
-    milho_excesso_chuva: ["fungicida"],
-    cana_estiagem_prolongada: ["irrigacao"],
-    cana_geada: ["protecao_termica"],
-    cana_chuva_colheita: [],
-    feijao_estiagem: ["irrigacao", "hidrogel"],
-    feijao_excesso_chuva: ["fungicida"],
-    feijao_chuva_colheita: [],
-  };
-
-  const categorias = mapaAlertaCategoria[req.params.alertaId];
-
-  if (!categorias) {
+router.get("/recomendados/:alertaId", async (req, res) => {
+  const insumos = await insumosParaAlerta(req.params.alertaId);
+  if (insumos === null) {
     return res.status(404).json({ erro: "Regra de alerta desconhecida" });
   }
-
-  if (categorias.length === 0) {
-    return res.json([]);
-  }
-
-  const insumos = db.insumos
-    .filter((i) => categorias.includes(i.categoria))
-    .map((insumo) => {
-      const ofertasOrdenadas = [...insumo.ofertas].sort((a, b) => a.preco - b.preco);
-      return { ...insumo, ofertas: ofertasOrdenadas, melhorPreco: ofertasOrdenadas[0] };
-    });
-
   res.json(insumos);
 });
 
-// GET /api/insumos/analise/:categoria
-// Gera (via IA + busca na web) uma recomendação de compra para a categoria
 router.get("/analise/:categoria", async (req, res) => {
   try {
     const analise = await gerarInsightCompra(req.params.categoria);
@@ -79,6 +30,55 @@ router.get("/analise/:categoria", async (req, res) => {
     console.error("[insumos] Erro ao gerar análise de compra:", erro);
     res.status(400).json({ erro: erro.message });
   }
+});
+
+router.get("/meus", exigirAutenticacao, exigirPapel("fornecedor"), async (req, res) => {
+  const resultado = await pool.query(
+    `SELECT id, insumo_catalogo_id AS "insumoCatalogoId", nome, categoria, unidade,
+            preco, cidade, telefone, criado_em AS "criadoEm"
+     FROM ofertas_insumos WHERE usuario_id = $1 ORDER BY criado_em DESC`,
+    [req.usuario.id]
+  );
+  res.json(resultado.rows);
+});
+
+router.post("/", exigirAutenticacao, exigirPapel("fornecedor"), async (req, res) => {
+  const { nome, categoria, unidade, preco, cidade, telefone, insumoCatalogoId } = req.body;
+  const precoNum = Number(preco);
+  if (!nome || !categoria || !unidade || !Number.isFinite(precoNum) || precoNum <= 0 || !cidade) {
+    return res.status(400).json({ erro: "Informe nome, categoria, unidade, preço e cidade." });
+  }
+
+  const catalogoMatch = catalogo.insumos.find((i) => i.id === insumoCatalogoId);
+  const resultado = await pool.query(
+    `INSERT INTO ofertas_insumos
+       (usuario_id, insumo_catalogo_id, nome, categoria, unidade, preco, cidade, telefone)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING id, insumo_catalogo_id AS "insumoCatalogoId", nome, categoria, unidade,
+               preco, cidade, telefone, criado_em AS "criadoEm"`,
+    [
+      req.usuario.id,
+      catalogoMatch ? catalogoMatch.id : null,
+      catalogoMatch ? catalogoMatch.nome : nome,
+      catalogoMatch ? catalogoMatch.categoria : categoria,
+      catalogoMatch ? catalogoMatch.unidade : unidade,
+      precoNum,
+      cidade,
+      telefone || req.usuario.telefone || null,
+    ]
+  );
+  res.status(201).json(resultado.rows[0]);
+});
+
+router.delete("/:id", exigirAutenticacao, exigirPapel("fornecedor"), async (req, res) => {
+  const resultado = await pool.query(
+    "DELETE FROM ofertas_insumos WHERE id = $1 AND usuario_id = $2",
+    [Number(req.params.id), req.usuario.id]
+  );
+  if (!resultado.rowCount) {
+    return res.status(404).json({ erro: "Oferta não encontrada." });
+  }
+  res.status(204).send();
 });
 
 module.exports = router;

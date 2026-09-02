@@ -5,7 +5,9 @@ const { avaliarAlertas } = require("../services/rules");
 const { buscarTalhaoPorId } = require("./talhoes");
 const { exigirAutenticacao } = require("../services/auth");
 const { pool } = require("../services/db");
+const { insumosParaAlerta } = require("../services/insumosCatalog");
 const { temChaveLlm, chamarClaudeComBusca, promptAlertaProdutor } = require("../services/llm");
+const { gerarESalvarParaTalhao } = require("../services/mensagens");
 
 router.use(exigirAutenticacao);
 
@@ -22,8 +24,31 @@ router.get("/:talhaoId", async (req, res) => {
 
   try {
     const clima = await buscarClimaAtual(talhao.latitude, talhao.longitude);
-    const alertas = avaliarAlertas(talhao.cultura, talhao.fase, clima);
-    const briefing = await gerarBriefingProdutor({ talhao, clima, alertas });
+    const alertasBase = avaliarAlertas(talhao.cultura, talhao.fase, clima);
+    const alertas = await Promise.all(
+      alertasBase.map(async (alerta) => {
+        const insumos = (await insumosParaAlerta(alerta.id)) || [];
+        return {
+          ...alerta,
+          insumos: insumos.slice(0, 3).map((i) => ({
+            id: i.id,
+            nome: i.nome,
+            categoria: i.categoria,
+            unidade: i.unidade,
+            melhorPreco: i.melhorPreco,
+          })),
+        };
+      })
+    );
+    const briefing = await gerarBriefingProdutor({ talhao, clima, alertas: alertasBase });
+
+    persistirAlertas(talhao.id, alertasBase).catch((erro) =>
+      console.error("[alertas] persistir:", erro.message)
+    );
+
+    gerarESalvarParaTalhao(req.usuario.id, talhao, clima, alertasBase).catch((erro) =>
+      console.error("[alertas] mensagens:", erro.message)
+    );
 
     pool.query(
       `INSERT INTO leituras_clima
@@ -64,6 +89,17 @@ router.get("/:talhaoId", async (req, res) => {
     res.status(500).json({ erro: "Erro ao gerar alertas para o talhão" });
   }
 });
+
+async function persistirAlertas(talhaoId, alertas) {
+  await pool.query("DELETE FROM alertas_gerados WHERE talhao_id = $1", [talhaoId]);
+  for (const alerta of alertas) {
+    await pool.query(
+      `INSERT INTO alertas_gerados (talhao_id, regra_id, nivel, titulo, mensagem, recomendacao)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [talhaoId, alerta.id, alerta.nivel, alerta.titulo, alerta.mensagem, alerta.recomendacao]
+    );
+  }
+}
 
 async function gerarBriefingProdutor({ talhao, clima, alertas }) {
   const previsao = clima.previsao || [];

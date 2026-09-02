@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { geocodificarEndereco, areaHectares } = require("../services/geocoding");
+const { geocodificarEndereco, geocodificarReverso, areaHectares } = require("../services/geocoding");
 const { culturasSuportadas } = require("../services/rules");
 const { exigirAutenticacao } = require("../services/auth");
 const { pool } = require("../services/db");
@@ -20,6 +20,31 @@ router.get("/", async (req, res) => {
     [req.usuario.id]
   );
   res.json(resultado.rows);
+});
+
+// GET /api/talhoes/geocodificar?endereco=... - localiza endereço para o mapa de cadastro
+router.get("/geocodificar", async (req, res) => {
+  const endereco = String(req.query.endereco || "").trim();
+  if (!endereco) {
+    return res.status(400).json({ erro: "Informe o endereço para localizar no mapa." });
+  }
+
+  try {
+    const coords = await geocodificarEndereco(endereco);
+    res.json(coords);
+  } catch (erro) {
+    console.error("[talhoes] Geocodificação falhou:", erro.message);
+    res.status(400).json({ erro: "Não foi possível localizar esse endereço. Tente cidade, bairro ou referência mais específica." });
+  }
+});
+
+router.get("/geocodificar-reverso", async (req, res) => {
+  try {
+    const coords = await geocodificarReverso(req.query.lat, req.query.lng);
+    res.json(coords);
+  } catch (erro) {
+    res.status(400).json({ erro: erro.message || "Não foi possível identificar o endereço desse ponto." });
+  }
 });
 
 // POST /api/talhoes - cadastra um novo talhão para o usuário logado
@@ -100,11 +125,12 @@ router.delete("/:id", async (req, res) => {
   res.status(204).send();
 });
 
-// PATCH /api/talhoes/:id - atualiza fase/nome de um talhão (só o dono)
+// PATCH /api/talhoes/:id - atualiza nome, cultura e fase (só o dono)
 router.patch("/:id", async (req, res) => {
   const id = Number(req.params.id);
   const resultado = await pool.query(
-    `SELECT id, usuario_id AS "usuarioId", nome, fase FROM talhoes WHERE id = $1`, [id]
+    `SELECT id, usuario_id AS "usuarioId", nome, cultura, fase FROM talhoes WHERE id = $1`,
+    [id]
   );
   const talhao = resultado.rows[0];
 
@@ -115,16 +141,29 @@ router.patch("/:id", async (req, res) => {
     return res.status(403).json({ erro: "Você não tem permissão para editar este talhão." });
   }
 
-  const { nome, fase } = req.body;
-  if (nome) talhao.nome = nome;
-  if (fase) talhao.fase = fase;
+  const nome = req.body.nome != null ? String(req.body.nome).trim() : talhao.nome;
+  const cultura = req.body.cultura != null ? String(req.body.cultura).trim() : talhao.cultura;
+  const fase = req.body.fase != null ? String(req.body.fase).trim() : talhao.fase;
+
+  if (!nome) {
+    return res.status(400).json({ erro: "Informe o nome do talhão." });
+  }
+  if (!culturasSuportadas().includes(cultura)) {
+    return res.status(400).json({
+      erro: "Cultura não suportada. Use uma de: " + culturasSuportadas().join(", "),
+    });
+  }
+  if (!fase) {
+    return res.status(400).json({ erro: "Informe a fase da cultura." });
+  }
 
   const atualizado = await pool.query(
-    `UPDATE talhoes SET nome = $1, fase = $2 WHERE id = $3
+    `UPDATE talhoes SET nome = $1, cultura = $2, fase = $3 WHERE id = $4
      RETURNING id, usuario_id AS "usuarioId", nome, cultura, fase, endereco,
                latitude, longitude, endereco_formatado AS "enderecoFormatado",
+               poligono, area_ha AS "areaHa",
                criado_em AS "criadoEm"`,
-    [talhao.nome, talhao.fase, id]
+    [nome, cultura, fase, id]
   );
 
   res.json(atualizado.rows[0]);

@@ -16,14 +16,17 @@ function hashSenha(senha, salt) {
   return crypto.scryptSync(senha, salt, 64).toString("hex");
 }
 
-async function criarUsuario({ nome, email, senha }) {
+const PAPEIS = ["produtor", "fornecedor"];
+
+async function criarUsuario({ nome, email, senha, papel, cidade, telefone }) {
+  const papelFinal = PAPEIS.includes(papel) ? papel : "produtor";
   const salt = crypto.randomBytes(16).toString("hex");
   try {
     const resultado = await pool.query(
-      `INSERT INTO usuarios (nome, email, senha_hash, salt)
-       VALUES ($1, LOWER($2), $3, $4)
-       RETURNING id, nome, email, salt, criado_em AS "criadoEm"`,
-      [nome, email, hashSenha(senha, salt), salt]
+      `INSERT INTO usuarios (nome, email, senha_hash, salt, papel, cidade, telefone)
+       VALUES ($1, LOWER($2), $3, $4, $5, $6, $7)
+       RETURNING id, nome, email, papel, cidade, telefone, salt, criado_em AS "criadoEm"`,
+      [nome, email, hashSenha(senha, salt), salt, papelFinal, cidade || null, telefone || null]
     );
     const usuario = sanitizar(resultado.rows[0]);
     await pool.query("INSERT INTO preferencias_usuario (usuario_id) VALUES ($1)", [usuario.id]);
@@ -36,7 +39,8 @@ async function criarUsuario({ nome, email, senha }) {
 
 async function autenticar({ email, senha }) {
   const resultado = await pool.query(
-    `SELECT id, nome, email, senha_hash AS "senhaHash", salt, criado_em AS "criadoEm"
+    `SELECT id, nome, email, papel, cidade, telefone,
+            senha_hash AS "senhaHash", salt, criado_em AS "criadoEm"
      FROM usuarios WHERE email = LOWER($1)`,
     [email]
   );
@@ -65,7 +69,7 @@ async function encerrarSessao(token) {
 
 async function usuarioPorToken(token) {
   const resultado = await pool.query(
-    `SELECT u.id, u.nome, u.email, u.criado_em AS "criadoEm"
+    `SELECT u.id, u.nome, u.email, u.papel, u.cidade, u.telefone, u.criado_em AS "criadoEm"
      FROM sessoes s JOIN usuarios u ON u.id = s.usuario_id
      WHERE s.token = $1 AND s.expira_em > NOW()`,
     [token]
@@ -76,6 +80,7 @@ async function usuarioPorToken(token) {
 async function obterConfiguracoes(usuarioId) {
   const resultado = await pool.query(
     `SELECT u.id, u.nome, u.email, u.criado_em AS "criadoEm",
+            u.papel, u.cidade, u.telefone,
             COALESCE(p.cultura_favorita, 'cafe') AS "culturaFavorita",
             COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura",
             COALESCE(p.notificacoes, TRUE) AS notificacoes
@@ -87,12 +92,26 @@ async function obterConfiguracoes(usuarioId) {
   return resultado.rows[0] || null;
 }
 
-async function atualizarPerfil(usuarioId, { nome, email }) {
+async function atualizarPerfil(usuarioId, dados) {
+  const { nome, email } = dados;
   try {
+    const atual = await pool.query(
+      "SELECT telefone, cidade FROM usuarios WHERE id = $1",
+      [usuarioId]
+    );
+    const row = atual.rows[0] || {};
+    const telefone = Object.prototype.hasOwnProperty.call(dados, "telefone")
+      ? dados.telefone || null
+      : row.telefone;
+    const cidade = Object.prototype.hasOwnProperty.call(dados, "cidade")
+      ? dados.cidade || null
+      : row.cidade;
+
     const resultado = await pool.query(
-      `UPDATE usuarios SET nome = $1, email = LOWER($2) WHERE id = $3
-       RETURNING id, nome, email, criado_em AS "criadoEm"`,
-      [nome, email, usuarioId]
+      `UPDATE usuarios SET nome = $1, email = LOWER($2), telefone = $3, cidade = $4
+       WHERE id = $5
+       RETURNING id, nome, email, papel, cidade, telefone, criado_em AS "criadoEm"`,
+      [nome, email, telefone, cidade, usuarioId]
     );
     return resultado.rows[0] ? sanitizar(resultado.rows[0]) : null;
   } catch (erro) {
@@ -163,6 +182,15 @@ async function exigirAutenticacao(req, res, next) {
   next();
 }
 
+function exigirPapel(...papeis) {
+  return (req, res, next) => {
+    if (!req.usuario || !papeis.includes(req.usuario.papel || "produtor")) {
+      return res.status(403).json({ erro: "Esta ação é só para contas de " + papeis.join(" ou ") + "." });
+    }
+    next();
+  };
+}
+
 module.exports = {
   criarUsuario,
   autenticar,
@@ -174,4 +202,6 @@ module.exports = {
   alterarSenha,
   excluirConta,
   exigirAutenticacao,
+  exigirPapel,
+  PAPEIS,
 };

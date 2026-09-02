@@ -56,6 +56,24 @@
           <span>Senha</span>
           <input type="password" name="senha" placeholder="mínimo 6 caracteres" required minlength="6" />
         </label>
+        <label class="field">
+          <span>Tipo de conta</span>
+          <select name="papel" id="registroPapel" required>
+            <option value="produtor">Produtor rural</option>
+            <option value="fornecedor">Vendedor de insumos</option>
+          </select>
+        </label>
+        <div id="camposContato">
+          <label class="field">
+            <span>Cidade</span>
+            <input type="text" name="cidade" placeholder="Ex: Pouso Alegre, MG" />
+          </label>
+          <label class="field">
+            <span>Celular / WhatsApp</span>
+            <input type="tel" name="telefone" placeholder="Ex: (35) 99999-0000" required />
+          </label>
+          <p class="field-hint">Alertas climáticos chegam neste celular (SMS) e no e-mail da conta.</p>
+        </div>
         <p class="auth-error" id="registroErro"></p>
         <button type="submit" class="btn btn-primary auth-submit">Criar conta</button>
       </form>
@@ -79,7 +97,11 @@
 
       <nav class="nav" id="nav">
         <button class="nav-item is-active" data-view="painel">Visão geral</button>
-        <button class="nav-item" data-view="talhoes">Talhões &amp; Alertas</button>
+        <button class="nav-item" data-view="mensagens" data-nav-papel="produtor">
+          Mensagens
+          <span class="nav-badge" id="badgeMensagens" hidden>0</span>
+        </button>
+        <button class="nav-item" data-view="talhoes" data-nav-papel="produtor">Talhões &amp; Alertas</button>
         <button class="nav-item" data-view="insumos">Insumos</button>
         <button class="nav-item" data-view="mercado">Mercado</button>
         <button class="nav-item" data-view="configuracoes">Configurações</button>
@@ -114,6 +136,10 @@
         <div class="painel-kpis" id="painelKpis"></div>
         <div class="painel-grid">
           <div class="card">
+            <div class="card-label">Mensagens para você</div>
+            <div id="painelMensagens"><p class="empty-state">Carregando…</p></div>
+          </div>
+          <div class="card">
             <div class="card-label">Alertas por talhão</div>
             <div id="painelAlertas"><p class="empty-state">Carregando…</p></div>
           </div>
@@ -121,6 +147,23 @@
             <div class="card-label">Cotações Brasil × internacional</div>
             <div id="painelCotacoes"><p class="empty-state">Carregando…</p></div>
           </div>
+        </div>
+      </section>
+
+      <!-- VIEW: MENSAGENS -->
+      <section class="view" id="view-mensagens">
+        <header class="view-header">
+          <div>
+            <h1>Mensagens de alerta</h1>
+            <p class="view-desc">Recados do clima enviados também por e-mail e SMS para o contato cadastrado: chuva forte, risco de seca, geada e demais riscos.</p>
+          </div>
+          <div class="view-header-actions">
+            <button class="btn btn-ghost" id="btnMarcarMensagensLidas" type="button">Marcar todas como lidas</button>
+            <button class="btn btn-primary" id="btnAtualizarMensagens" type="button">Atualizar agora</button>
+          </div>
+        </header>
+        <div id="mensagensLista" class="mensagens-feed">
+          <p class="empty-state">Carregando mensagens…</p>
         </div>
       </section>
 
@@ -167,6 +210,9 @@
             <h2>Dados do perfil</h2>
             <label class="field"><span>Nome</span><input name="nome" required /></label>
             <label class="field"><span>E-mail</span><input type="email" name="email" required /></label>
+            <label class="field"><span>Celular / SMS</span><input type="tel" name="telefone" placeholder="(35) 99999-0000" /></label>
+            <label class="field"><span>Cidade</span><input name="cidade" placeholder="Ex: Pouso Alegre, MG" /></label>
+            <p class="field-hint">Alertas de chuva, seca e geada são enviados para este e-mail e celular.</p>
             <p class="form-feedback" id="perfilFeedback"></p>
             <button class="btn btn-primary" type="submit">Salvar perfil</button>
           </form>
@@ -182,7 +228,7 @@
             <label class="field"><span>Unidade de temperatura</span>
               <select name="unidadeTemperatura"><option value="celsius">Celsius (°C)</option><option value="fahrenheit">Fahrenheit (°F)</option></select>
             </label>
-            <label class="settings-check"><input type="checkbox" name="notificacoes" /> <span>Receber notificações de alertas</span></label>
+            <label class="settings-check"><input type="checkbox" name="notificacoes" /> <span>Receber alertas por e-mail, SMS e no navegador</span></label>
             <p class="form-feedback" id="preferenciasFeedback"></p>
             <button class="btn btn-primary" type="submit">Salvar preferências</button>
           </form>
@@ -208,9 +254,15 @@
         <header class="view-header">
           <div>
             <h1>Comparador de insumos</h1>
-            <p class="view-desc">Preços simulados de fornecedores da região, com recomendação de compra gerada por IA a partir do cenário atual de mercado.</p>
+            <p class="view-desc">Compare preços da região. Produtores veem recomendações a partir dos alertas; vendedores cadastram suas ofertas.</p>
           </div>
+          <button class="btn btn-primary" id="btnNovaOferta" hidden>+ Nova oferta</button>
         </header>
+
+        <div class="card" id="minhasOfertasBox" hidden>
+          <div class="card-label">Minhas ofertas</div>
+          <div id="minhasOfertasLista"><p class="empty-state">Você ainda não cadastrou ofertas.</p></div>
+        </div>
 
         <div class="filter-row" id="insumosFiltro">
           <button class="chip is-active" data-categoria="">Todos</button>
@@ -235,7 +287,7 @@
         <header class="view-header">
           <div>
             <h1>Mercado</h1>
-            <p class="view-desc">Mercado interno brasileiro (R$/saca) lado a lado com as bolsas internacionais e a paridade cambial — clima, câmbio, exportação e demanda.</p>
+            <p class="view-desc">Série mensal 2010–2026 no Brasil (R$/saca), bolsas internacionais, e projeção mensal com IA para 2027 e 2028.</p>
           </div>
           <div class="mercado-header-actions">
             <button class="btn btn-primary" id="btnSimulador">Simulador de venda</button>
@@ -262,10 +314,8 @@
                 <div class="segmented segmented-sm" id="periodoFiltros">
                   <button class="segmented-item" data-periodo="7">Semana</button>
                   <button class="segmented-item" data-periodo="mes">Mês</button>
-                  <button class="segmented-item" data-periodo="90">90 dias</button>
-                  <button class="segmented-item" data-periodo="3meses">3 meses</button>
-                  <button class="segmented-item is-active" data-periodo="6meses">6 meses</button>
-                  <button class="segmented-item" data-periodo="ano">Ano</button>
+                  <button class="segmented-item" data-periodo="6meses">6 meses</button>
+                  <button class="segmented-item is-active" data-periodo="ano">Ano</button>
                 </div>
                 <select class="ano-select" id="anoSelect"></select>
               </div>
@@ -304,7 +354,8 @@
                   Análise gerada em modo simulado — configure ANTHROPIC_API_KEY para pesquisa em tempo real.
                 </p>
                 <div class="projecao-box">
-                  <div class="fontes-titulo">Projeção 30 / 60 / 90 dias</div>
+                  <div class="fontes-titulo">Projeção 2027–2028</div>
+                  <p class="analysis-note">Histórico mensal 2010–2026 · projeção mensal com IA (ou cenário estatístico) para 2027 e 2028.</p>
                   <p class="analysis-text" id="projecaoTexto">Carregando projeção…</p>
                   <div id="projecaoPontos"></div>
                 </div>
@@ -344,10 +395,14 @@
           <select name="fase" required></select>
         </label>
         <label class="field">
-          <span>Endereço (opcional se marcar no mapa)</span>
-          <input type="text" name="endereco" placeholder="Ex: Santa Rita do Sapucaí, MG" />
+          <span>Endereço da propriedade</span>
+          <div class="endereco-row">
+            <input type="text" name="endereco" id="talhaoEndereco" placeholder="Ex: Fazenda Boa Vista, Santa Rita do Sapucaí, MG" required />
+            <button type="button" class="btn btn-ghost" id="btnLocalizarEndereco">Localizar no mapa</button>
+          </div>
         </label>
-        <p class="mapa-hint" id="mapaCadastroHint">Clique no mapa para marcar o talhão. Com “Delimitar área”, clique em 3+ pontos e feche o polígono.</p>
+        <p class="endereco-resolvido" id="enderecoResolvido" hidden></p>
+        <p class="mapa-hint" id="mapaCadastroHint">Informe o endereço e clique em “Localizar no mapa”. Depois ajuste o ponto ou delimite a área do talhão.</p>
         <div id="mapaCadastro" class="mapa-cadastro"></div>
         <div class="modal-actions" style="justify-content:flex-start">
           <button type="button" class="btn btn-ghost" id="btnDelimitar">Delimitar área</button>
@@ -358,6 +413,59 @@
         <div class="modal-actions">
           <button type="button" class="btn btn-ghost" id="btnCancelarModal">Cancelar</button>
           <button type="submit" class="btn btn-primary">Cadastrar talhão</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVA OFERTA DE INSUMO -->
+  <div class="modal-overlay" id="modalOferta">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Cadastrar oferta</h2>
+        <button class="modal-close" id="btnFecharOferta" aria-label="Fechar">×</button>
+      </div>
+      <form id="formOferta" class="modal-body">
+        <label class="field">
+          <span>Insumo do catálogo (opcional)</span>
+          <select name="insumoCatalogoId" id="ofertaCatalogo">
+            <option value="">Outro / personalizado</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Nome</span>
+          <input type="text" name="nome" id="ofertaNome" placeholder="Ex: Fungicida à base de cobre" required />
+        </label>
+        <label class="field">
+          <span>Categoria</span>
+          <select name="categoria" id="ofertaCategoria" required>
+            <option value="fungicida">Fungicida</option>
+            <option value="irrigacao">Irrigação</option>
+            <option value="hidrogel">Hidrogel</option>
+            <option value="protecao_termica">Proteção térmica</option>
+            <option value="fertilizante">Fertilizante</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Unidade</span>
+          <input type="text" name="unidade" id="ofertaUnidade" placeholder="litro, kg, kit…" required />
+        </label>
+        <label class="field">
+          <span>Preço (R$)</span>
+          <input type="number" name="preco" min="0.01" step="0.01" required />
+        </label>
+        <label class="field">
+          <span>Cidade</span>
+          <input type="text" name="cidade" placeholder="Ex: Varginha, MG" required />
+        </label>
+        <label class="field">
+          <span>Telefone</span>
+          <input type="text" name="telefone" placeholder="(35) 99999-0000" />
+        </label>
+        <p class="auth-error" id="ofertaErro"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="btnCancelarOferta">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Publicar oferta</button>
         </div>
       </form>
     </div>

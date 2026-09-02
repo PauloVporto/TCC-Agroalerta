@@ -61,6 +61,57 @@ async function geocodificarNominatim(endereco) {
   };
 }
 
+async function geocodificarReverso(latitude, longitude) {
+  const lat = Number(latitude);
+  const lng = Number(longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    throw new Error("Coordenadas inválidas.");
+  }
+
+  if (API_KEY) {
+    try {
+      const url =
+        "https://maps.googleapis.com/maps/api/geocode/json?latlng=" +
+        lat +
+        "," +
+        lng +
+        "&key=" +
+        API_KEY;
+      const resposta = await fetch(url);
+      const dados = await resposta.json();
+      if (dados.status === "OK" && dados.results[0]) {
+        return {
+          latitude: lat,
+          longitude: lng,
+          enderecoFormatado: dados.results[0].formatted_address,
+          fonte: "google_maps",
+        };
+      }
+    } catch (erro) {
+      console.error("[geocoding] reverse Google falhou:", erro.message);
+    }
+  }
+
+  const url =
+    "https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
+    lat +
+    "&lon=" +
+    lng +
+    "&zoom=14&addressdetails=1";
+  const resposta = await fetch(url, {
+    headers: { "User-Agent": "AgroAlerta-TCC/1.0 (trabalho academico)", Accept: "application/json" },
+  });
+  if (!resposta.ok) throw new Error("Nominatim reverse " + resposta.status);
+  const dados = await resposta.json();
+  if (!dados || !dados.display_name) throw new Error("Sem endereço para esse ponto.");
+  return {
+    latitude: lat,
+    longitude: lng,
+    enderecoFormatado: dados.display_name,
+    fonte: "nominatim",
+  };
+}
+
 function areaHectares(poligono) {
   if (!Array.isArray(poligono) || poligono.length < 3) return null;
   let soma = 0;
@@ -75,4 +126,4 @@ function areaHectares(poligono) {
   return Number((m2 / 10000).toFixed(2));
 }
 
-module.exports = { geocodificarEndereco, areaHectares };
+module.exports = { geocodificarEndereco, geocodificarReverso, areaHectares };

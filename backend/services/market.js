@@ -44,14 +44,20 @@ const NOTICIAS_CURADAS_FALLBACK = {
   ],
 };
 
-const SUL_DE_MINAS = { latitude: -22.2461, longitude: -45.7008 };
+const { montarSerieMercado, projetarAnos, aplicarAjustesMensaisIa, remontarAgregadosProjecao, ANO_PROJECAO, ANO_PROJECAO_FIM, ANO_HISTORICO_FIM, ANO_INICIO, ANOS_PROJECAO } = require("./marketHistoryExtend");
 
 function serieInterna(cultura) {
-  return mercadoData[cultura] || null;
+  const base = mercadoData[cultura];
+  if (!base) return null;
+  const serie = montarSerieMercado(base.historico, cultura);
+  return { ...base, ...serie };
 }
 
+const SUL_DE_MINAS = { latitude: -22.2461, longitude: -45.7008 };
+
 function resumoSerie(historico) {
-  const ultimosPrecos = historico.historico.slice(-14);
+  const pts = historico.historico.filter((p) => p.tipo !== "projecao");
+  const ultimosPrecos = pts.slice(-14);
   const precoAtual = ultimosPrecos[ultimosPrecos.length - 1].preco;
   const precoInicio = ultimosPrecos[0].preco;
   const variacaoPercentual = (((precoAtual - precoInicio) / precoInicio) * 100).toFixed(1);
@@ -71,6 +77,17 @@ async function obterHistorico(cultura) {
     ...base,
     mercado: "brasil",
     fonteAoVivo: mercado.fonteMercado,
+    anosDisponiveis: base.anosDisponiveis,
+    anosProjecao: base.anosProjecao,
+    anoInicio: base.anoInicio,
+    anoHistoricoFim: base.anoHistoricoFim,
+    anoProjecao: base.anoProjecao,
+    anoProjecaoFim: base.anoProjecaoFim,
+    historicoAnual: base.historicoAnual,
+    projecao2027: base.projecao2027,
+    projecao2028: base.projecao2028,
+    projecaoMensal: base.projecaoMensal,
+    projecaoPorAno: base.projecaoPorAno,
     mercadoInterno: {
       nome: "Mercado interno Brasil",
       unidade: base.unidade,
@@ -239,43 +256,41 @@ function gerarAnaliseSimulada(cultura, variacaoPercentual, precoAtual, noticias,
   };
 }
 
-function adicionarDias(iso, dias) {
-  const d = new Date(iso + "T00:00:00Z");
-  d.setUTCDate(d.getUTCDate() + dias);
-  return d.toISOString().slice(0, 10);
+function extrairJsonAjustes(texto) {
+  if (!texto) return null;
+  const candidatos = [];
+  const fence = texto.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) candidatos.push(fence[1]);
+  const brace = texto.match(/\{[\s\S]*"ajustes"[\s\S]*\}/);
+  if (brace) candidatos.push(brace[0]);
+  candidatos.push(texto);
+  for (const raw of candidatos) {
+    try {
+      const parsed = JSON.parse(raw.trim());
+      if (parsed && typeof parsed === "object") {
+        return parsed.ajustes || parsed.meses || parsed;
+      }
+    } catch (_) {
+      /* tenta próximo */
+    }
+  }
+  return null;
 }
 
-function projetarPontos(historico, horizontes = [30, 60, 90]) {
-  const janela = (historico || []).slice(-30);
-  if (janela.length < 5) return [];
-  const n = janela.length;
-  let sumX = 0;
-  let sumY = 0;
-  let sumXY = 0;
-  let sumXX = 0;
-  janela.forEach((p, i) => {
-    sumX += i;
-    sumY += p.preco;
-    sumXY += i * p.preco;
-    sumXX += i * i;
-  });
-  const den = n * sumXX - sumX * sumX;
-  const b = den === 0 ? 0 : (n * sumXY - sumX * sumY) / den;
-  const a = (sumY - b * sumX) / n;
-  const ultimo = janela[n - 1];
-  return horizontes.map((dias) => ({
-    data: adicionarDias(ultimo.data, dias),
-    horizonteDias: dias,
-    preco: Number(Math.max(0, a + b * (n - 1 + dias)).toFixed(2)),
-    tipo: "projecao",
-  }));
+function textoSemJson(texto) {
+  if (!texto) return "";
+  return texto
+    .replace(/```(?:json)?[\s\S]*?```/gi, "")
+    .replace(/\{[\s\S]*"ajustes"[\s\S]*\}/, "")
+    .trim();
 }
 
 async function gerarProjecao(cultura) {
   const historico = await obterHistorico(cultura);
   if (!historico) throw new Error("Cultura não suportada: " + cultura);
-  const interno = resumoSerie(serieInterna(cultura));
-  const pontos = projetarPontos(historico.historico);
+  const base = serieInterna(cultura);
+  const interno = resumoSerie(base);
+  let proj = projetarAnos(base.historico, cultura, ANOS_PROJECAO);
   const ancora = historico.paridade || historico.internacional;
   const contexto = montarContextoLlm({
     cultura,
@@ -294,8 +309,13 @@ async function gerarProjecao(cultura) {
   let fontes = [];
   if (temChaveLlm()) {
     try {
-      const out = await chamarClaudeComBusca(promptProjecaoMercado(contexto, pontos), 500);
-      resumo = out.texto;
+      const out = await chamarClaudeComBusca(promptProjecaoMercado(contexto, proj.mensal), 900);
+      const ajustes = extrairJsonAjustes(out.texto);
+      if (ajustes && Object.keys(ajustes).length) {
+        const mensalAjustado = aplicarAjustesMensaisIa(proj.mensal, ajustes, "projecao-ia");
+        proj = remontarAgregadosProjecao(mensalAjustado, ANOS_PROJECAO);
+      }
+      resumo = textoSemJson(out.texto) || out.texto;
       fontes = out.fontes;
       gerarPor = "ia_projecao";
     } catch (erro) {
@@ -303,30 +323,71 @@ async function gerarProjecao(cultura) {
     }
   }
   if (!resumo) {
-    const d30 = pontos.find((p) => p.horizonteDias === 30);
+    const medias = (proj.anuais || []).map((a) => a.ano + ": R$ " + a.preco.toFixed(2)).join(" · ");
     resumo =
-      "Projeção estatística do mercado interno (últimos 30 pregões) aponta R$ " +
-      (d30 ? d30.preco.toFixed(2) : interno.precoAtual) +
-      " em 30 dias. " +
+      "Histórico mensal interno de " +
+      ANO_INICIO +
+      " a " +
+      ANO_HISTORICO_FIM +
+      " e projeção mensal para " +
+      ANOS_PROJECAO.join("–") +
+      " (" +
+      (NOMES_CULTURA[cultura] || cultura) +
+      "). Médias anuais projetadas — " +
+      medias +
+      ". " +
       (ancora
-        ? "A âncora internacional/paridade está em " +
-          (historico.paridade ? "R$ " + historico.paridade.preco : historico.internacional.preco + " " + historico.internacional.unidade) +
-          "."
-        : "Sem contrato internacional; a projeção usa só o mercado interno.") +
-      " Use como cenário, não como garantia de preço.";
+        ? "Paridade/bolsa internacional hoje: " +
+          (historico.paridade
+            ? "R$ " + historico.paridade.preco
+            : historico.internacional.preco + " " + historico.internacional.unidade) +
+          ". "
+        : "Mercado essencialmente interno. ") +
+      "Cenário estatístico com sazonalidade mensal — não é garantia de preço. Ative a chave de IA para narrativa e refinamentos mensais.";
   }
+
+  const historicoAnual = [...agregarAnualLocal(base.historico), ...(proj.anuais || [])];
 
   return {
     cultura,
     unidade: historico.unidade,
     precoAtual: interno.precoAtual,
-    pontos,
+    anoProjecao: ANO_PROJECAO,
+    anoProjecaoFim: ANO_PROJECAO_FIM,
+    anosProjecao: ANOS_PROJECAO,
+    anoHistoricoFim: ANO_HISTORICO_FIM,
+    anoInicio: ANO_INICIO,
+    historicoAnual,
+    pontos: proj.trimestres,
+    pontosMensais: proj.mensal,
+    pontosPorAno: proj.porAno,
+    pontoAnual: proj.anual,
+    pontosAnuais: proj.anuais,
     ancora,
     resumo,
     gerarPor,
     fontes,
     geradoEm: new Date().toISOString(),
   };
+}
+
+function agregarAnualLocal(historico) {
+  const porAno = {};
+  for (const p of historico || []) {
+    if (p.tipo === "projecao") continue;
+    const ano = p.data.slice(0, 4);
+    if (!porAno[ano]) porAno[ano] = [];
+    porAno[ano].push(p.preco);
+  }
+  return Object.entries(porAno)
+    .map(([ano, precos]) => ({
+      ano: Number(ano),
+      data: ano + "-12-15",
+      preco: Number((precos.reduce((a, b) => a + b, 0) / precos.length).toFixed(2)),
+      tipo: "historico",
+      granularidade: "anual",
+    }))
+    .sort((a, b) => a.ano - b.ano);
 }
 
 async function obterContextoIntegracao(cultura) {
@@ -353,7 +414,6 @@ module.exports = {
   obterHistorico,
   gerarAnaliseTendencia,
   gerarProjecao,
-  projetarPontos,
   obterContextoIntegracao,
   chamarClaudeComBusca,
   resumoMercadoInterno: (cultura) => {

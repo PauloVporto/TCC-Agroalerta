@@ -1,7 +1,7 @@
 {
   "cafe": {
     "unidade": "saca 60kg (arábica)",
-    "fonte": "Cepea/Esalq (série sintética calibrada ao indicador real de ago/2026, ~R$1.730/sc; não é cotação ao vivo)",
+    "fonte": "Cepea/Esalq (série sintética calibrada ao indicador real de ago/2026, ~R$1.730/sc; calibragem mensal 2010–2026; não é cotação ao vivo)",
     "historico": [
       {
         "data": "2026-03-01",
@@ -743,7 +743,7 @@
   },
   "soja": {
     "unidade": "saca 60kg",
-    "fonte": "Cepea/Esalq - Paraná (série sintética calibrada ao indicador real de ago/2026, ~R$143/sc; não é cotação ao vivo)",
+    "fonte": "Cepea/Esalq - Paraná (série sintética calibrada ao indicador real de ago/2026, ~R$143/sc; calibragem mensal 2010–2026; não é cotação ao vivo)",
     "historico": [
       {
         "data": "2026-03-01",
@@ -1485,7 +1485,7 @@
   },
   "milho": {
     "unidade": "saca 60kg",
-    "fonte": "Cepea/Esalq - Campinas (série sintética calibrada ao indicador real de ago/2026, acima de R$70/sc, alta pela 5a semana; não é cotação ao vivo)",
+    "fonte": "Cepea/Esalq - Campinas (série sintética calibrada ao indicador real de ago/2026, acima de R$70/sc, alta pela 5a semana; calibragem mensal 2010–2026; não é cotação ao vivo)",
     "historico": [
       {
         "data": "2026-03-01",
@@ -2227,7 +2227,7 @@
   },
   "cana": {
     "unidade": "tonelada (ATR)",
-    "fonte": "Consecana/Cepea (série sintética calibrada a faixa de referência típica de ~R$125-135/t; não é cotação ao vivo)",
+    "fonte": "Consecana/Cepea (série sintética calibrada a faixa de referência típica de ~R$125-135/t; calibragem mensal 2010–2026; não é cotação ao vivo)",
     "historico": [
       {
         "data": "2026-03-01",
@@ -2969,7 +2969,7 @@
   },
   "feijao": {
     "unidade": "saca 60kg (carioca)",
-    "fonte": "Cepea/Esalq (série sintética; reflete narrativa real de queda no início de ago/2026 por pressão de colheita seguida de recuperação; não é cotação ao vivo)",
+    "fonte": "Cepea/Esalq (série sintética; reflete narrativa real de queda no início de ago/2026 por pressão de colheita seguida de recuperação; calibragem mensal 2010–2026; não é cotação ao vivo)",
     "historico": [
       {
         "data": "2026-03-01",

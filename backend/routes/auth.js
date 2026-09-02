@@ -15,7 +15,7 @@ const {
 // POST /api/auth/registrar
 // body: { nome, email, senha }
 router.post("/registrar", async (req, res) => {
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, papel, cidade, telefone } = req.body;
 
   if (!nome || !email || !senha) {
     return res.status(400).json({ erro: "Campos obrigatórios: nome, email, senha" });
@@ -23,9 +23,15 @@ router.post("/registrar", async (req, res) => {
   if (senha.length < 6) {
     return res.status(400).json({ erro: "A senha deve ter pelo menos 6 caracteres." });
   }
+  const digitosTel = String(telefone || "").replace(/\D/g, "");
+  if (digitosTel.length < 10) {
+    return res.status(400).json({
+      erro: "Informe o celular com DDD. Os alertas climáticos serão enviados por SMS e e-mail.",
+    });
+  }
 
   try {
-    const usuario = await criarUsuario({ nome, email, senha });
+    const usuario = await criarUsuario({ nome, email, senha, papel, cidade, telefone });
     // Já loga o usuário automaticamente após o cadastro
     const { token } = await autenticar({ email, senha });
     res.status(201).json({ usuario, token });
@@ -68,10 +74,13 @@ router.get("/configuracoes", exigirAutenticacao, async (req, res) => {
 });
 
 router.patch("/perfil", exigirAutenticacao, async (req, res) => {
-  const { nome, email } = req.body;
+  const { nome, email, telefone, cidade } = req.body;
   if (!nome || !email) return res.status(400).json({ erro: "Nome e e-mail são obrigatórios." });
   try {
-    res.json(await atualizarPerfil(req.usuario.id, { nome, email }));
+    const payload = { nome, email };
+    if (Object.prototype.hasOwnProperty.call(req.body, "telefone")) payload.telefone = telefone;
+    if (Object.prototype.hasOwnProperty.call(req.body, "cidade")) payload.cidade = cidade;
+    res.json(await atualizarPerfil(req.usuario.id, payload));
   } catch (erro) {
     res.status(409).json({ erro: erro.message });
   }

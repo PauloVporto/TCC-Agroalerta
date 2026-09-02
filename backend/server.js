@@ -8,6 +8,7 @@ const insumosRouter = require("./routes/insumos");
 const mercadoRouter = require("./routes/mercado");
 const authRouter = require("./routes/auth");
 const painelRouter = require("./routes/painel");
+const mensagensRouter = require("./routes/mensagens");
 const { culturasSuportadas } = require("./services/rules");
 const { inicializarBanco } = require("./services/db");
 const { fonteClimaAtiva } = require("./services/weather");
@@ -27,6 +28,7 @@ app.use((req, res, next) => {
 
 app.get("/api/health", (req, res) => {
   const fonteClima = fonteClimaAtiva();
+  const { statusCanais } = require("./services/notificar");
   res.json({
     status: "ok",
     modoClima: fonteClima === "simulado" ? "simulado" : "real",
@@ -34,6 +36,7 @@ app.get("/api/health", (req, res) => {
     modoMercado: "brasil+internacional",
     modoIA: temChaveLlm() ? "real" : "simulado",
     modoMapas: process.env.GOOGLE_MAPS_API_KEY ? "real" : "simulado",
+    modoNotificacoes: statusCanais(),
   });
 });
 
@@ -47,6 +50,7 @@ app.use("/api/alertas", alertasRouter);
 app.use("/api/insumos", insumosRouter);
 app.use("/api/mercado", mercadoRouter);
 app.use("/api/painel", painelRouter);
+app.use("/api/mensagens", mensagensRouter);
 
 app.use((req, res) => {
   res.status(404).json({ erro: "Rota não encontrada" });

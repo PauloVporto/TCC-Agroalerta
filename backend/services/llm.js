@@ -201,15 +201,22 @@ function promptAlertaProdutor({ talhao, clima, previsao, alertas }) {
 
 function promptProjecaoMercado(contexto, pontos) {
   const lista = (pontos || [])
-    .map((p) => p.horizonteDias + " dias: R$ " + p.preco)
+    .map((p) => (p.horizonteRotulo || p.data) + ": R$ " + p.preco)
     .join("; ");
+  const anos = [...new Set((pontos || []).map((p) => p.ano || String(p.data).slice(0, 4)))].join(" e ");
   return (
-    "Você projeta preço agrícola para o produtor brasileiro. " +
-    "Números estatísticos (regressão sobre o mercado interno, âncora da bolsa/PTAX): " +
+    "Você projeta preço agrícola mensal para o produtor brasileiro. " +
+    "Baseline estatística (regressão 2018–2026 + sazonalidade) mês a mês para " +
+    (anos || "2027–2028") +
+    ": " +
     lista +
     ". " +
     contexto +
-    "\nExplique a projeção a 30, 60 e 90 dias comparando Brasil e internacional. Até 5 frases, sem inventar preços."
+    "\nResponda em português com DUAS partes:\n" +
+    "1) Até 6 frases explicando o cenário 2027 e 2028 (Brasil × internacional, tendência desde 2010). Não invente preços fora da lista.\n" +
+    "2) Em seguida, um bloco JSON puro (sem markdown) no formato " +
+    '{"ajustes":{"2027-01":1710.5,"2027-02":1720,...}} ' +
+    "somente se quiser refinar algum mês (±18% da baseline). Se não houver ajuste, use {\"ajustes\":{}}."
   );
 }
 
