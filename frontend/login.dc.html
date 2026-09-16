@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F7F5EF; color: #1A1A18; font-family: Archivo, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #1F3D2B; text-decoration: none; }
+  a:hover { color: #6B4A34; }
+  button, input, select, textarea { border-radius: 8px; }
+  input:focus { outline: 2px solid #1F3D2B; outline-offset: -2px; }
+  ::selection { background: #D4A537; color: #1A1A18; }
+</style>
+</helmet>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<div style="min-height: 100vh; background: #F7F5EF; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; position: relative;">
+  <button type="button" onClick="{{ goLanding }}" style="position: absolute; top: 28px; left: 32px; font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #1F3D2B; background: transparent; border: 1px solid #C9C3B0; padding: 10px 18px; cursor: pointer;" style-hover="border-color: #1F3D2B;">🠔 Voltar ao site</button>
+
+  <form onSubmit="{{ submit }}" style="width: 100%; max-width: 384px; display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 14px;">
+      <img src="uploads/logo2-3261c888.png" alt="" style="width: 100%; max-width: 88px; height: auto; display: block; object-fit: contain;" />
+      <img src="uploads/Logotipo-97c88bdf.png" alt="AgroAlerta" style="width: 100%; max-width: 230px; height: auto; display: block; object-fit: contain;" />
+    </div>
+
+    <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+      E-mail
+      <input type="email" value="{{ email }}" onChange="{{ onEmail }}" placeholder="produtor@fazenda.com.br" autoComplete="email" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+      <sc-if value="{{ emailError }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ emailError }}</span>
+      </sc-if>
+    </label>
+
+    <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+      Senha
+      <input type="password" value="{{ password }}" onChange="{{ onPassword }}" placeholder="••••••••" autoComplete="current-password" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+      <sc-if value="{{ passwordError }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ passwordError }}</span>
+      </sc-if>
+    </label>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; color: #4A4A42;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" checked="{{ remember }}" onChange="{{ onRemember }}" style="width: 15px; height: 15px; accent-color: #1F3D2B;" />
+        Manter conectado
+      </label>
+      <a href="#recuperar">Esqueci a senha</a>
+    </div>
+    <p style="margin: 0; font-size: 13px; color: #4A4A42; text-align: center;">Ainda não tem conta? <button type="button" onClick="{{ goRegistro }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #1F3D2B; background: transparent; border: 0; border-radius: 0; padding: 0; cursor: pointer; text-decoration: underline;" style-hover="color: #6B4A34;">Criar conta</button></p>
+
+    <sc-if value="{{ loginGenericError }}" hint-placeholder-val="{{ false }}">
+      <p style="margin: 0; font-size: 13px; color: #A33A22; text-align: center;">{{ loginGenericError }}</p>
+    </sc-if>
+
+    <button type="submit" disabled="{{ loading }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 15px 24px; cursor: pointer; letter-spacing: 0.02em;" style-hover="background: #162C1F;">{{ submitLabel }}</button>
+  </form>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRegistro }}" hint-placeholder-val="{{ false }}">
+<div style="min-height: 100vh; background: #F7F5EF; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 56px 24px; position: relative;">
+  <button type="button" onClick="{{ goLanding }}" style="position: absolute; top: 28px; left: 32px; font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #1F3D2B; background: transparent; border: 1px solid #C9C3B0; padding: 10px 18px; cursor: pointer;" style-hover="border-color: #1F3D2B;">🠔 Voltar ao site</button>
+
+  <form onSubmit="{{ submitRegistro }}" style="width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 4px;">
+      <img src="uploads/logo2-3261c888.png" alt="" style="width: 100%; max-width: 76px; height: auto; display: block; object-fit: contain;" />
+    </div>
+
+    <div style="text-align: center;">
+      <h1 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 28px; margin: 0; color: #1F3D2B; letter-spacing: -0.015em;">Criar conta</h1>
+      <p style="margin: 8px 0 0; font-size: 14px; line-height: 1.55; color: #4A4A42;">Depois do cadastro você registra o primeiro talhão e passa a receber os alertas.</p>
+    </div>
+
+    <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+      Nome completo
+      <input type="text" value="{{ rNome }}" onChange="{{ onRNome }}" placeholder="Marina Rezende Alves" autoComplete="name" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+      <sc-if value="{{ rNomeError }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ rNomeError }}</span>
+      </sc-if>
+    </label>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <span style="font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">Tipo de conta</span>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button type="button" onClick="{{ pickProdutor }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: {{ produtorFg }}; background: {{ produtorBg }}; border: 1px solid {{ produtorBorda }}; padding: 10px 20px; border-radius: 999px; cursor: pointer;" style-hover="border-color: #1F3D2B;">Produtor</button>
+        <button type="button" onClick="{{ pickFornecedor }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: {{ fornecedorFg }}; background: {{ fornecedorBg }}; border: 1px solid {{ fornecedorBorda }}; padding: 10px 20px; border-radius: 999px; cursor: pointer;" style-hover="border-color: #1F3D2B;">Fornecedor</button>
+      </div>
+      <span style="font-size: 12px; line-height: 1.5; color: #6B4A34;">{{ papelNota }}</span>
+    </div>
+
+    <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+      E-mail
+      <input type="email" value="{{ rEmail }}" onChange="{{ onREmail }}" placeholder="produtor@fazenda.com.br" autoComplete="email" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+      <sc-if value="{{ rEmailError }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ rEmailError }}</span>
+      </sc-if>
+    </label>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px;">
+      <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+        Telefone
+        <input type="tel" value="{{ rTelefone }}" onChange="{{ onRTelefone }}" placeholder="(34) 99999-0000" autoComplete="tel" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+        <sc-if value="{{ rTelefoneError }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ rTelefoneError }}</span>
+        </sc-if>
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+        Cidade
+        <input type="text" value="{{ rCidade }}" onChange="{{ onRCidade }}" placeholder="Patrocínio · MG" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+        <sc-if value="{{ rCidadeError }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ rCidadeError }}</span>
+        </sc-if>
+      </label>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px;">
+      <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+        Senha
+        <input type="password" value="{{ rSenha }}" onChange="{{ onRSenha }}" placeholder="mínimo 6 caracteres" autoComplete="new-password" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+        <sc-if value="{{ rSenhaError }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ rSenhaError }}</span>
+        </sc-if>
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+        Confirmar senha
+        <input type="password" value="{{ rSenha2 }}" onChange="{{ onRSenha2 }}" placeholder="repita a senha" autoComplete="new-password" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+        <sc-if value="{{ rSenha2Error }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ rSenha2Error }}</span>
+        </sc-if>
+      </label>
+    </div>
+
+    <div style="border-top: 1px solid #DDD8C9; padding-top: 20px; display: flex; flex-direction: column; gap: 18px;">
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: #6B4A34;">Preferências</span>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">Cultura favorita</span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <sc-for list="{{ culturas }}" as="c" hint-placeholder-count="5">
+            <button type="button" onClick="{{ c.pick }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: {{ c.fg }}; background: {{ c.bg }}; border: 1px solid {{ c.borda }}; padding: 9px 18px; border-radius: 999px; cursor: pointer;" style-hover="border-color: #1F3D2B;">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">Unidade de temperatura</span>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" onClick="{{ pickCelsius }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: {{ celsiusFg }}; background: {{ celsiusBg }}; border: 1px solid {{ celsiusBorda }}; padding: 9px 18px; border-radius: 999px; cursor: pointer;" style-hover="border-color: #1F3D2B;">°C</button>
+          <button type="button" onClick="{{ pickFahrenheit }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: {{ fahrenheitFg }}; background: {{ fahrenheitBg }}; border: 1px solid {{ fahrenheitBorda }}; padding: 9px 18px; border-radius: 999px; cursor: pointer;" style-hover="border-color: #1F3D2B;">°F</button>
+        </div>
+      </div>
+
+      <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #4A4A42; cursor: pointer;">
+        <input type="checkbox" checked="{{ rNotificacoes }}" onChange="{{ onRNotificacoes }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #1F3D2B; flex: none;" />
+        Receber alertas climáticos por e-mail e SMS.
+      </label>
+    </div>
+
+    <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #4A4A42; cursor: pointer;">
+      <input type="checkbox" checked="{{ rTermos }}" onChange="{{ onRTermos }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #1F3D2B; flex: none;" />
+      Concordo com os termos de uso.
+    </label>
+    <sc-if value="{{ rTermosError }}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 12px; color: #A33A22; margin-top: -12px;">{{ rTermosError }}</span>
+    </sc-if>
+
+    <sc-if value="{{ rGenericError }}" hint-placeholder-val="{{ false }}">
+      <p style="margin: 0; font-size: 13px; color: #A33A22; text-align: center;">{{ rGenericError }}</p>
+    </sc-if>
+
+    <button type="submit" disabled="{{ rLoading }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 15px 24px; cursor: pointer; letter-spacing: 0.02em;" style-hover="background: #162C1F;">{{ rSubmitLabel }}</button>
+
+    <p style="margin: 0; font-size: 13px; color: #4A4A42; text-align: center;">Já tem conta? <button type="button" onClick="{{ goLogin }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #1F3D2B; background: transparent; border: 0; border-radius: 0; padding: 0; cursor: pointer; text-decoration: underline;" style-hover="color: #6B4A34;">Entrar</button></p>
+  </form>
+</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const API_BASE = 'http://localhost:3001/api';
+
+function apiFetch(path, opts) {
+  opts = opts || {};
+  const token = sessionStorage.getItem('agroalerta_token');
+  const headers = Object.assign({}, opts.headers || {});
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(API_BASE + path, Object.assign({}, opts, { headers: headers }));
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    if (sessionStorage.getItem('agroalerta_token')) {
+      window.location.href = './dashboard.dc.html';
+      return;
+    }
+    const modo = new URLSearchParams(window.location.search).get('modo');
+    this.state = {
+      screen: modo === 'registro' ? 'registro' : 'login',
+      email: '', password: '', remember: true,
+      emailError: '', passwordError: '', loading: false, loginGenericError: '',
+      rNome: '', rCidade: '', rTelefone: '', rEmail: '', rPapel: 'produtor',
+      rCultura: 'cafe', rUnidade: 'C', rNotificacoes: true,
+      rSenha: '', rSenha2: '', rTermos: false, rLoading: false,
+      rNomeError: '', rCidadeError: '', rTelefoneError: '', rEmailError: '',
+      rSenhaError: '', rSenha2Error: '', rTermosError: '', rGenericError: ''
+    };
+  }
+
+  chip(on) {
+    return {
+      bg: on ? '#1F3D2B' : '#FFFFFF',
+      fg: on ? '#F7F5EF' : '#1F3D2B',
+      borda: on ? '#1F3D2B' : '#C9C3B0'
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const set = (k) => (e) => this.setState({ [k]: e.target.value });
+
+    const submit = (e) => {
+      e.preventDefault();
+      const emailOk = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(s.email.trim());
+      const passOk = s.password.length >= 6;
+      this.setState({
+        emailError: s.email.trim() === '' ? 'Informe o e-mail cadastrado.' : (emailOk ? '' : 'E-mail em formato inválido.'),
+        passwordError: s.password === '' ? 'Informe a senha.' : (passOk ? '' : 'A senha deve ter ao menos 6 caracteres.')
+      });
+      if (!emailOk || !passOk) return;
+      this.setState({ loading: true, loginGenericError: '' });
+      fetch(API_BASE + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: s.email.trim(), senha: s.password })
+      }).then(function(r) { return r.json().then(function(c) { return { ok: r.ok, corpo: c }; }); })
+        .then((res) => {
+          if (!res.ok) throw new Error(res.corpo.erro || 'Credenciais inválidas.');
+          sessionStorage.setItem('agroalerta_token', res.corpo.token);
+          sessionStorage.setItem('agroalerta_usuario', JSON.stringify(res.corpo.usuario));
+          window.location.href = './dashboard.dc.html';
+        }).catch((err) => this.setState({ loading: false, loginGenericError: err.message }));
+    };
+
+    const submitRegistro = (e) => {
+      e.preventDefault();
+      const emailOk = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(s.rEmail.trim());
+      const senhaOk = s.rSenha.length >= 6;
+      const iguais = s.rSenha === s.rSenha2 && s.rSenha2 !== '';
+      const nomeOk = s.rNome.trim().split(/\s+/).length >= 2;
+      const cidadeOk = s.rCidade.trim() !== '';
+      const telOk = s.rTelefone.replace(/\D/g, '').length >= 10;
+      this.setState({
+        rNomeError: nomeOk ? '' : 'Informe nome e sobrenome.',
+        rCidadeError: cidadeOk ? '' : 'Informe a cidade.',
+        rTelefoneError: s.rTelefone.trim() === '' ? 'Informe um telefone.' : (telOk ? '' : 'Telefone incompleto.'),
+        rEmailError: s.rEmail.trim() === '' ? 'Informe um e-mail.' : (emailOk ? '' : 'E-mail em formato inválido.'),
+        rSenhaError: senhaOk ? '' : 'A senha deve ter ao menos 6 caracteres.',
+        rSenha2Error: iguais ? '' : 'As senhas não coincidem.',
+        rTermosError: s.rTermos ? '' : 'É necessário aceitar os termos.'
+      });
+      if (!nomeOk || !cidadeOk || !telOk || !emailOk || !senhaOk || !iguais || !s.rTermos) return;
+      this.setState({ rLoading: true, rGenericError: '' });
+      fetch(API_BASE + '/auth/registrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: s.rNome.trim(), email: s.rEmail.trim(), senha: s.rSenha })
+      }).then(function(r) { return r.json().then(function(c) { return { ok: r.ok, corpo: c }; }); })
+        .then((res) => {
+          if (!res.ok) throw new Error(res.corpo.erro || 'Erro ao criar conta.');
+          sessionStorage.setItem('agroalerta_token', res.corpo.token);
+          sessionStorage.setItem('agroalerta_usuario', JSON.stringify(res.corpo.usuario));
+          return apiFetch('/auth/preferencias', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              culturaFavorita: s.rCultura || 'cafe',
+              unidadeTemperatura: s.rUnidade === 'F' ? 'fahrenheit' : 'celsius',
+              notificacoes: !!s.rNotificacoes
+            })
+          });
+        })
+        .then(() => {
+          window.location.href = './dashboard.dc.html';
+        }).catch((err) => this.setState({ rLoading: false, rGenericError: err.message }));
+    };
+
+    return {
+      isLogin: s.screen === 'login',
+      isRegistro: s.screen === 'registro',
+      goLogin: () => this.setState({ screen: 'login' }),
+      goRegistro: () => this.setState({ screen: 'registro' }),
+      goLanding: () => { window.location.href = './AgroAlerta.dc.html'; },
+
+      email: s.email, password: s.password, remember: s.remember,
+      onEmail: set('email'), onPassword: set('password'),
+      onRemember: (e) => this.setState({ remember: e.target.checked }),
+      emailError: s.emailError, passwordError: s.passwordError,
+      loginGenericError: s.loginGenericError,
+      loading: s.loading, submitLabel: s.loading ? 'Entrando…' : 'Entrar no painel',
+      submit,
+
+      rNome: s.rNome, rCidade: s.rCidade, rTelefone: s.rTelefone, rEmail: s.rEmail,
+      rSenha: s.rSenha, rSenha2: s.rSenha2, rTermos: s.rTermos, rNotificacoes: s.rNotificacoes,
+      onRNome: set('rNome'), onRCidade: set('rCidade'), onRTelefone: set('rTelefone'),
+      onREmail: set('rEmail'), onRSenha: set('rSenha'), onRSenha2: set('rSenha2'),
+      onRTermos: (e) => this.setState({ rTermos: e.target.checked, rTermosError: '' }),
+      onRNotificacoes: (e) => this.setState({ rNotificacoes: e.target.checked }),
+
+      pickProdutor: () => this.setState({ rPapel: 'produtor' }),
+      pickFornecedor: () => this.setState({ rPapel: 'fornecedor' }),
+      produtorBg: this.chip(s.rPapel === 'produtor').bg,
+      produtorFg: this.chip(s.rPapel === 'produtor').fg,
+      produtorBorda: this.chip(s.rPapel === 'produtor').borda,
+      fornecedorBg: this.chip(s.rPapel === 'fornecedor').bg,
+      fornecedorFg: this.chip(s.rPapel === 'fornecedor').fg,
+      fornecedorBorda: this.chip(s.rPapel === 'fornecedor').borda,
+      papelNota: s.rPapel === 'produtor'
+        ? 'Cadastra talhões, recebe alertas climáticos e compara preços de insumos.'
+        : 'Publica e gerencia ofertas de insumos que aparecem na comparação de preços.',
+
+      culturas: [
+        { valor: 'cafe', label: 'Café' }, { valor: 'soja', label: 'Soja' },
+        { valor: 'milho', label: 'Milho' }, { valor: 'cana', label: 'Cana' }, { valor: 'feijao', label: 'Feijão' }
+      ].map((c) => {
+        const st = this.chip(s.rCultura === c.valor);
+        return { label: c.label, bg: st.bg, fg: st.fg, borda: st.borda, pick: () => this.setState({ rCultura: c.valor }) };
+      }),
+      pickCelsius: () => this.setState({ rUnidade: 'C' }),
+      pickFahrenheit: () => this.setState({ rUnidade: 'F' }),
+      celsiusBg: this.chip(s.rUnidade === 'C').bg,
+      celsiusFg: this.chip(s.rUnidade === 'C').fg,
+      celsiusBorda: this.chip(s.rUnidade === 'C').borda,
+      fahrenheitBg: this.chip(s.rUnidade === 'F').bg,
+      fahrenheitFg: this.chip(s.rUnidade === 'F').fg,
+      fahrenheitBorda: this.chip(s.rUnidade === 'F').borda,
+
+      rNomeError: s.rNomeError, rCidadeError: s.rCidadeError, rTelefoneError: s.rTelefoneError,
+      rEmailError: s.rEmailError, rSenhaError: s.rSenhaError, rSenha2Error: s.rSenha2Error,
+      rTermosError: s.rTermosError, rGenericError: s.rGenericError,
+      rLoading: s.rLoading, rSubmitLabel: s.rLoading ? 'Criando conta…' : 'Criar conta',
+      submitRegistro
+    };
+  }
+}
+</script>
+</body>
+</html>
