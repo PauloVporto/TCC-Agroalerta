@@ -5,7 +5,7 @@ const mercadoData = JSON.parse(
   fs.readFileSync(path.join(__dirname, "..", "data", "mercado.json"), "utf-8")
 );
 
-const API_KEY = process.env.ANTHROPIC_API_KEY;
+const API_KEY = (process.env.ANTHROPIC_API_KEY || "").trim() || undefined;
 
 const NOMES_CULTURA = {
   cafe: "café arábica",

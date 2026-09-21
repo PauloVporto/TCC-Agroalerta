@@ -7,6 +7,7 @@ const alertasRouter = require("./routes/alertas");
 const insumosRouter = require("./routes/insumos");
 const mercadoRouter = require("./routes/mercado");
 const authRouter = require("./routes/auth");
+const climaRouter = require("./routes/clima");
 const { culturasSuportadas } = require("./services/rules");
 const { inicializarBanco } = require("./services/db");
 
@@ -35,7 +36,17 @@ app.get("/api/culturas", (req, res) => {
   res.json(culturasSuportadas());
 });
 
+// GET /api/config - configurações públicas do frontend.
+// A chave do Google Maps aqui é a de uso client-side (Embed/JS API): ela é
+// pensada para ficar visível no navegador e deve ser restrita por domínio/
+// referrer no Console do Google, não por segredo no servidor.
+app.get("/api/config", (req, res) => {
+  const chave = (process.env.GOOGLE_MAPS_API_KEY || "").trim();
+  res.json({ googleMapsApiKey: chave || null });
+});
+
 app.use("/api/auth", authRouter);
+app.use("/api/clima", climaRouter);
 app.use("/api/talhoes", talhoesRouter);
 app.use("/api/alertas", alertasRouter);
 app.use("/api/insumos", insumosRouter);

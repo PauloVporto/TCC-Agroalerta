@@ -16,14 +16,16 @@ function hashSenha(senha, salt) {
   return crypto.scryptSync(senha, salt, 64).toString("hex");
 }
 
-async function criarUsuario({ nome, email, senha }) {
+async function criarUsuario({ nome, email, senha, cidade, cidadeFormatada, latitude, longitude }) {
   const salt = crypto.randomBytes(16).toString("hex");
   try {
     const resultado = await pool.query(
-      `INSERT INTO usuarios (nome, email, senha_hash, salt)
-       VALUES ($1, LOWER($2), $3, $4)
-       RETURNING id, nome, email, salt, criado_em AS "criadoEm"`,
-      [nome, email, hashSenha(senha, salt), salt]
+      `INSERT INTO usuarios (nome, email, senha_hash, salt, cidade, cidade_formatada, latitude, longitude)
+       VALUES ($1, LOWER($2), $3, $4, $5, $6, $7, $8)
+       RETURNING id, nome, email, salt, cidade, cidade_formatada AS "cidadeFormatada",
+                 latitude, longitude, criado_em AS "criadoEm"`,
+      [nome, email, hashSenha(senha, salt), salt, cidade || null, cidadeFormatada || null,
+        latitude != null ? latitude : null, longitude != null ? longitude : null]
     );
     const usuario = sanitizar(resultado.rows[0]);
     await pool.query("INSERT INTO preferencias_usuario (usuario_id) VALUES ($1)", [usuario.id]);
@@ -72,7 +74,8 @@ async function usuarioPorToken(token) {
 
 async function obterConfiguracoes(usuarioId) {
   const resultado = await pool.query(
-    `SELECT u.id, u.nome, u.email, u.criado_em AS "criadoEm",
+    `SELECT u.id, u.nome, u.email, u.cidade, u.cidade_formatada AS "cidadeFormatada",
+            u.latitude, u.longitude, u.criado_em AS "criadoEm",
             COALESCE(p.cultura_favorita, 'cafe') AS "culturaFavorita",
             COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura",
             COALESCE(p.notificacoes, TRUE) AS notificacoes

@@ -114,10 +114,10 @@
         </sc-if>
       </label>
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
-        Cidade
-        <input type="text" value="{{ rCidade }}" onChange="{{ onRCidade }}" placeholder="Patrocínio · MG" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
-        <sc-if value="{{ rCidadeError }}" hint-placeholder-val="{{ false }}">
-          <span style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ rCidadeError }}</span>
+        CEP da propriedade
+        <input type="text" inputMode="numeric" value="{{ rCep }}" onChange="{{ onRCep }}" placeholder="37540-000" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+        <sc-if value="{{ rCepError }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ rCepError }}</span>
         </sc-if>
       </label>
     </div>
@@ -208,10 +208,10 @@ class Component extends DCLogic {
       screen: modo === 'registro' ? 'registro' : 'login',
       email: '', password: '', remember: true,
       emailError: '', passwordError: '', loading: false, loginGenericError: '',
-      rNome: '', rCidade: '', rTelefone: '', rEmail: '', rPapel: 'produtor',
+      rNome: '', rCep: '', rTelefone: '', rEmail: '', rPapel: 'produtor',
       rCultura: 'cafe', rUnidade: 'C', rNotificacoes: true,
       rSenha: '', rSenha2: '', rTermos: false, rLoading: false,
-      rNomeError: '', rCidadeError: '', rTelefoneError: '', rEmailError: '',
+      rNomeError: '', rCepError: '', rTelefoneError: '', rEmailError: '',
       rSenhaError: '', rSenha2Error: '', rTermosError: '', rGenericError: ''
     };
   }
@@ -257,26 +257,34 @@ class Component extends DCLogic {
       const senhaOk = s.rSenha.length >= 6;
       const iguais = s.rSenha === s.rSenha2 && s.rSenha2 !== '';
       const nomeOk = s.rNome.trim().split(/\s+/).length >= 2;
-      const cidadeOk = s.rCidade.trim() !== '';
+      const cepOk = s.rCep.replace(/\D/g, '').length === 8;
       const telOk = s.rTelefone.replace(/\D/g, '').length >= 10;
       this.setState({
         rNomeError: nomeOk ? '' : 'Informe nome e sobrenome.',
-        rCidadeError: cidadeOk ? '' : 'Informe a cidade.',
+        rCepError: s.rCep.trim() === '' ? 'Informe o CEP.' : (cepOk ? '' : 'CEP deve ter 8 dígitos.'),
         rTelefoneError: s.rTelefone.trim() === '' ? 'Informe um telefone.' : (telOk ? '' : 'Telefone incompleto.'),
         rEmailError: s.rEmail.trim() === '' ? 'Informe um e-mail.' : (emailOk ? '' : 'E-mail em formato inválido.'),
         rSenhaError: senhaOk ? '' : 'A senha deve ter ao menos 6 caracteres.',
         rSenha2Error: iguais ? '' : 'As senhas não coincidem.',
         rTermosError: s.rTermos ? '' : 'É necessário aceitar os termos.'
       });
-      if (!nomeOk || !cidadeOk || !telOk || !emailOk || !senhaOk || !iguais || !s.rTermos) return;
-      this.setState({ rLoading: true, rGenericError: '' });
+      if (!nomeOk || !cepOk || !telOk || !emailOk || !senhaOk || !iguais || !s.rTermos) return;
+      this.setState({ rLoading: true, rGenericError: '', rCepError: '' });
       fetch(API_BASE + '/auth/registrar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome: s.rNome.trim(), email: s.rEmail.trim(), senha: s.rSenha })
+        body: JSON.stringify({
+          nome: s.rNome.trim(), email: s.rEmail.trim(), senha: s.rSenha,
+          cep: s.rCep.trim(), cultura: s.rCultura
+        })
       }).then(function(r) { return r.json().then(function(c) { return { ok: r.ok, corpo: c }; }); })
         .then((res) => {
-          if (!res.ok) throw new Error(res.corpo.erro || 'Erro ao criar conta.');
+          if (!res.ok) {
+            const msg = res.corpo.erro || 'Erro ao criar conta.';
+            const erro = new Error(msg);
+            erro.ehErroDeCep = /cep/i.test(msg);
+            throw erro;
+          }
           sessionStorage.setItem('agroalerta_token', res.corpo.token);
           sessionStorage.setItem('agroalerta_usuario', JSON.stringify(res.corpo.usuario));
           return apiFetch('/auth/preferencias', {
@@ -291,7 +299,11 @@ class Component extends DCLogic {
         })
         .then(() => {
           window.location.href = './dashboard.dc.html';
-        }).catch((err) => this.setState({ rLoading: false, rGenericError: err.message }));
+        }).catch((err) => this.setState({
+          rLoading: false,
+          rCepError: err.ehErroDeCep ? err.message : '',
+          rGenericError: err.ehErroDeCep ? '' : err.message
+        }));
     };
 
     return {
@@ -309,9 +321,9 @@ class Component extends DCLogic {
       loading: s.loading, submitLabel: s.loading ? 'Entrando…' : 'Entrar no painel',
       submit,
 
-      rNome: s.rNome, rCidade: s.rCidade, rTelefone: s.rTelefone, rEmail: s.rEmail,
+      rNome: s.rNome, rCep: s.rCep, rTelefone: s.rTelefone, rEmail: s.rEmail,
       rSenha: s.rSenha, rSenha2: s.rSenha2, rTermos: s.rTermos, rNotificacoes: s.rNotificacoes,
-      onRNome: set('rNome'), onRCidade: set('rCidade'), onRTelefone: set('rTelefone'),
+      onRNome: set('rNome'), onRCep: set('rCep'), onRTelefone: set('rTelefone'),
       onREmail: set('rEmail'), onRSenha: set('rSenha'), onRSenha2: set('rSenha2'),
       onRTermos: (e) => this.setState({ rTermos: e.target.checked, rTermosError: '' }),
       onRNotificacoes: (e) => this.setState({ rNotificacoes: e.target.checked }),
@@ -344,7 +356,7 @@ class Component extends DCLogic {
       fahrenheitFg: this.chip(s.rUnidade === 'F').fg,
       fahrenheitBorda: this.chip(s.rUnidade === 'F').borda,
 
-      rNomeError: s.rNomeError, rCidadeError: s.rCidadeError, rTelefoneError: s.rTelefoneError,
+      rNomeError: s.rNomeError, rCepError: s.rCepError, rTelefoneError: s.rTelefoneError,
       rEmailError: s.rEmailError, rSenhaError: s.rSenhaError, rSenha2Error: s.rSenha2Error,
       rTermosError: s.rTermosError, rGenericError: s.rGenericError,
       rLoading: s.rLoading, rSubmitLabel: s.rLoading ? 'Criando conta…' : 'Criar conta',

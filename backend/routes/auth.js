@@ -11,21 +11,53 @@ const {
   excluirConta,
   exigirAutenticacao,
 } = require("../services/auth");
+const { resolverLocalizacaoPorCep } = require("../services/localizacao");
+const { criarTalhao } = require("./talhoes");
+const { culturasSuportadas } = require("../services/rules");
 
 // POST /api/auth/registrar
-// body: { nome, email, senha }
+// body: { nome, email, senha, cep, cultura? }
+//
+// O CEP informado é validado no ViaCEP (base dos Correios, sem precisar de
+// chave) antes de criar a conta - é isso que garante que a cidade/região
+// realmente existe. A partir do endereço resolvido pelo ViaCEP, tentamos
+// geocodificar (Google Maps, se configurado) para obter lat/lon e já
+// criamos o primeiro talhão naquela localização, para que o produtor veja
+// alertas e previsão do tempo reais assim que entrar no painel.
 router.post("/registrar", async (req, res) => {
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, cep, cultura } = req.body;
 
-  if (!nome || !email || !senha) {
-    return res.status(400).json({ erro: "Campos obrigatórios: nome, email, senha" });
+  if (!nome || !email || !senha || !cep) {
+    return res.status(400).json({ erro: "Campos obrigatórios: nome, email, senha, cep" });
   }
   if (senha.length < 6) {
     return res.status(400).json({ erro: "A senha deve ter pelo menos 6 caracteres." });
   }
 
+  const local = await resolverLocalizacaoPorCep(cep);
+  if (!local.valido) {
+    return res.status(400).json({ erro: local.erro });
+  }
+
+  const culturaEscolhida = culturasSuportadas().includes(cultura) ? cultura : "cafe";
+
   try {
-    const usuario = await criarUsuario({ nome, email, senha });
+    const usuario = await criarUsuario({
+      nome, email, senha,
+      cidade: local.cidade + " - " + local.uf,
+      cidadeFormatada: local.enderecoFormatado,
+      latitude: local.latitude,
+      longitude: local.longitude,
+    });
+
+    await criarTalhao(usuario.id, {
+      nome: "Talhão principal - " + local.cidade,
+      cultura: culturaEscolhida,
+      fase: "vegetativo",
+      endereco: local.enderecoFormatado,
+      coordenadas: local,
+    });
+
     // Já loga o usuário automaticamente após o cadastro
     const { token } = await autenticar({ email, senha });
     res.status(201).json({ usuario, token });

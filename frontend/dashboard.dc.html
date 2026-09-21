@@ -92,13 +92,7 @@
         <h1 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 28px; margin: 0; color: #1F3D2B; letter-spacing: -0.02em; line-height: 1.1;">{{ pageTitle }}</h1>
       </div>
       <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4A4A42;">
-        <sc-if value="{{ ehProdutor }}" hint-placeholder-val="{{ true }}">
-          <span style="border: 1px solid #C9C3B0; padding: 9px 15px; background: #FFFFFF; font-weight: 500; border-radius: 999px;">Café + soja</span>
-        </sc-if>
         <span style="border: 1px solid #C9C3B0; padding: 9px 15px; background: #FFFFFF; font-weight: 500; border-radius: 999px;">{{ usuarioCidade }}</span>
-        <sc-if value="{{ ehProdutor }}" hint-placeholder-val="{{ true }}">
-          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: #1F3D2B; color: #F7F5EF; padding: 10px 15px; border-radius: 999px;">Clima atualizado 06:10</span>
-        </sc-if>
         <sc-if value="{{ ehFornecedor }}" hint-placeholder-val="{{ false }}">
           <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: #6B4A34; color: #F7F5EF; padding: 10px 15px; border-radius: 999px;">{{ totalOfertas }}</span>
         </sc-if>
@@ -149,7 +143,7 @@
 
       <section style="padding: 28px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
         <div>
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em;">Previsão · 7 dias</h2>
+          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em;">{{ previsaoTitulo }}</h2>
           <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px;">
             <sc-for list="{{ clima }}" as="d" hint-placeholder-count="7">
               <div style="border: 1px solid #DDD8C9; background: #FFFFFF; padding: 12px 8px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
@@ -164,20 +158,18 @@
             </sc-for>
           </div>
           <div style="margin-top: 16px; border-top: 1px solid #DDD8C9; padding-top: 14px; display: flex; justify-content: space-between; gap: 16px; font-size: 13px; color: #4A4A42; flex-wrap: wrap;">
-            <span>Chuva acumulada 7 dias: <strong style="color: #1A1A18;">38 mm</strong></span>
-            <span>Mínima prevista: <strong style="color: #2F6E8F;">4 °C na sexta</strong></span>
+            <span>Chuva acumulada 7 dias: <strong style="color: #1A1A18;">{{ resumoChuva7dTexto }}</strong></span>
+            <span>Mínima prevista: <strong style="color: #2F6E8F;">{{ resumoMinimaTexto }}</strong></span>
           </div>
         </div>
         <div>
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em;">Últimos registros</h2>
-          <ul style="margin: 0; padding: 0; list-style: none; border-top: 1px solid #DDD8C9;">
-            <sc-for list="{{ registros }}" as="r" hint-placeholder-count="4">
-              <li style="padding: 13px 0; border-bottom: 1px solid #DDD8C9; display: flex; justify-content: space-between; gap: 18px; font-size: 14px;">
-                <span style="color: #1A1A18;">{{ r.texto }}</span>
-                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6B4A34; white-space: nowrap;">{{ r.quando }}</span>
-              </li>
-            </sc-for>
-          </ul>
+          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em;">Localização da propriedade</h2>
+          <sc-if value="{{ mapaDisponivel }}" hint-placeholder-val="{{ true }}">
+            <iframe src="{{ mapaSrc }}" title="Mapa da localização cadastrada" style="width: 100%; height: 226px; border: 1px solid #DDD8C9; border-radius: 10px; display: block;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </sc-if>
+          <sc-if value="{{ mapaIndisponivel }}" hint-placeholder-val="{{ false }}">
+            <div style="height: 226px; border: 1px dashed #C9C3B0; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; font-size: 13px; color: #6B4A34;">{{ mapaMensagem }}</div>
+          </sc-if>
         </div>
       </section>
       </sc-if>
@@ -222,8 +214,38 @@
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 16px; flex-wrap: wrap;">
           <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Áreas cadastradas</h2>
-          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #6B4A34;">Exposição ao risco climático</span>
+          <button type="button" onClick="{{ toggleNovoTalhao }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 10px 18px; cursor: pointer;" style-hover="background: #162C1F;">{{ novoTalhaoLabel }}</button>
         </div>
+
+        <sc-if value="{{ novoTalhaoAberto }}" hint-placeholder-val="{{ false }}">
+        <form onSubmit="{{ cadastrarTalhao }}" style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px; padding: 22px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: end;">
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Nome do talhão
+            <input type="text" value="{{ tNome }}" onChange="{{ onTNome }}" placeholder="Talhão 02 - encosta" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Cultura
+            <select value="{{ tCultura }}" onChange="{{ onTCultura }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px;">
+              <sc-for list="{{ culturasTalhao }}" as="c" hint-placeholder-count="5">
+                <option value="{{ c.valor }}">{{ c.label }}</option>
+              </sc-for>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Fase atual
+            <input type="text" value="{{ tFase }}" onChange="{{ onTFase }}" placeholder="floracao" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            CEP da área
+            <input type="text" inputMode="numeric" value="{{ tCep }}" onChange="{{ onTCep }}" placeholder="37540-000" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+          </label>
+          <button type="submit" disabled="{{ tSalvando }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #6B4A34; border: 1px solid #6B4A34; padding: 12px 20px; cursor: pointer;" style-hover="background: #563A28;">{{ tSalvarLabel }}</button>
+          <sc-if value="{{ tErro }}" hint-placeholder-val="{{ false }}">
+            <span style="grid-column: 1 / -1; font-size: 12px; color: #A33A22;">{{ tErro }}</span>
+          </sc-if>
+        </form>
+        </sc-if>
+
         <div style="overflow-x: auto; border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px;">
           <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 720px;">
             <thead>
@@ -317,9 +339,9 @@
             </sc-for>
           </div>
           <div style="margin-top: 18px; border-top: 1px solid #DDD8C9; padding-top: 16px; display: flex; gap: 32px; flex-wrap: wrap; font-size: 13px; color: #4A4A42;">
-            <span>Última cotação: <strong style="color: #1A1A18;">R$ 2.418/sc</strong></span>
-            <span>Variação 12 meses: <strong style="color: #1F3D2B;">+18,4%</strong></span>
-            <span>Máxima do período: <strong style="color: #A97C12;">R$ 2.560/sc</strong></span>
+            <span>Última cotação: <strong style="color: #1A1A18;">{{ ultimaCotacaoTexto }}</strong></span>
+            <span>Variação 12 meses: <strong style="color: #1F3D2B;">{{ variacao12mTexto }}</strong></span>
+            <span>Máxima do período: <strong style="color: #A97C12;">{{ maximaPeriodoTexto }}</strong></span>
           </div>
         </div>
       </section>
@@ -328,10 +350,10 @@
         <div style="background: #1F3D2B; color: #F7F5EF; border-radius: 12px; padding: 26px 28px;">
           <div style="display: flex; align-items: center; gap: 10px;">
             <span style="width: 7px; height: 7px; background: #D4A537; display: block; border-radius: 50%;"></span>
-            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,245,239,0.8);">Resumo qualitativo gerado por IA</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,245,239,0.8);">{{ resumoIAFonteTexto }}</span>
           </div>
-          <p style="margin: 16px 0 0; font-family: Newsreader, Georgia, serif; font-size: 19px; line-height: 1.6; color: #F7F5EF;">A alta dos últimos três meses combina oferta restrita no Cerrado Mineiro com câmbio favorável à exportação. A projeção qualitativa aponta sustentação de preço no curto prazo, com atenção ao risco de geada em julho, que historicamente antecipa picos de cotação.</p>
-          <p style="margin: 16px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.7; letter-spacing: 0.04em; color: rgba(247,245,239,0.66);">Fontes usadas: Cepea/USP (série de preços), Conab (boletim de safra), 3 notícias curadas manualmente entre 02 e 09 set.</p>
+          <p style="margin: 16px 0 0; font-family: Newsreader, Georgia, serif; font-size: 19px; line-height: 1.6; color: #F7F5EF;">{{ resumoIATexto }}</p>
+          <p style="margin: 16px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.7; letter-spacing: 0.04em; color: rgba(247,245,239,0.66);">Fontes usadas: {{ fontesUsadasTexto }}</p>
           <p style="margin: 14px 0 0; font-size: 12px; line-height: 1.6; color: rgba(247,245,239,0.6);">Resumo de apoio à decisão, não recomendação de compra ou venda.</p>
         </div>
         <div>
@@ -501,7 +523,7 @@
     </div>
 
     <footer style="flex: none; padding: 14px 32px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #6B4A34; border-top: 1px solid #DDD8C9; background: #EFEBDF; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
-      <span>AgroAlerta · protótipo acadêmico com dados fictícios</span>
+      <span>AgroAlerta · protótipo acadêmico integrado às APIs configuradas</span>
       <span>Clima 06:10 · análise de mercado 05:40</span>
     </footer>
   </main>
@@ -535,6 +557,7 @@ class Component extends DCLogic {
       cCultura: 'cafe', cUnidade: 'C', cNotificacoes: true, contaSalva: false,
       sacas: 500,
       novaOfertaAberta: false, oNome: '', oCategoria: '', oUnidade: '', oPreco: '', ofertaError: '',
+      novoTalhaoAberto: false, tNome: '', tCultura: 'cafe', tFase: '', tCep: '', tErro: '', tSalvando: false,
       ofertas: [
         { nome: 'Protetor foliar 5 L', categoria: 'Protetor foliar', unidade: 'frasco 5 L', preco: 289, cidade: '' }
       ],
@@ -542,6 +565,12 @@ class Component extends DCLogic {
       _talhaoSelecionadoId: null,
       _mercadoCultura: 'cafe',
       _climaMetrics: null,
+      _climaCidade: null,
+      _googleMapsKey: null,
+      cLatitude: null, cLongitude: null,
+      _mercadoResumo: '',
+      _mercadoFontes: [],
+      _mercadoGerarPor: null,
       talhoes: [],
       alertas: [],
       precos: [],
@@ -551,9 +580,38 @@ class Component extends DCLogic {
   }
 
   _carregarDados() {
+    this._carregarConfiguracoes();
+    this._carregarConfigApp();
+    this._carregarClimaCidade();
     this._carregarTalhoes();
     this._carregarInsumos();
     this._carregarMercado(this.state._mercadoCultura || 'cafe');
+  }
+
+  _carregarConfiguracoes() {
+    apiFetch('/auth/configuracoes').then(function(r) { return r.json(); }).then((cfg) => {
+      if (!cfg) return;
+      this.setState({
+        cCidade: cfg.cidade || cfg.cidadeFormatada || '',
+        cCultura: cfg.culturaFavorita || 'cafe',
+        cUnidade: cfg.unidadeTemperatura === 'fahrenheit' ? 'F' : 'C',
+        cNotificacoes: !!cfg.notificacoes,
+        cLatitude: cfg.latitude != null ? cfg.latitude : null,
+        cLongitude: cfg.longitude != null ? cfg.longitude : null
+      });
+    }).catch(function() {});
+  }
+
+  _carregarConfigApp() {
+    fetch(API_BASE + '/config').then(function(r) { return r.json(); }).then((cfg) => {
+      this.setState({ _googleMapsKey: cfg.googleMapsApiKey || null });
+    }).catch(function() {});
+  }
+
+  _carregarClimaCidade() {
+    apiFetch('/clima').then(function(r) { return r.json(); }).then((dados) => {
+      this.setState({ _climaCidade: dados.clima || null });
+    }).catch(function() {});
   }
 
   _carregarTalhoes() {
@@ -591,7 +649,12 @@ class Component extends DCLogic {
           fonte: analise.gerarPor === 'ia_com_busca' ? 'IA + busca na web' : 'modo simulado'
         };
       });
-      this.setState({ serie: serie, noticias: noticias, _mercadoCultura: cultura });
+      this.setState({
+        serie: serie, noticias: noticias, _mercadoCultura: cultura,
+        _mercadoResumo: analise.resumo || '',
+        _mercadoFontes: Array.isArray(analise.fontes) ? analise.fontes : [],
+        _mercadoGerarPor: analise.gerarPor || null
+      });
     }).catch(function() {});
   }
 
@@ -679,13 +742,16 @@ class Component extends DCLogic {
       });
     });
 
-    const regras = [
-      { nivel: 'Alto', risco: 'Geada', talhao: '—', cultura: 'Café arábica', fase: 'Florada', regra: 'temperaturaMinima < 5 & ventoMaximoKmh < 5', janela: 'conforme alerta' },
-      { nivel: 'Médio', risco: 'Chuva intensa', talhao: '—', cultura: 'Soja', fase: 'R5 · enchimento', regra: 'chuvaAcumulada7d > 50', janela: '3 dias' },
-      { nivel: 'Médio', risco: 'Geada', talhao: '—', cultura: 'Café arábica', fase: 'Chumbinho', regra: 'temperaturaMinima < 6', janela: 'conforme alerta' },
-      { nivel: 'Baixo', risco: 'Estiagem', talhao: '—', cultura: 'Café arábica', fase: 'Granação', regra: 'diasSemChuva > 14', janela: 'monitorar' },
-      { nivel: 'Baixo', risco: 'Chuva provável', talhao: '—', cultura: 'Soja', fase: 'V6 · vegetativo', regra: 'probabilidadeChuva > 70', janela: 'monitorar' }
-    ].map((g) => Object.assign({}, g, this.nivelCores(g.nivel)));
+    const talhaoParaRegras = s.talhoes.find(function(t) { return t.id === s._talhaoSelecionadoId; });
+    const regras = s.alertas.map((a) => Object.assign({}, this.nivelCores(a.nivel), {
+      nivel: NIVEL_DISPLAY[a.nivel] || a.nivel,
+      risco: a.titulo,
+      talhao: talhaoParaRegras ? talhaoParaRegras.nome : '—',
+      cultura: CULTURAS_NOME[a.cultura] || a.cultura,
+      fase: (a.fase || '').replace(/_/g, ' '),
+      regra: a.mensagem,
+      janela: '—'
+    }));
 
     const talhoes = s.talhoes.map((t) => {
       const ehSelecionado = s._talhaoSelecionadoId === t.id;
@@ -739,6 +805,45 @@ class Component extends DCLogic {
     });
 
     const precoMercadoAtual = s.serie.length > 0 ? s.serie[s.serie.length - 1].preco : 2418;
+
+    const serie12m = s.serie.slice(-365);
+    const ultimaCotacaoTexto = s.serie.length > 0
+      ? 'R$ ' + precoMercadoAtual.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '/sc'
+      : 'carregando…';
+    const variacao12mTexto = serie12m.length > 1
+      ? (((precoMercadoAtual - serie12m[0].preco) / serie12m[0].preco) * 100).toFixed(1).replace('.', ',').replace(/^(-?)/, function(_, sinal) { return sinal ? '−' : '+'; }) + '%'
+      : '—';
+    const maximaPeriodoTexto = serie12m.length > 0
+      ? 'R$ ' + Math.max.apply(null, serie12m.map(function(p) { return p.preco; })).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '/sc'
+      : '—';
+
+    const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const previsaoDiaria = (s._climaCidade && Array.isArray(s._climaCidade.previsaoDiaria)) ? s._climaCidade.previsaoDiaria : [];
+    const clima = previsaoDiaria.map(function(d) {
+      const data = new Date(d.data + 'T00:00:00Z');
+      return {
+        dia: DIAS_SEMANA[data.getUTCDay()],
+        max: d.tempMax + '°', min: d.tempMin + '°',
+        chuva: d.chuvaProbabilidade + '%', chuvaBarra: Math.min(100, d.chuvaProbabilidade) + '%'
+      };
+    });
+    const resumoChuva7dTexto = s._climaCidade ? s._climaCidade.chuvaAcumulada7dias + ' mm' : (s._dadosCarregados ? '—' : 'carregando…');
+    const resumoMinimaTexto = s._climaCidade ? s._climaCidade.temperaturaMinima + ' °C' : (s._dadosCarregados ? '—' : 'carregando…');
+    const previsaoTitulo = clima.length > 0
+      ? 'Previsão · ' + clima.length + (clima.length === 1 ? ' dia' : ' dias')
+      : (s._dadosCarregados ? 'Previsão indisponível' : 'Previsão · carregando…');
+
+    const temCoordenadas = s.cLatitude != null && s.cLongitude != null;
+    const mapaDisponivel = !!s._googleMapsKey && temCoordenadas;
+    const mapaMensagem = !s._dadosCarregados
+      ? 'Carregando localização…'
+      : (!s._googleMapsKey
+        ? 'Configure GOOGLE_MAPS_API_KEY no backend para ver o mapa da propriedade.'
+        : 'Nenhuma localização cadastrada ainda.');
+    const mapaSrc = mapaDisponivel
+      ? 'https://www.google.com/maps/embed/v1/place?key=' + encodeURIComponent(s._googleMapsKey) +
+        '&q=' + s.cLatitude + ',' + s.cLongitude + '&zoom=12'
+      : '';
 
     return {
       sair: () => this.logout(),
@@ -842,6 +947,37 @@ class Component extends DCLogic {
         remover: () => this.setState(st => ({ ofertas: st.ofertas.filter(function(_, j) { return j !== i; }) }))
       })),
 
+      novoTalhaoAberto: s.novoTalhaoAberto,
+      novoTalhaoLabel: s.novoTalhaoAberto ? 'Cancelar' : 'Cadastrar talhão',
+      toggleNovoTalhao: () => this.setState(st => ({ novoTalhaoAberto: !st.novoTalhaoAberto, tErro: '' })),
+      tNome: s.tNome, tCultura: s.tCultura, tFase: s.tFase, tCep: s.tCep, tErro: s.tErro,
+      tSalvando: s.tSalvando, tSalvarLabel: s.tSalvando ? 'Verificando CEP…' : 'Cadastrar',
+      onTNome: set('tNome'), onTCultura: set('tCultura'), onTFase: set('tFase'), onTCep: set('tCep'),
+      culturasTalhao: [
+        { valor: 'cafe', label: 'Café' }, { valor: 'soja', label: 'Soja' }, { valor: 'milho', label: 'Milho' },
+        { valor: 'cana', label: 'Cana' }, { valor: 'feijao', label: 'Feijão' }
+      ],
+      cadastrarTalhao: (e) => {
+        e.preventDefault();
+        if (s.tNome.trim() === '' || s.tFase.trim() === '' || s.tCep.replace(/\D/g, '').length !== 8) {
+          this.setState({ tErro: 'Preencha nome, fase e um CEP válido (8 dígitos).' });
+          return;
+        }
+        this.setState({ tSalvando: true, tErro: '' });
+        apiFetch('/talhoes', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome: s.tNome.trim(), cultura: s.tCultura, fase: s.tFase.trim(), cep: s.tCep.trim() })
+        }).then(function(r) { return r.json().then(function(c) { return { ok: r.ok, corpo: c }; }); })
+          .then((res) => {
+            if (!res.ok) throw new Error(res.corpo.erro || 'Não foi possível cadastrar o talhão.');
+            this.setState({
+              tSalvando: false, novoTalhaoAberto: false,
+              tNome: '', tCultura: 'cafe', tFase: '', tCep: ''
+            });
+            this._carregarTalhoes();
+          }).catch((err) => this.setState({ tSalvando: false, tErro: err.message }));
+      },
+
       kpis: [
         {
           label: 'Alertas em aberto',
@@ -868,22 +1004,15 @@ class Component extends DCLogic {
           cor: '#2F6E8F'
         }
       ],
-      alertas, regras, talhoes, precos, serie,
-      clima: [
-        { dia: 'Seg', max: '27°', min: '13°', chuva: '10%', mm: 10 },
-        { dia: 'Ter', max: '26°', min: '11°', chuva: '5%', mm: 5 },
-        { dia: 'Qua', max: '24°', min: '9°', chuva: '15%', mm: 15 },
-        { dia: 'Qui', max: '22°', min: '6°', chuva: '20%', mm: 20 },
-        { dia: 'Sex', max: '21°', min: '4°', chuva: '5%', mm: 5 },
-        { dia: 'Sáb', max: '24°', min: '8°', chuva: '30%', mm: 30 },
-        { dia: 'Dom', max: '26°', min: '12°', chuva: '55%', mm: 55 }
-      ].map(function(d) { return Object.assign({}, d, { chuvaBarra: d.mm + '%' }); }),
-      registros: [
-        { texto: 'Sistema conectado ao backend', quando: 'agora' },
-        { texto: 'Dados de talhões e alertas carregados via API', quando: 'agora' },
-        { texto: 'Análise de mercado e preços de insumos atualizados', quando: 'agora' },
-        { texto: 'Sessão autenticada com token', quando: 'agora' }
-      ],
+      alertas, regras, talhoes, precos, serie, clima, previsaoTitulo,
+      mapaDisponivel, mapaIndisponivel: !mapaDisponivel, mapaSrc, mapaMensagem,
+      resumoChuva7dTexto, resumoMinimaTexto,
+      ultimaCotacaoTexto, variacao12mTexto, maximaPeriodoTexto,
+      resumoIATexto: s._mercadoResumo || (s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…'),
+      resumoIAFonteTexto: s._mercadoGerarPor === 'ia_com_busca' ? 'IA (Claude) com busca na web' : 'Modo simulado · sem ANTHROPIC_API_KEY configurada',
+      fontesUsadasTexto: s._mercadoFontes.length > 0
+        ? s._mercadoFontes.map(function(f) { return f.titulo; }).join(', ')
+        : 'Nenhuma fonte retornada nesta consulta.',
       noticias: s.noticias.length > 0 ? s.noticias : [
         { titulo: s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…', fonte: s._dadosCarregados ? '—' : 'aguarde' }
       ],
