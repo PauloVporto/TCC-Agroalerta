@@ -1,0 +1,309 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1860" height="1542" viewBox="0 0 1860 1542" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="sombra" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.07"/>
+    </filter>
+    <marker id="heranca" viewBox="0 0 20 20" refX="20" refY="10" markerUnits="userSpaceOnUse" markerWidth="20" markerHeight="20" orient="auto">
+      <path d="M1,1 L19,10 L1,19 z" fill="#FFFFFF" stroke="#4A4A4A" stroke-width="1.6" stroke-linejoin="round"/>
+    </marker>
+    <marker id="composicao" viewBox="0 0 22 12" refX="0" refY="6" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="12" orient="auto">
+      <path d="M1,6 L11,1 L21,6 L11,11 z" fill="#4A4A4A" stroke="#4A4A4A" stroke-width="1.2" stroke-linejoin="round"/>
+    </marker>
+    <marker id="agregacao" viewBox="0 0 22 12" refX="0" refY="6" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="12" orient="auto">
+      <path d="M1,6 L11,1 L21,6 L11,11 z" fill="#FFFFFF" stroke="#4A4A4A" stroke-width="1.4" stroke-linejoin="round"/>
+    </marker>
+    <marker id="dependencia" viewBox="0 0 12 12" refX="11" refY="6" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#4A4A4A" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+    </marker>
+  </defs>
+  <rect width="1860" height="1542" fill="#FFFFFF"/>
+  <path d="M 560 520 L 560 480 L 1300 480 L 1300 520" fill="none" stroke="#4A4A4A" stroke-width="1.6"/>
+  <path d="M 930 480 L 930 430" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-end="url(#heranca)"/>
+  <path d="M 800 200 L 690 200" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-start="url(#composicao)"/>
+  <path d="M 1060 200 L 1170 200" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-start="url(#composicao)"/>
+  <path d="M 560 672 L 560 780" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-start="url(#composicao)"/>
+  <path d="M 1300 652 L 1300 780" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-start="url(#composicao)"/>
+  <path d="M 430 596 L 190 596 L 190 780" fill="none" stroke="#4A4A4A" stroke-width="1.6"/>
+  <path d="M 430 920 L 320 920" fill="none" stroke="#4A4A4A" stroke-width="1.6"/>
+  <path d="M 690 940 L 800 940" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-start="url(#composicao)"/>
+  <path d="M 1060 940 L 1170 940" fill="none" stroke="#4A4A4A" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#dependencia)"/>
+  <path d="M 560 1156 L 560 1246" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-start="url(#agregacao)"/>
+  <path d="M 190 1076 L 190 1166" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-start="url(#agregacao)"/>
+  <path d="M 930 1056 L 930 1364 L 690 1364" fill="none" stroke="#4A4A4A" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#dependencia)"/>
+  <path d="M 1670 976 L 1670 886" fill="none" stroke="#4A4A4A" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#dependencia)"/>
+  <rect x="800" y="60" width="260" height="370" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="800" y="60" width="260" height="54" rx="10" fill="#D6F1F4"/>
+  <rect x="800" y="104" width="260" height="10" fill="#D6F1F4"/>
+  <text x="930" y="80" text-anchor="middle" font-size="11" fill="#1E8A95">«abstrata»</text>
+  <text x="930" y="102" text-anchor="middle" font-size="16" font-weight="700" font-style="italic" fill="#2B2B2B">Usuario</text>
+  <line x1="800" y1="114" x2="1060" y2="114" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="816" y="138" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">id</tspan><tspan fill="#7A7A7A">: int</tspan></text>
+  <text x="816" y="158" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">nome</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="816" y="178" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">email</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="816" y="198" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">senhaHash</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="816" y="218" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">salt</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="816" y="238" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">papel</tspan><tspan fill="#7A7A7A">: Papel</tspan></text>
+  <text x="816" y="258" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">cidade</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="816" y="278" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">telefone</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="816" y="298" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">criadoEm</tspan><tspan fill="#7A7A7A">: DateTime</tspan></text>
+  <line x1="800" y1="312" x2="1060" y2="312" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="816" y="336" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">registrar()</tspan></text>
+  <text x="816" y="356" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">autenticar()</tspan></text>
+  <text x="816" y="376" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">atualizarPerfil()</tspan></text>
+  <text x="816" y="396" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">alterarSenha()</tspan></text>
+  <text x="816" y="416" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">excluirConta()</tspan></text>
+  <rect x="800" y="60" width="260" height="370" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="430" y="120" width="260" height="176" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="430" y="120" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="430" y="150" width="260" height="10" fill="#D6F1F4"/>
+  <text x="560" y="146" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">Sessao</text>
+  <line x1="430" y1="160" x2="690" y2="160" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="446" y="184" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">token</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="446" y="204" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">criadoEm</tspan><tspan fill="#7A7A7A">: DateTime</tspan></text>
+  <text x="446" y="224" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">expiraEm</tspan><tspan fill="#7A7A7A">: DateTime</tspan></text>
+  <line x1="430" y1="238" x2="690" y2="238" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="446" y="262" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">validar()</tspan></text>
+  <text x="446" y="282" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">encerrar()</tspan></text>
+  <rect x="430" y="120" width="260" height="176" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="1170" y="120" width="260" height="176" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="1170" y="120" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="1170" y="150" width="260" height="10" fill="#D6F1F4"/>
+  <text x="1300" y="146" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">PreferenciasUsuario</text>
+  <line x1="1170" y1="160" x2="1430" y2="160" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1186" y="184" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">culturaFavorita</tspan><tspan fill="#7A7A7A">: Cultura</tspan></text>
+  <text x="1186" y="204" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">unidadeTemperatura</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="1186" y="224" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">notificacoes</tspan><tspan fill="#7A7A7A">: boolean</tspan></text>
+  <text x="1186" y="244" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">atualizadoEm</tspan><tspan fill="#7A7A7A">: DateTime</tspan></text>
+  <line x1="1170" y1="258" x2="1430" y2="258" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1186" y="282" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">atualizar()</tspan></text>
+  <rect x="1170" y="120" width="260" height="176" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="430" y="520" width="260" height="152" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="430" y="520" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="430" y="550" width="260" height="10" fill="#D6F1F4"/>
+  <text x="560" y="546" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">Produtor</text>
+  <line x1="430" y1="560" x2="690" y2="560" stroke="#BFE6EA" stroke-width="1.5"/>
+  <line x1="430" y1="574" x2="690" y2="574" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="446" y="598" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">cadastrarTalhao()</tspan></text>
+  <text x="446" y="618" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">consultarPainel()</tspan></text>
+  <text x="446" y="638" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">consultarAlertas()</tspan></text>
+  <text x="446" y="658" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">lerMensagens()</tspan></text>
+  <rect x="430" y="520" width="260" height="152" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="1170" y="520" width="260" height="132" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="1170" y="520" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="1170" y="550" width="260" height="10" fill="#D6F1F4"/>
+  <text x="1300" y="546" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">Fornecedor</text>
+  <line x1="1170" y1="560" x2="1430" y2="560" stroke="#BFE6EA" stroke-width="1.5"/>
+  <line x1="1170" y1="574" x2="1430" y2="574" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1186" y="598" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">publicarOferta()</tspan></text>
+  <text x="1186" y="618" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">listarMinhasOfertas()</tspan></text>
+  <text x="1186" y="638" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">removerOferta()</tspan></text>
+  <rect x="1170" y="520" width="260" height="132" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="430" y="780" width="260" height="376" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="430" y="780" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="430" y="810" width="260" height="10" fill="#D6F1F4"/>
+  <text x="560" y="806" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">Talhao</text>
+  <line x1="430" y1="820" x2="690" y2="820" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="446" y="844" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">id</tspan><tspan fill="#7A7A7A">: int</tspan></text>
+  <text x="446" y="864" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">nome</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="446" y="884" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">cultura</tspan><tspan fill="#7A7A7A">: Cultura</tspan></text>
+  <text x="446" y="904" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">fase</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="446" y="924" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">endereco</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="446" y="944" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">latitude</tspan><tspan fill="#7A7A7A">: double</tspan></text>
+  <text x="446" y="964" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">longitude</tspan><tspan fill="#7A7A7A">: double</tspan></text>
+  <text x="446" y="984" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">enderecoFormatado</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="446" y="1004" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">poligono</tspan><tspan fill="#7A7A7A">: JSON</tspan></text>
+  <text x="446" y="1024" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">areaHa</tspan><tspan fill="#7A7A7A">: double</tspan></text>
+  <line x1="430" y1="1038" x2="690" y2="1038" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="446" y="1062" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">cadastrar()</tspan></text>
+  <text x="446" y="1082" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">editar()</tspan></text>
+  <text x="446" y="1102" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">excluir()</tspan></text>
+  <text x="446" y="1122" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">geocodificarEndereco()</tspan></text>
+  <text x="446" y="1142" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">calcularAreaHa()</tspan></text>
+  <rect x="430" y="780" width="260" height="376" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="60" y="780" width="260" height="296" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="60" y="780" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="60" y="810" width="260" height="10" fill="#D6F1F4"/>
+  <text x="190" y="806" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">MensagemProdutor</text>
+  <line x1="60" y1="820" x2="320" y2="820" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="76" y="844" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">chave</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="76" y="864" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">nivel</tspan><tspan fill="#7A7A7A">: NivelAlerta</tspan></text>
+  <text x="76" y="884" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">titulo</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="76" y="904" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">corpo</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="76" y="924" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">recomendacao</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="76" y="944" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">lida</tspan><tspan fill="#7A7A7A">: boolean</tspan></text>
+  <text x="76" y="964" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">statusEmail</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="76" y="984" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">statusSms</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <line x1="60" y1="998" x2="320" y2="998" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="76" y="1022" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">gerarParaTalhao()</tspan></text>
+  <text x="76" y="1042" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">sincronizar()</tspan></text>
+  <text x="76" y="1062" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">marcarLida()</tspan></text>
+  <rect x="60" y="780" width="260" height="296" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="800" y="840" width="260" height="216" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="800" y="840" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="800" y="870" width="260" height="10" fill="#D6F1F4"/>
+  <text x="930" y="866" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">AlertaGerado</text>
+  <line x1="800" y1="880" x2="1060" y2="880" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="816" y="904" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">regraId</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="816" y="924" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">nivel</tspan><tspan fill="#7A7A7A">: NivelAlerta</tspan></text>
+  <text x="816" y="944" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">titulo</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="816" y="964" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">mensagem</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="816" y="984" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">recomendacao</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <line x1="800" y1="998" x2="1060" y2="998" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="816" y="1022" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">avaliarAlertas()</tspan></text>
+  <text x="816" y="1042" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">recomendarInsumos()</tspan></text>
+  <rect x="800" y="840" width="260" height="216" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="1170" y="780" width="260" height="256" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="1170" y="780" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="1170" y="810" width="260" height="10" fill="#D6F1F4"/>
+  <text x="1300" y="806" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">OfertaInsumo</text>
+  <line x1="1170" y1="820" x2="1430" y2="820" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1186" y="844" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">id</tspan><tspan fill="#7A7A7A">: int</tspan></text>
+  <text x="1186" y="864" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">nome</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="1186" y="884" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">categoria</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="1186" y="904" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">unidade</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="1186" y="924" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">preco</tspan><tspan fill="#7A7A7A">: double</tspan></text>
+  <text x="1186" y="944" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">cidade</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="1186" y="964" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">telefone</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <line x1="1170" y1="978" x2="1430" y2="978" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1186" y="1002" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">listarInsumos()</tspan></text>
+  <text x="1186" y="1022" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">gerarInsightCompra()</tspan></text>
+  <rect x="1170" y="780" width="260" height="256" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="1540" y="60" width="260" height="112" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="1540" y="60" width="260" height="54" rx="10" fill="#D6F1F4"/>
+  <rect x="1540" y="104" width="260" height="10" fill="#D6F1F4"/>
+  <text x="1670" y="80" text-anchor="middle" font-size="11" fill="#1E8A95">«enumeração»</text>
+  <text x="1670" y="102" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">Papel</text>
+  <line x1="1540" y1="114" x2="1800" y2="114" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1556" y="138" font-size="13"><tspan fill="#2B2B2B">produtor</tspan></text>
+  <text x="1556" y="158" font-size="13"><tspan fill="#2B2B2B">fornecedor</tspan></text>
+  <rect x="1540" y="60" width="260" height="112" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="1540" y="194" width="260" height="132" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="1540" y="194" width="260" height="54" rx="10" fill="#D6F1F4"/>
+  <rect x="1540" y="238" width="260" height="10" fill="#D6F1F4"/>
+  <text x="1670" y="214" text-anchor="middle" font-size="11" fill="#1E8A95">«enumeração»</text>
+  <text x="1670" y="236" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">NivelAlerta</text>
+  <line x1="1540" y1="248" x2="1800" y2="248" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1556" y="272" font-size="13"><tspan fill="#2B2B2B">baixo</tspan></text>
+  <text x="1556" y="292" font-size="13"><tspan fill="#2B2B2B">medio</tspan></text>
+  <text x="1556" y="312" font-size="13"><tspan fill="#2B2B2B">alto</tspan></text>
+  <rect x="1540" y="194" width="260" height="132" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="1540" y="348" width="260" height="172" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="1540" y="348" width="260" height="54" rx="10" fill="#D6F1F4"/>
+  <rect x="1540" y="392" width="260" height="10" fill="#D6F1F4"/>
+  <text x="1670" y="368" text-anchor="middle" font-size="11" fill="#1E8A95">«enumeração»</text>
+  <text x="1670" y="390" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">Cultura</text>
+  <line x1="1540" y1="402" x2="1800" y2="402" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1556" y="426" font-size="13"><tspan fill="#2B2B2B">cafe</tspan></text>
+  <text x="1556" y="446" font-size="13"><tspan fill="#2B2B2B">soja</tspan></text>
+  <text x="1556" y="466" font-size="13"><tspan fill="#2B2B2B">milho</tspan></text>
+  <text x="1556" y="486" font-size="13"><tspan fill="#2B2B2B">cana</tspan></text>
+  <text x="1556" y="506" font-size="13"><tspan fill="#2B2B2B">feijao</tspan></text>
+  <rect x="1540" y="348" width="260" height="172" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="1540" y="610" width="260" height="276" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="1540" y="610" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="1540" y="640" width="260" height="10" fill="#D6F1F4"/>
+  <text x="1670" y="636" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">CotacaoMercado</text>
+  <line x1="1540" y1="650" x2="1800" y2="650" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1556" y="674" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">cultura</tspan><tspan fill="#7A7A7A">: Cultura</tspan></text>
+  <text x="1556" y="694" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">data</tspan><tspan fill="#7A7A7A">: Date</tspan></text>
+  <text x="1556" y="714" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">preco</tspan><tspan fill="#7A7A7A">: double</tspan></text>
+  <text x="1556" y="734" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">unidade</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="1556" y="754" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">fonte</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="1556" y="774" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">ticker</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <line x1="1540" y1="788" x2="1800" y2="788" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1556" y="812" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">obterHistorico()</tspan></text>
+  <text x="1556" y="832" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">buscarCotacaoAoVivo()</tspan></text>
+  <text x="1556" y="852" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">converterParaReais()</tspan></text>
+  <text x="1556" y="872" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">gerarProjecao()</tspan></text>
+  <rect x="1540" y="610" width="260" height="276" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="1540" y="976" width="260" height="216" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="1540" y="976" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="1540" y="1006" width="260" height="10" fill="#D6F1F4"/>
+  <text x="1670" y="1002" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">AnaliseIA</text>
+  <line x1="1540" y1="1016" x2="1800" y2="1016" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1556" y="1040" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">cultura</tspan><tspan fill="#7A7A7A">: Cultura</tspan></text>
+  <text x="1556" y="1060" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">resumo</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="1556" y="1080" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">gerarPor</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="1556" y="1100" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">fontes</tspan><tspan fill="#7A7A7A">: JSON</tspan></text>
+  <text x="1556" y="1120" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">contexto</tspan><tspan fill="#7A7A7A">: JSON</tspan></text>
+  <line x1="1540" y1="1134" x2="1800" y2="1134" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="1556" y="1158" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">gerarAnaliseTendencia()</tspan></text>
+  <text x="1556" y="1178" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">chamarClaudeComBusca()</tspan></text>
+  <rect x="1540" y="976" width="260" height="216" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="430" y="1246" width="260" height="236" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="430" y="1246" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="430" y="1276" width="260" height="10" fill="#D6F1F4"/>
+  <text x="560" y="1272" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">LeituraClima</text>
+  <line x1="430" y1="1286" x2="690" y2="1286" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="446" y="1310" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">fonte</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="446" y="1330" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">temperaturaMinima</tspan><tspan fill="#7A7A7A">: double</tspan></text>
+  <text x="446" y="1350" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">chuvaAcumulada7d</tspan><tspan fill="#7A7A7A">: double</tspan></text>
+  <text x="446" y="1370" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">diasSemChuva</tspan><tspan fill="#7A7A7A">: int</tspan></text>
+  <text x="446" y="1390" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">probabilidadeChuva</tspan><tspan fill="#7A7A7A">: int</tspan></text>
+  <text x="446" y="1410" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">ventoMaximoKmh</tspan><tspan fill="#7A7A7A">: double</tspan></text>
+  <line x1="430" y1="1424" x2="690" y2="1424" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="446" y="1448" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">buscarClimaAtual()</tspan></text>
+  <text x="446" y="1468" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">gerarSimulado()</tspan></text>
+  <rect x="430" y="1246" width="260" height="236" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <rect x="60" y="1166" width="260" height="236" rx="10" fill="#FFFFFF" filter="url(#sombra)"/>
+  <rect x="60" y="1166" width="260" height="40" rx="10" fill="#D6F1F4"/>
+  <rect x="60" y="1196" width="260" height="10" fill="#D6F1F4"/>
+  <text x="190" y="1192" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">EnvioAlerta</text>
+  <line x1="60" y1="1206" x2="320" y2="1206" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="76" y="1230" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">canal</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="76" y="1250" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">destino</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="76" y="1270" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">modo</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <text x="76" y="1290" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">sucesso</tspan><tspan fill="#7A7A7A">: boolean</tspan></text>
+  <text x="76" y="1310" font-size="13"><tspan fill="#1E8A95" font-weight="700">− </tspan><tspan fill="#2B2B2B">detalhe</tspan><tspan fill="#7A7A7A">: String</tspan></text>
+  <line x1="60" y1="1324" x2="320" y2="1324" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="76" y="1348" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">enviarEmail()</tspan></text>
+  <text x="76" y="1368" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">enviarSms()</tspan></text>
+  <text x="76" y="1388" font-size="13"><tspan fill="#1E8A95" font-weight="700">+ </tspan><tspan fill="#2B2B2B">despacharPendentes()</tspan></text>
+  <rect x="60" y="1166" width="260" height="236" rx="10" fill="none" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="774" y="192" text-anchor="end" font-size="13" fill="#2B2B2B">1</text>
+  <text x="696" y="192" text-anchor="start" font-size="13" fill="#2B2B2B">0..*</text>
+  <text x="745" y="220" text-anchor="middle" font-size="12.5" fill="#7A7A7A">possui</text>
+  <text x="1086" y="192" text-anchor="start" font-size="13" fill="#2B2B2B">1</text>
+  <text x="1164" y="192" text-anchor="end" font-size="13" fill="#2B2B2B">1</text>
+  <text x="1115" y="220" text-anchor="middle" font-size="12.5" fill="#7A7A7A">define</text>
+  <text x="568" y="708" text-anchor="start" font-size="13" fill="#2B2B2B">1</text>
+  <text x="568" y="772" text-anchor="start" font-size="13" fill="#2B2B2B">0..*</text>
+  <text x="552" y="730" text-anchor="end" font-size="12.5" fill="#7A7A7A">possui</text>
+  <text x="1308" y="688" text-anchor="start" font-size="13" fill="#2B2B2B">1</text>
+  <text x="1308" y="772" text-anchor="start" font-size="13" fill="#2B2B2B">0..*</text>
+  <text x="1292" y="720" text-anchor="end" font-size="12.5" fill="#7A7A7A">publica</text>
+  <text x="422" y="588" text-anchor="end" font-size="13" fill="#2B2B2B">1</text>
+  <text x="198" y="772" text-anchor="start" font-size="13" fill="#2B2B2B">0..*</text>
+  <text x="310" y="588" text-anchor="middle" font-size="12.5" fill="#7A7A7A">recebe</text>
+  <text x="424" y="912" text-anchor="end" font-size="13" fill="#2B2B2B">0..1</text>
+  <text x="326" y="912" text-anchor="start" font-size="13" fill="#2B2B2B">0..*</text>
+  <text x="375" y="942" text-anchor="middle" font-size="12.5" fill="#7A7A7A">refere-se a</text>
+  <text x="716" y="932" text-anchor="start" font-size="13" fill="#2B2B2B">1</text>
+  <text x="794" y="932" text-anchor="end" font-size="13" fill="#2B2B2B">0..*</text>
+  <text x="745" y="962" text-anchor="middle" font-size="12.5" fill="#7A7A7A">gera</text>
+  <text x="1115" y="930" text-anchor="middle" font-size="12.5" fill="#1E8A95">«recomenda»</text>
+  <text x="568" y="1192" text-anchor="start" font-size="13" fill="#2B2B2B">0..1</text>
+  <text x="568" y="1238" text-anchor="start" font-size="13" fill="#2B2B2B">0..*</text>
+  <text x="552" y="1205" text-anchor="end" font-size="12.5" fill="#7A7A7A">registra</text>
+  <text x="198" y="1112" text-anchor="start" font-size="13" fill="#2B2B2B">0..1</text>
+  <text x="198" y="1158" text-anchor="start" font-size="13" fill="#2B2B2B">0..*</text>
+  <text x="182" y="1125" text-anchor="end" font-size="12.5" fill="#7A7A7A">enviada por</text>
+  <text x="940" y="1210" text-anchor="start" font-size="12.5" fill="#1E8A95">«avalia»</text>
+  <text x="1680" y="935" text-anchor="start" font-size="12.5" fill="#1E8A95">«utiliza»</text>
+  <text x="60" y="86" font-size="26" font-weight="700" fill="#2B2B2B">Diagrama de Classes</text>
+  <text x="60" y="110" font-size="14" fill="#7A7A7A">AgroAlerta · modelo de domínio</text>
+  <rect x="60" y="140" width="260" height="330" rx="10" fill="#FFFFFF" stroke="#BFE6EA" stroke-width="1.5"/>
+  <text x="78" y="170" font-size="11" font-weight="700" letter-spacing="1.5" fill="#1E8A95">LEGENDA</text>
+  <path d="M 78 204 L 138 204" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-end="url(#heranca)"/>
+  <text x="156" y="209" font-size="13" fill="#2B2B2B">Generalização (herança)</text>
+  <path d="M 78 246 L 138 246" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-start="url(#composicao)"/>
+  <text x="156" y="251" font-size="13" fill="#2B2B2B">Composição</text>
+  <path d="M 78 288 L 138 288" fill="none" stroke="#4A4A4A" stroke-width="1.6" marker-start="url(#agregacao)"/>
+  <text x="156" y="293" font-size="13" fill="#2B2B2B">Agregação</text>
+  <path d="M 78 330 L 138 330" fill="none" stroke="#4A4A4A" stroke-width="1.6"/>
+  <text x="156" y="335" font-size="13" fill="#2B2B2B">Associação</text>
+  <path d="M 78 372 L 138 372" fill="none" stroke="#4A4A4A" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#dependencia)"/>
+  <text x="156" y="377" font-size="13" fill="#2B2B2B">Dependência</text>
+  <text x="78" y="419" font-size="13"><tspan fill="#1E8A95" font-weight="700">−</tspan><tspan fill="#2B2B2B"> atributo privado</tspan></text>
+  <text x="78" y="443" font-size="13"><tspan fill="#1E8A95" font-weight="700">+</tspan><tspan fill="#2B2B2B"> método público</tspan></text>
+</svg>
