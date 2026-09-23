@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F7F5EF; color: #1A1A18; font-family: Archivo, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #1F3D2B; text-decoration: none; }
+  a:hover { color: #6B4A34; }
+  button, input, select, textarea { border-radius: 8px; }
+  input:focus { outline: 2px solid #1F3D2B; outline-offset: -2px; }
+  ::selection { background: #D4A537; color: #1A1A18; }
+  @keyframes agro-word {
+    0%, 24%   { color: #6B4A34; font-style: italic; font-weight: 400; }
+    25%, 49%  { color: #1F3D2B; font-style: normal; font-weight: 600; }
+    50%, 74%  { color: #2F6E8F; font-style: italic; font-weight: 600; }
+    75%, 100% { color: #A97C12; font-style: normal; font-weight: 700; }
+  }
+  @keyframes agro-word-dark {
+    0%, 24%   { color: #C9A98F; font-style: italic; font-weight: 400; }
+    25%, 49%  { color: #9FC79C; font-style: normal; font-weight: 600; }
+    50%, 74%  { color: #7FC3E3; font-style: italic; font-weight: 600; }
+    75%, 100% { color: #D4A537; font-style: normal; font-weight: 700; }
+  }
+  .agro-anim { font-size-adjust: ex-height 0.47; }
+  @media (prefers-reduced-motion: reduce) { .agro-anim { animation: none !important; } }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #F7F5EF;">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px 40px; border-bottom: 1px solid #DDD8C9; background: #F7F5EF; position: sticky; top: 0; z-index: 5; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 10px; height: 36px;">
+      <img src="uploads/logo2-3261c888.png" alt="" style="height: 36px; width: auto; display: block; object-fit: contain; align-self: center;" />
+      <img src="uploads/Logotipo-97c88bdf.png" alt="AgroAlerta" style="height: 36px; width: auto; display: block; object-fit: contain; align-self: center;" />
+    </div>
+    <nav style="display: flex; align-items: center; gap: 26px; font-size: 14px;">
+      <a href="#modulos">Recursos</a>
+      <a href="#fluxo">Como funciona</a>
+      <a href="#culturas">Culturas</a>
+      <a href="#sobre">Sobre</a>
+      <button type="button" onClick="{{ goLogin }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 10px 22px; cursor: pointer; letter-spacing: 0.02em;" style-hover="background: #162C1F; border-color: #162C1F;">Entrar</button>
+    </nav>
+  </header>
+
+  <section style="display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); border-bottom: 1px solid #DDD8C9;">
+    <div style="padding: 80px 48px 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 28px;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+        <img src="uploads/logo2-3261c888.png" alt="" style="height: 96px; width: auto; display: block; object-fit: contain;" />
+        <img src="uploads/Logotipo-97c88bdf.png" alt="AgroAlerta" style="width: 100%; max-width: 300px; height: auto; display: block; object-fit: contain;" />
+      </div>
+      <h1 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: clamp(34px, 4.2vw, 54px); line-height: 1.05; letter-spacing: -0.02em; margin: 0; color: #1F3D2B; max-width: 22ch; text-wrap: pretty;">O clima muda sem avisar. O <em class="agro-anim" style="position: relative; display: inline-block; text-transform: uppercase; font-style: italic; font-weight: 400; animation: agro-word 3.5s steps(1, end) infinite;">alerta<span style="position: absolute; left: 0; right: 0; bottom: 0.02em; height: 0.08em; background: #D4A537; display: block;"></span></em> não.</h1>
+      <div style="width: 64px; height: 3px; background: #D4A537;"></div>
+      <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: center;">
+        <button type="button" onClick="{{ goLogin }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 15px 20px; cursor: pointer; width: 186px; text-align: center;" style-hover="background: #162C1F;">Acessar painel</button>
+        <button type="button" onClick="{{ goRegistro }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #1A1A18; background: #D4A537; border: 1px solid #D4A537; padding: 15px 20px; cursor: pointer; width: 186px; text-align: center;" style-hover="background: #C2942B; border-color: #C2942B;">Criar conta</button>
+      </div>
+    </div>
+    <div style="border-left: 1px solid #DDD8C9; position: relative; min-height: 460px; background: #EFEBDF;">
+      <img src="uploads/lavoura.png" alt="Lavoura de café no Cerrado Mineiro" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;" />
+    </div>
+  </section>
+
+  <section style="background: #1F3D2B; color: #F7F5EF; padding: 0 40px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));">
+      <div style="padding: 36px 28px 36px 0; border-right: 1px solid rgba(247,245,239,0.16);">
+        <div style="font-family: Fraunces, Georgia, serif; font-size: 38px; font-weight: 600; color: #D4A537; line-height: 1;">2 culturas</div>
+        <div style="margin-top: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,245,239,0.8);">Café e soja</div>
+      </div>
+      <div style="padding: 36px 28px; border-right: 1px solid rgba(247,245,239,0.16);">
+        <div style="font-family: Fraunces, Georgia, serif; font-size: 38px; font-weight: 600; color: #7FC3E3; line-height: 1;">3 dores</div>
+        <div style="margin-top: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,245,239,0.8);">Clima, insumo, mercado</div>
+      </div>
+      <div style="padding: 36px 28px; border-right: 1px solid rgba(247,245,239,0.16);">
+        <div style="font-family: Fraunces, Georgia, serif; font-size: 38px; font-weight: 600; color: #9FC79C; line-height: 1;">R$ 58,7 bi</div>
+        <div style="margin-top: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,245,239,0.8);">VBP do café em MG · 2025</div>
+      </div>
+      <div style="padding: 36px 0 36px 28px;">
+        <div style="font-family: Fraunces, Georgia, serif; font-size: 38px; font-weight: 600; color: #F7F5EF; line-height: 1;">4 recursos</div>
+        <div style="margin-top: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,245,239,0.8);">Protótipo integrado</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="modulos" style="padding: 80px 40px; border-bottom: 1px solid #DDD8C9;">
+    <div style="display: grid; grid-template-columns: minmax(0, 270px) minmax(0, 1fr); gap: 56px; align-items: start;">
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 32px; line-height: 1.12; margin: 0; color: #1F3D2B; letter-spacing: -0.015em;">Quatro recursos, um sistema</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #4A4A42;">As soluções existentes tratam clima, insumo e mercado separadamente. Aqui os três conversam.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+        <div style="background: #EEF5F8; border: 1px solid #CFE0E8; border-radius: 12px; padding: 26px 24px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #F7F5EF; background: #2F6E8F; padding: 4px 10px; border-radius: 999px; align-self: flex-start;">Recurso 1</span>
+          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 20px; font-weight: 600; margin: 0; color: #24505F;">Monitoramento climático</h3>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #2F6E8F;">Alertas de chuva, seca e geada por cultura e fase de desenvolvimento, a partir de regras fixas sobre uma API de clima.</p>
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #DDD8C9; border-radius: 12px; padding: 26px 24px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #F7F5EF; background: #1F3D2B; padding: 4px 10px; border-radius: 999px; align-self: flex-start;">Recurso 2</span>
+          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 20px; font-weight: 600; margin: 0; color: #1A1A18;">Recomendação de insumos</h3>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #4A4A42;">Cada alerta gerado aponta a categoria de insumo correspondente, por mapeamento direto entre risco e manejo.</p>
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #DDD8C9; border-radius: 12px; padding: 26px 24px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #1F3D2B; background: #D4A537; padding: 4px 10px; border-radius: 999px; align-self: flex-start;">Recurso 3</span>
+          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 20px; font-weight: 600; margin: 0; color: #1A1A18;">Comparação de preços</h3>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #4A4A42;">Ranking de custo-benefício entre fornecedores, sobre base de preços simulada, sem coleta ao vivo.</p>
+        </div>
+        <div style="background: #EFEBDF; border: 1px solid #DDD8C9; border-radius: 12px; padding: 26px 24px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #F7F5EF; background: #6B4A34; padding: 4px 10px; border-radius: 999px; align-self: flex-start;">Recurso 4</span>
+          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 20px; font-weight: 600; margin: 0; color: #1A1A18;">Análise de mercado com IA</h3>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #4A4A42;">Série histórica do CEPEA e notícias curadas alimentam um resumo qualitativo de tendência gerado por IA, com as fontes ao lado.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="fluxo" style="padding: 80px 40px; background: #EFEBDF; border-bottom: 1px solid #DDD8C9;">
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; color: #6B4A34;">Da previsão à decisão</span>
+    <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 34px; margin: 14px 0 44px; color: #1F3D2B; letter-spacing: -0.015em;">Alerta, recomendação, compra</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 36px;">
+      <div style="border-top: 2px solid #2F6E8F; padding-top: 18px;">
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; color: #2F6E8F; letter-spacing: 0.16em;">01</div>
+        <h3 style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; margin: 10px 0; color: #1A1A18;">O risco é detectado</h3>
+        <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #4A4A42;">A previsão entra no motor de regras junto com a cultura e a fase do talhão. Geada em florada do café não é o mesmo risco que geada em pós-colheita.</p>
+      </div>
+      <div style="border-top: 2px solid #1F3D2B; padding-top: 18px;">
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; color: #1F3D2B; letter-spacing: 0.16em;">02</div>
+        <h3 style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; margin: 10px 0; color: #1A1A18;">O manejo é sugerido</h3>
+        <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #4A4A42;">O alerta chega com a categoria de insumo indicada para aquele risco e a janela em que a aplicação ainda faz diferença.</p>
+      </div>
+      <div style="border-top: 2px solid #D4A537; padding-top: 18px;">
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; color: #A97C12; letter-spacing: 0.16em;">03</div>
+        <h3 style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; margin: 10px 0; color: #1A1A18;">O preço é comparado</h3>
+        <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #4A4A42;">Fornecedores são ordenados por custo total, com frete e prazo de entrega, porque insumo que chega tarde não resolve o alerta.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="culturas" style="padding: 80px 40px; border-bottom: 1px solid #DDD8C9;">
+    <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 32px; margin: 0 0 8px; color: #1F3D2B; letter-spacing: -0.015em;">Café e soja, por escolha</h2>
+    <p style="margin: 0 0 32px; font-size: 16px; line-height: 1.6; color: #4A4A42; max-width: 62ch;">As duas culturas de maior peso econômico no agronegócio mineiro, e as que melhor exercitam cada frente do sistema.</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+      <div style="border: 1px solid #DDD8C9; border-radius: 12px; background: #FFFFFF; padding: 30px 28px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="#6B4A34" stroke-width="1.4"><ellipse cx="8" cy="8" rx="4" ry="6"></ellipse><path d="M8 2.6c-1.2 2 -1.2 8.8 0 10.8"></path></svg>
+          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 24px; font-weight: 600; margin: 0; color: #1A1A18;">Café</h3>
+        </div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.62; color: #4A4A42;">Maior produtor nacional. Responde por 35% do valor bruto da produção agrícola mineira em 2025, R$ 58,7 bilhões.</p>
+        <p style="margin: 0; font-size: 15px; line-height: 1.62; color: #6B4A34; border-top: 1px solid #DDD8C9; padding-top: 14px;">Cultura perene e muito sensível a geada e variação climática, é o caso mais rico para o módulo de alertas.</p>
+      </div>
+      <div style="border: 1px solid #DDD8C9; border-radius: 12px; background: #FFFFFF; padding: 30px 28px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="#1F3D2B" stroke-width="1.4"><path d="M8 14V6"></path><path d="M8 6c-3 0-4.5-1.6-4.5-4 3 0 4.5 1.6 4.5 4z"></path><path d="M8 8.4c3 0 4.5-1.6 4.5-4-3 0-4.5 1.6-4.5 4z"></path></svg>
+          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 24px; font-weight: 600; margin: 0; color: #1A1A18;">Soja</h3>
+        </div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.62; color: #4A4A42;">Segunda principal cultura agrícola do estado, com R$ 18,8 bilhões em 2025.</p>
+        <p style="margin: 0; font-size: 15px; line-height: 1.62; color: #2F6E8F; border-top: 1px solid #DDD8C9; padding-top: 14px;">Forte ligação com mercado internacional e câmbio, é o caso ideal para o módulo de análise de mercado com IA.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="sobre" style="padding: 0; background: #1F3D2B; color: #F7F5EF;">
+    <div style="display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);">
+      <div style="padding: 88px 56px 84px 40px; display: flex; flex-direction: column; gap: 24px;">
+        <div style="display: flex; align-items: center; gap: 18px;">
+          <img src="uploads/logo2-3261c888.png" alt="" style="height: 72px; width: auto; display: block; object-fit: contain; filter: brightness(0) invert(1);" />
+          <img src="uploads/Logotipo-97c88bdf.png" alt="AgroAlerta" style="width: 100%; max-width: 250px; height: auto; display: block; object-fit: contain; filter: brightness(0) invert(1);" />
+        </div>
+        <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: clamp(28px, 3.4vw, 42px); line-height: 1.1; margin: 0; color: #F7F5EF; letter-spacing: -0.02em; max-width: 26ch; text-wrap: pretty;">Um protótipo de pesquisa aplicada</h2>
+        <p style="margin: 0; font-family: Newsreader, Georgia, serif; font-weight: 400; font-size: 20px; line-height: 1.62; color: rgba(247,245,239,0.88); max-width: 60ch; text-wrap: pretty;">O <em class="agro-anim" style="position: relative; display: inline-block; font-style: italic; font-weight: 600; animation: agro-word-dark 3.5s steps(1, end) infinite;">AgroAlerta<span style="position: absolute; left: 0; right: 0; bottom: 0.02em; height: 0.08em; background: #D4A537; display: block;"></span></em> é um trabalho de conclusão de curso em Engenharia de Software, desenvolvido como protótipo sob os princípios de Design Science Research. A proposta responde a uma pergunta prática: como ajudar pequenos e médios produtores a antecipar o <span style="color: #7FC3E3;">risco climático</span> da <span style="color: #9FC79C;">safra</span>, comparar o custo dos <span style="color: #9FC79C;">insumos</span> e entender a tendência de <span style="color: #D4A537;">mercado</span> em um só lugar. A arquitetura é modular por decisão de projeto: cada recurso entrega valor sozinho e pode ser validado em separado.</p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #F7F5EF; border: 1px solid rgba(247,245,239,0.28); padding: 8px 14px; border-radius: 999px;">Integração de APIs</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #F7F5EF; border: 1px solid rgba(247,245,239,0.28); padding: 8px 14px; border-radius: 999px;">Motor de regras</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #F7F5EF; border: 1px solid rgba(247,245,239,0.28); padding: 8px 14px; border-radius: 999px;">IA generativa</span>
+        </div>
+      </div>
+      <div style="border-left: 1px solid rgba(247,245,239,0.16); padding: 88px 40px 84px 48px; display: flex; flex-direction: column; justify-content: center; gap: 28px;">
+        <div style="min-height: 190px; display: flex; flex-direction: column; justify-content: center; gap: 14px;">
+          <span style="font-family: Fraunces, Georgia, serif; font-size: 72px; font-weight: 600; line-height: 1; letter-spacing: -0.03em; color: {{ slideCor }};">{{ slideValor }}</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(247,245,239,0.82);">{{ slideRotulo }}</span>
+          <p style="margin: 0; max-width: 34ch; font-size: 15px; line-height: 1.6; color: rgba(247,245,239,0.7);">{{ slideNota }}</p>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid rgba(247,245,239,0.16); padding-top: 20px;">
+          <div style="display: flex; gap: 8px;">
+            <sc-for list="{{ slides }}" as="s" hint-placeholder-count="4">
+              <button type="button" onClick="{{ s.ir }}" title="{{ s.rotulo }}" style="width: 30px; height: 4px; padding: 0; border: 0; border-radius: 999px; background: {{ s.fundo }}; cursor: pointer;" style-hover="background: #D4A537;"></button>
+            </sc-for>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" onClick="{{ slideAnterior }}" title="Anterior" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1; color: rgba(247,245,239,0.8); background: transparent; border: 1px solid rgba(247,245,239,0.3); padding: 8px 12px; cursor: pointer;" style-hover="border-color: #D4A537; color: #D4A537;">🠔</button>
+            <button type="button" onClick="{{ slideProximo }}" title="Próximo" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1; color: rgba(247,245,239,0.8); background: transparent; border: 1px solid rgba(247,245,239,0.3); padding: 8px 12px; cursor: pointer;" style-hover="border-color: #D4A537; color: #D4A537;">🠖</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 72px 40px; border-bottom: 1px solid #DDD8C9;">
+    <div style="display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: 56px; align-items: start;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 30px; margin: 0; color: #1F3D2B; letter-spacing: -0.015em; line-height: 1.12;">Fontes de dados</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #4A4A42;">Cada recurso é alimentado por uma fonte pública ou por curadoria declarada, nada é estimado sem origem.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px;">
+        <div style="border: 1px solid #DDD8C9; border-top: 3px solid #2F6E8F; border-radius: 12px; background: #FFFFFF; padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 10px;">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#2F6E8F" stroke-width="1.4"><circle cx="8" cy="5.6" r="3"></circle><line x1="3.6" y1="12.2" x2="2.8" y2="14.2"></line><line x1="8" y1="12.2" x2="7.2" y2="14.2"></line><line x1="12.4" y1="12.2" x2="11.6" y2="14.2"></line></svg>
+          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; margin: 0; color: #1A1A18;">API de clima</h3>
+          <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #4A4A42;">Previsão e série histórica por coordenada do talhão.</p>
+          <span style="margin-top: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #2F6E8F;">Recurso 1</span>
+        </div>
+        <div style="border: 1px solid #DDD8C9; border-top: 3px solid #D4A537; border-radius: 12px; background: #FFFFFF; padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 10px;">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#A97C12" stroke-width="1.4"><polyline points="1.5,12 5.5,7.5 9,10 14.5,3.5"></polyline><polyline points="10.5,3.5 14.5,3.5 14.5,7"></polyline></svg>
+          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; margin: 0; color: #1A1A18;">Cepea/USP</h3>
+          <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #4A4A42;">Série de preços do café arábica e da soja.</p>
+          <span style="margin-top: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #A97C12;">Recurso 4</span>
+        </div>
+        <div style="border: 1px solid #DDD8C9; border-top: 3px solid #1F3D2B; border-radius: 12px; background: #FFFFFF; padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 10px;">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#1F3D2B" stroke-width="1.4"><rect x="2" y="2" width="12" height="12"></rect><line x1="5" y1="11" x2="5" y2="7"></line><line x1="8" y1="11" x2="8" y2="5"></line><line x1="11" y1="11" x2="11" y2="8.5"></line></svg>
+          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; margin: 0; color: #1A1A18;">Seapa/MG · IBGE · Conab</h3>
+          <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #4A4A42;">Dados regionais de safra e valor da produção, 2025.</p>
+          <span style="margin-top: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #1F3D2B;">Contexto</span>
+        </div>
+        <div style="border: 1px solid #DDD8C9; border-top: 3px solid #6B4A34; border-radius: 12px; background: #FFFFFF; padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 10px;">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#6B4A34" stroke-width="1.4"><rect x="1.5" y="3" width="13" height="10"></rect><line x1="4" y1="6" x2="8" y2="6"></line><line x1="4" y1="8.6" x2="11" y2="8.6"></line><line x1="4" y1="10.6" x2="9" y2="10.6"></line></svg>
+          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; margin: 0; color: #1A1A18;">Notícias de mercado</h3>
+          <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #4A4A42;">Curadoria manual, com a fonte visível em cada análise.</p>
+          <span style="margin-top: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34;">Recurso 4</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 68px 40px; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; background: #F7F5EF;">
+    <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 30px; margin: 0; color: #1F3D2B; max-width: 32ch; line-height: 1.15; letter-spacing: -0.015em;">Veja o painel com os alertas da safra em andamento.</h2>
+    <button type="button" onClick="{{ goLogin }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #F7F5EF; background: #6B4A34; border: 1px solid #6B4A34; padding: 15px 32px; cursor: pointer;" style-hover="background: #563A28;">Entrar no painel</button>
+  </section>
+
+  <footer style="background: #1A1A18; color: rgba(247,245,239,0.72); padding: 36px 40px; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; font-size: 13px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <img src="uploads/logo2-3261c888.png" alt="" style="height: 30px; width: auto; display: block; object-fit: contain; filter: brightness(0) invert(1);" />
+      <img src="uploads/Logotipo-97c88bdf.png" alt="AgroAlerta" style="height: 22px; width: auto; display: block; object-fit: contain; filter: brightness(0) invert(1);" />
+    </div>
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.04em;">Protótipo acadêmico · dados de demonstração</span>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    if (sessionStorage.getItem('agroalerta_token')) {
+      window.location.href = './dashboard.dc.html';
+      return;
+    }
+    this.state = { slide: 0 };
+  }
+
+  slidesSobre() {
+    return [
+      { valor: '12 sem.', rotulo: 'Cronograma de desenvolvimento', cor: '#D4A537', nota: 'Três meses divididos entre levantamento, construção dos recursos e validação.' },
+      { valor: '4', rotulo: 'Recursos no escopo', cor: '#7FC3E3', nota: 'Clima, recomendação de insumos, comparação de preços e análise de mercado.' },
+      { valor: '2', rotulo: 'Culturas contempladas', cor: '#9FC79C', nota: 'Café e soja, as de maior peso econômico no agronegócio mineiro.' },
+      { valor: '3–5', rotulo: 'Participantes na validação', cor: '#F7F5EF', nota: 'Grupo reduzido de avaliadores, não produtores em campo.' }
+    ];
+  }
+
+  renderVals() {
+    const s = this.state;
+    return {
+      goLogin: () => { window.location.href = './login.dc.html'; },
+      goRegistro: () => { window.location.href = './login.dc.html?modo=registro'; },
+      slideValor: this.slidesSobre()[s.slide].valor,
+      slideRotulo: this.slidesSobre()[s.slide].rotulo,
+      slideNota: this.slidesSobre()[s.slide].nota,
+      slideCor: this.slidesSobre()[s.slide].cor,
+      slides: this.slidesSobre().map((sl, i) => ({
+        rotulo: sl.rotulo,
+        fundo: i === s.slide ? '#D4A537' : 'rgba(247,245,239,0.28)',
+        ir: () => this.setState({ slide: i })
+      })),
+      slideAnterior: () => this.setState(st => ({ slide: (st.slide + 3) % 4 })),
+      slideProximo: () => this.setState(st => ({ slide: (st.slide + 1) % 4 }))
+    };
+  }
+}
+</script>
+</body>
+</html>

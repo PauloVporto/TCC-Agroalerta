@@ -1,169 +1,75 @@
 /**
  * Serviço de clima.
  *
- * API escolhida para o TCC: Open-Meteo (https://open-meteo.com/).
- * Motivos em relação às alternativas levantadas:
- * - OpenWeather: exige chave; plano gratuito tem limite diário.
- * - Google Maps Weather: exige faturamento no Google Cloud.
- * - Visual Crossing: plano gratuito limitado.
- * - Open-Meteo: código aberto, sem chave para uso acadêmico, previsão
- *   diária/horária e histórico suficientes para o motor de regras.
+ * Se OPENWEATHER_API_KEY estiver configurada no .env, busca dados reais
+ * na OpenWeatherMap. Caso contrário, gera dados simulados (porém plausíveis)
+ * para que o sistema inteiro possa ser testado sem depender de chave de API.
  *
- * OPENWEATHER_API_KEY ainda pode forçar o provedor antigo via
- * WEATHER_PROVIDER=openweather.
+ * Isso é uma decisão de escopo proposital: no TCC, vale documentar isso
+ * como "modo de demonstração" no capítulo de limitações.
  */
 
-const OPENWEATHER_KEY = process.env.OPENWEATHER_API_KEY;
-const PROVIDER = (process.env.WEATHER_PROVIDER || "openmeteo").toLowerCase();
-const CACHE_MS = 15 * 60 * 1000;
-const cacheClima = new Map();
-
-function chaveCache(latitude, longitude) {
-  return latitude.toFixed(3) + "," + longitude.toFixed(3) + ":" + fonteClimaAtiva();
-}
+// .trim() evita 401 "silencioso" quando a chave vem com espaço/quebra de
+// linha extra (comum ao colar em .env editados no Windows).
+const API_KEY = (process.env.OPENWEATHER_API_KEY || "").trim() || undefined;
+const BASE_URL = "https://api.openweathermap.org/data/2.5";
 
 async function buscarClimaAtual(latitude, longitude) {
-  const chave = chaveCache(latitude, longitude);
-  const cached = cacheClima.get(chave);
-  if (cached && Date.now() - cached.em < CACHE_MS) {
-    return cached.clima;
+  if (!API_KEY) {
+    return gerarClimaSimulado(latitude, longitude);
   }
 
-  const usarOpenWeather = PROVIDER === "openweather" && OPENWEATHER_KEY;
-
   try {
-    const clima = usarOpenWeather
-      ? await buscarOpenWeather(latitude, longitude)
-      : await buscarOpenMeteo(latitude, longitude);
-    cacheClima.set(chave, { em: Date.now(), clima });
-    return clima;
+    const url =
+      BASE_URL +
+      "/forecast?lat=" +
+      latitude +
+      "&lon=" +
+      longitude +
+      "&appid=" +
+      API_KEY +
+      "&units=metric&lang=pt_br";
+
+    const resposta = await fetch(url);
+    if (!resposta.ok) {
+      const corpo = await resposta.text();
+      const dica = resposta.status === 401
+        ? " - chave inválida ou ainda não ativada (a OpenWeatherMap pode levar até 2h para ativar uma chave nova)"
+        : "";
+      throw new Error("Erro na API de clima: " + resposta.status + dica + " - " + corpo.slice(0, 200));
+    }
+    const dados = await resposta.json();
+    return processarRespostaOpenWeather(dados);
   } catch (erro) {
-    console.error("[weather] Falha na API de clima, usando fallback simulado:", erro.message);
+    console.error("[weather] Falha ao buscar clima real, usando fallback simulado:", erro.message);
     return gerarClimaSimulado(latitude, longitude);
   }
 }
 
-function fonteClimaAtiva() {
-  if (PROVIDER === "openweather" && OPENWEATHER_KEY) return "openweathermap";
-  return "open-meteo";
-}
-
-async function buscarOpenMeteo(latitude, longitude) {
-  const params = new URLSearchParams({
-    latitude: String(latitude),
-    longitude: String(longitude),
-    daily: [
-      "temperature_2m_min",
-      "precipitation_sum",
-      "precipitation_probability_max",
-      "wind_speed_10m_max",
-    ].join(","),
-    past_days: "7",
-    forecast_days: "14",
-    timezone: "America/Sao_Paulo",
-    wind_speed_unit: "kmh",
-  });
-
-  const resposta = await fetch("https://api.open-meteo.com/v1/forecast?" + params);
-  if (!resposta.ok) {
-    throw new Error("Erro na Open-Meteo: " + resposta.status);
-  }
-  return processarRespostaOpenMeteo(await resposta.json());
-}
-
-function processarRespostaOpenMeteo(dados) {
-  const daily = dados.daily || {};
-  const datas = daily.time || [];
-  const mins = daily.temperature_2m_min || [];
-  const chuvas = daily.precipitation_sum || [];
-  const probs = daily.precipitation_probability_max || [];
-  const ventos = daily.wind_speed_10m_max || [];
-
-  const hoje = new Date().toISOString().slice(0, 10);
-  const idxsPassado = [];
-  const idxsFuturo = [];
-
-  datas.forEach((data, i) => {
-    if (data < hoje) idxsPassado.push(i);
-    else idxsFuturo.push(i);
-  });
-
-  const chuvasPassado = idxsPassado.map((i) => chuvas[i] || 0);
-  const chuvaAcumulada7dias = Number(chuvasPassado.reduce((a, b) => a + b, 0).toFixed(1));
-
-  let diasSemChuva = 0;
-  for (let i = idxsPassado.length - 1; i >= 0; i--) {
-    if ((chuvas[idxsPassado[i]] || 0) < 0.5) diasSemChuva += 1;
-    else break;
-  }
-
-  const tempsFuturo = (idxsFuturo.length ? idxsFuturo : datas.map((_, i) => i)).map((i) => mins[i]);
-  const temperaturaMinima = Number(Math.min(...tempsFuturo.filter((n) => typeof n === "number")).toFixed(1));
-
-  const probsFuturo = idxsFuturo.map((i) => probs[i]).filter((n) => typeof n === "number");
-  const probabilidadeChuva7dias = probsFuturo.length
-    ? Math.round(probsFuturo.reduce((a, b) => a + b, 0) / probsFuturo.length)
-    : 0;
-
-  const ventoMaximoKmh = Math.round(Math.max(...ventos.filter((n) => typeof n === "number"), 0));
-
-  const previsao = idxsFuturo.map((i) => {
-    const chuvaMm = Number((chuvas[i] || 0).toFixed(1));
-    const probabilidadeChuva = typeof probs[i] === "number" ? probs[i] : 0;
-    let condicao = "estavel";
-    if (chuvaMm >= 8 || probabilidadeChuva >= 60) condicao = "chuva";
-    else if (chuvaMm < 0.5 && probabilidadeChuva < 35) condicao = "seco";
-    return {
-      data: datas[i],
-      temperaturaMinima: mins[i],
-      chuvaMm,
-      probabilidadeChuva,
-      ventoKmh: ventos[i] || 0,
-      condicao,
-    };
-  });
-
-  return {
-    temperaturaMinima,
-    chuvaAcumulada7dias,
-    diasSemChuva,
-    probabilidadeChuva7dias,
-    ventoMaximoKmh,
-    fonte: "open-meteo",
-    previsao,
-  };
-}
-
-async function buscarOpenWeather(latitude, longitude) {
-  const url =
-    "https://api.openweathermap.org/data/2.5/forecast?lat=" +
-    latitude +
-    "&lon=" +
-    longitude +
-    "&appid=" +
-    OPENWEATHER_KEY +
-    "&units=metric&lang=pt_br";
-
-  const resposta = await fetch(url);
-  if (!resposta.ok) {
-    throw new Error("Erro na API de clima: " + resposta.status);
-  }
-  return processarRespostaOpenWeather(await resposta.json());
-}
-
+/**
+ * Converte a resposta bruta da OpenWeatherMap (previsão de 5 dias / 3h)
+ * nos indicadores que o motor de regras precisa.
+ *
+ * A API devolve os horários em UTC (dt_txt e dt). Como o Brasil está em
+ * UTC-3, agrupar direto pela data UTC jogava blocos da madrugada local
+ * (21h-23h59 local = 00h-02h59 UTC do dia seguinte) para o dia errado.
+ * Por isso convertemos cada bloco para a data local usando o offset de
+ * fuso que a própria OpenWeatherMap devolve em `city.timezone`.
+ */
 function processarRespostaOpenWeather(dados) {
   const lista = dados.list || [];
+  const fusoSegundos = dados.city ? dados.city.timezone || 0 : 0;
+  const diaLocal = (item) => dataLocalISO(item.dt, fusoSegundos);
+
   const temperaturasMin = lista.map((item) => item.main.temp_min);
   const chuvas = lista.map((item) => (item.rain ? item.rain["3h"] || 0 : 0));
-  const ventos = lista.map((item) => (item.wind ? item.wind.speed * 3.6 : 0));
+  const ventos = lista.map((item) => (item.wind ? item.wind.speed * 3.6 : 0)); // m/s -> km/h
 
   const diasComChuva = new Set(
-    lista
-      .filter((item) => (item.rain ? item.rain["3h"] || 0 : 0) > 0.5)
-      .map((item) => item.dt_txt.split(" ")[0])
+    lista.filter((item) => (item.rain ? item.rain["3h"] || 0 : 0) > 0.5).map(diaLocal)
   ).size;
 
-  const diasTotais = new Set(lista.map((item) => item.dt_txt.split(" ")[0])).size;
+  const diasTotais = new Set(lista.map(diaLocal)).size;
 
   return {
     temperaturaMinima: Math.min(...temperaturasMin),
@@ -173,29 +79,82 @@ function processarRespostaOpenWeather(dados) {
       (lista.reduce((acc, item) => acc + (item.pop || 0), 0) / lista.length) * 100
     ),
     ventoMaximoKmh: Math.round(Math.max(...ventos)),
+    previsaoDiaria: agruparPorDia(lista, fusoSegundos),
     fonte: "openweathermap",
   };
 }
 
-function previsaoSimulada(semente) {
-  const hoje = new Date();
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(hoje);
-    d.setDate(d.getDate() + i);
-    const chuvaMm = (semente * (i + 1)) % 18;
-    return {
-      data: d.toISOString().slice(0, 10),
-      temperaturaMinima: 8 + (semente % 10),
-      chuvaMm,
-      probabilidadeChuva: (semente * 11 + i * 7) % 100,
-      ventoKmh: 12 + (semente % 20),
-      condicao: chuvaMm >= 8 ? "chuva" : chuvaMm < 0.5 ? "seco" : "estavel",
-    };
-  });
+// Data (YYYY-MM-DD) no fuso local do talhão, a partir de um timestamp unix (UTC).
+function dataLocalISO(dtUnix, fusoSegundos) {
+  return new Date((dtUnix + fusoSegundos) * 1000).toISOString().slice(0, 10);
 }
 
+/**
+ * Agrupa a lista de blocos de 3h da OpenWeatherMap por dia local, com
+ * máxima/mínima de temperatura e probabilidade/volume de chuva do dia.
+ * Usado para alimentar o card de previsão no dashboard.
+ *
+ * O plano gratuito da OpenWeatherMap só cobre ~5 dias à frente (40 blocos
+ * de 3h). O primeiro dia (hoje) costuma vir incompleto, cobrindo só o
+ * restante do dia a partir do horário da consulta - isso distorce a
+ * mínima/máxima (ex: já passou a madrugada, que teria a menor temperatura).
+ * Por isso descartamos dias incompletos quando há dias completos disponíveis.
+ */
+function agruparPorDia(lista, fusoSegundos) {
+  const porDia = new Map();
+
+  for (const item of lista) {
+    const data = dataLocalISO(item.dt, fusoSegundos);
+    if (!porDia.has(data)) porDia.set(data, []);
+    porDia.get(data).push(item);
+  }
+
+  const dias = Array.from(porDia.entries()).map(([data, itens]) => {
+    const temps = itens.map((i) => i.main.temp);
+    const chuvaMm = itens.reduce((acc, i) => acc + (i.rain ? i.rain["3h"] || 0 : 0), 0);
+    const chuvaProb = Math.round(
+      (itens.reduce((acc, i) => acc + (i.pop || 0), 0) / itens.length) * 100
+    );
+    return {
+      data,
+      tempMax: Math.round(Math.max(...temps)),
+      tempMin: Math.round(Math.min(...temps)),
+      chuvaMm: Number(chuvaMm.toFixed(1)),
+      chuvaProbabilidade: chuvaProb,
+      blocos: itens.length,
+    };
+  });
+
+  // Um dia com 3h de bloco tem no máximo 8 registros (24h / 3h). Considera
+  // "completo" a partir de 6 para tolerar o último dia, que também costuma
+  // vir parcial.
+  const completos = dias.filter((d) => d.blocos >= 6);
+  const escolhidos = completos.length >= 3 ? completos : dias;
+
+  return escolhidos.slice(0, 7).map(({ blocos, ...resto }) => resto);
+}
+
+/**
+ * Gera dados climáticos simulados, com alguma variação aleatória,
+ * para permitir testar o sistema completo sem depender de API externa.
+ */
 function gerarClimaSimulado(latitude, longitude) {
+  // Usa lat/lon como semente simples para dar alguma "consistência" por talhão
   const semente = Math.abs(Math.round((latitude + longitude) * 1000)) % 100;
+
+  const hoje = new Date();
+  const previsaoDiaria = Array.from({ length: 7 }, (_, i) => {
+    const s = (semente + i * 13) % 100;
+    const data = new Date(hoje);
+    data.setUTCDate(data.getUTCDate() + i);
+    return {
+      data: data.toISOString().split("T")[0],
+      tempMax: 18 + (s % 14),
+      tempMin: 2 + (s % 15),
+      chuvaMm: Number(((s * 2) % 40).toFixed(1)),
+      chuvaProbabilidade: (s * 7) % 100,
+    };
+  });
 
   return {
     temperaturaMinima: Number((2 + (semente % 15)).toFixed(1)),
@@ -203,15 +162,9 @@ function gerarClimaSimulado(latitude, longitude) {
     diasSemChuva: semente % 20,
     probabilidadeChuva7dias: (semente * 7) % 100,
     ventoMaximoKmh: 15 + (semente % 50),
+    previsaoDiaria,
     fonte: "simulado",
-    previsao: previsaoSimulada(semente),
   };
 }
 
-module.exports = {
-  buscarClimaAtual,
-  fonteClimaAtiva,
-  processarRespostaOpenMeteo,
-  processarRespostaOpenWeather,
-  gerarClimaSimulado,
-};
+module.exports = { buscarClimaAtual };
