@@ -133,6 +133,16 @@ async function alterarSenha(usuarioId, senhaAtual, novaSenha) {
   );
 }
 
+async function atualizarLocalizacao(usuarioId, { cidade, cidadeFormatada, latitude, longitude }) {
+  const resultado = await pool.query(
+    `UPDATE usuarios SET cidade = $1, cidade_formatada = $2, latitude = $3, longitude = $4
+     WHERE id = $5
+     RETURNING id, cidade, cidade_formatada AS "cidadeFormatada", latitude, longitude`,
+    [cidade, cidadeFormatada || null, latitude, longitude, usuarioId]
+  );
+  return resultado.rows[0] || null;
+}
+
 async function excluirConta(usuarioId) {
   await pool.query("DELETE FROM usuarios WHERE id = $1", [usuarioId]);
 }
@@ -171,6 +181,7 @@ module.exports = {
   obterConfiguracoes,
   atualizarPerfil,
   atualizarPreferencias,
+  atualizarLocalizacao,
   alterarSenha,
   excluirConta,
   exigirAutenticacao,

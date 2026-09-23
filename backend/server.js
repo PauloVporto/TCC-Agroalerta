@@ -28,7 +28,7 @@ app.get("/api/health", (req, res) => {
     status: "ok",
     modoClima: process.env.OPENWEATHER_API_KEY ? "real" : "simulado",
     modoIA: process.env.ANTHROPIC_API_KEY ? "real" : "simulado",
-    modoMapas: process.env.GOOGLE_MAPS_API_KEY ? "real" : "simulado",
+    modoMapas: "nominatim",
   });
 });
 
@@ -36,14 +36,6 @@ app.get("/api/culturas", (req, res) => {
   res.json(culturasSuportadas());
 });
 
-// GET /api/config - configurações públicas do frontend.
-// A chave do Google Maps aqui é a de uso client-side (Embed/JS API): ela é
-// pensada para ficar visível no navegador e deve ser restrita por domínio/
-// referrer no Console do Google, não por segredo no servidor.
-app.get("/api/config", (req, res) => {
-  const chave = (process.env.GOOGLE_MAPS_API_KEY || "").trim();
-  res.json({ googleMapsApiKey: chave || null });
-});
 
 app.use("/api/auth", authRouter);
 app.use("/api/clima", climaRouter);
@@ -63,7 +55,7 @@ async function iniciar() {
     console.log("  AgroAlerta - backend rodando em http://localhost:" + PORT);
     console.log("  Modo clima: " + (process.env.OPENWEATHER_API_KEY ? "REAL (OpenWeatherMap)" : "SIMULADO"));
     console.log("  Modo IA:    " + (process.env.ANTHROPIC_API_KEY ? "REAL (Anthropic)" : "SIMULADO"));
-    console.log("  Modo mapas: " + (process.env.GOOGLE_MAPS_API_KEY ? "REAL (Google Maps)" : "SIMULADO"));
+    console.log("  Modo mapas: OpenStreetMap (Nominatim, sem chave necessária)");
     console.log("");
   });
 }

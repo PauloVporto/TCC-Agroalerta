@@ -58,10 +58,6 @@
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Minhas ofertas</span>
       </button>
       </sc-if>
-      <button type="button" onClick="{{ goConta }}" title="Configurar conta" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navContaBg }}; color: {{ navContaFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navContaBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
-        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><circle cx="8" cy="8" r="2.4"></circle><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4"></path></svg>
-        <span style="white-space: nowrap; display: {{ labelDisplay }};">Configurar conta</span>
-      </button>
       <button type="button" onClick="{{ goRelatorios }}" title="Relatórios" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navRelatoriosBg }}; color: {{ navRelatoriosFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navRelatoriosBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="3" y="1.5" width="10" height="13"></rect><line x1="5.5" y1="5" x2="10.5" y2="5"></line><line x1="5.5" y1="8" x2="10.5" y2="8"></line><line x1="5.5" y1="11" x2="8.5" y2="11"></line></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Relatórios</span>
@@ -76,7 +72,10 @@
         <div style="min-width: 0; display: {{ labelDisplay }};">
           <div style="font-size: 13px; font-weight: 500; color: #F7F5EF; white-space: nowrap;">{{ usuarioNome }}</div>
           <div style="margin-top: 2px; font-size: 12px; color: rgba(247,245,239,0.66); white-space: nowrap;">{{ usuarioCidade }}</div>
-          <div style="margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: #1F3D2B; background: #D4A537; padding: 3px 9px; border-radius: 999px; display: inline-block;">{{ usuarioPapel }}</div>
+          <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: #1F3D2B; background: #D4A537; padding: 3px 9px; border-radius: 999px;">{{ usuarioPapel }}</span>
+            <button type="button" onClick="{{ goConta }}" style="font-family: Archivo, sans-serif; font-size: 11px; color: rgba(247,245,239,0.55); background: transparent; border: 0; padding: 0; cursor: pointer; white-space: nowrap;" style-hover="color: #D4A537;">Acessar perfil →</button>
+          </div>
         </div>
       </div>
       <button type="button" onClick="{{ sair }}" title="Sair" style="display: flex; align-items: center; gap: 10px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: rgba(247,245,239,0.8); background: transparent; border: 1px solid rgba(247,245,239,0.3); padding: 9px 12px; cursor: pointer;" style-hover="border-color: #D4A537; color: #D4A537;">
@@ -99,7 +98,7 @@
       </div>
     </header>
 
-    <div style="flex: 1 1 auto; min-height: 0; overflow-y: auto;">
+    <div style="flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column;">
 
       <sc-if value="{{ pgVisao }}" hint-placeholder-val="{{ false }}">
       <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); background: #F7F5EF; border-bottom: 1px solid #DDD8C9;">
@@ -141,12 +140,12 @@
         </div>
       </section>
 
-      <section style="padding: 28px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
+      <section style="flex: 1; padding: 28px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 32px; align-content: start;"><div style="display: contents;">
         <div>
           <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em;">{{ previsaoTitulo }}</h2>
           <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px;">
             <sc-for list="{{ clima }}" as="d" hint-placeholder-count="7">
-              <div style="border: 1px solid #DDD8C9; background: #FFFFFF; padding: 12px 8px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
+              <div style="border: 1px solid #DDD8C9; background: #FFFFFF; padding: 18px 8px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
                 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B4A34;">{{ d.dia }}</span>
                 <span style="font-family: Fraunces, Georgia, serif; font-size: 19px; font-weight: 600; color: #1F3D2B;">{{ d.max }}</span>
                 <span style="font-size: 12px; color: #4A4A42;">{{ d.min }}</span>
@@ -165,13 +164,13 @@
         <div>
           <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em;">Localização da propriedade</h2>
           <sc-if value="{{ mapaDisponivel }}" hint-placeholder-val="{{ true }}">
-            <iframe src="{{ mapaSrc }}" title="Mapa da localização cadastrada" style="width: 100%; height: 226px; border: 1px solid #DDD8C9; border-radius: 10px; display: block;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <iframe src="{{ mapaSrc }}" title="Mapa da localização cadastrada" style="width: 100%; height: 360px; border: 1px solid #DDD8C9; border-radius: 10px; display: block;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
           </sc-if>
           <sc-if value="{{ mapaIndisponivel }}" hint-placeholder-val="{{ false }}">
-            <div style="height: 226px; border: 1px dashed #C9C3B0; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; font-size: 13px; color: #6B4A34;">{{ mapaMensagem }}</div>
+            <div style="height: 360px; border: 1px dashed #C9C3B0; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; font-size: 13px; color: #6B4A34;">{{ mapaMensagem }}</div>
           </sc-if>
         </div>
-      </section>
+      </div></section>
       </sc-if>
 
       <sc-if value="{{ pgAlertas }}" hint-placeholder-val="{{ true }}">
@@ -457,15 +456,21 @@
             E-mail
             <input type="email" value="{{ cEmail }}" onChange="{{ onCEmail }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
           </label>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px;">
-            <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
-              Telefone
-              <input type="tel" value="{{ cTelefone }}" onChange="{{ onCTelefone }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
-            </label>
-            <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
-              Cidade
-              <input type="text" value="{{ cCidade }}" onChange="{{ onCCidade }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
-            </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42; margin-bottom: 14px;">
+            Telefone
+            <input type="tel" value="{{ cTelefone }}" onChange="{{ onCTelefone }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+          </label>
+          <div style="border: 1px solid #DDD8C9; border-radius: 10px; padding: 16px; background: #FAFAF7; margin-bottom: 14px;">
+            <span style="display: block; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42; margin-bottom: 10px;">Localização</span>
+            <div style="display: flex; gap: 8px; align-items: flex-end;">
+              <label style="flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #6B4A34;">
+                CEP
+                <input type="text" placeholder="00000-000" value="{{ cCep }}" onChange="{{ onCCep }}" maxlength="9" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 10px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+              </label>
+              <button type="button" onClick="{{ verificarCep }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #F7F5EF; background: #2F6E8F; border: 1px solid #2F6E8F; padding: 10px 16px; cursor: pointer; white-space: nowrap;" style-hover="background: #24505F;">{{ cCepBtnLabel }}</button>
+            </div>
+            <div style="margin-top: 8px; font-size: 12px; color: {{ cCepStatusCor }}; min-height: 16px;">{{ cCepStatus }}</div>
+            <div style="margin-top: 6px; font-size: 13px; color: #4A4A42; font-style: italic; min-height: 18px;">{{ cCidade }}</div>
           </div>
           <div style="margin-top: 18px; display: flex; align-items: center; gap: 12px; border-top: 1px solid #DDD8C9; padding-top: 16px;">
             <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34;">Papel</span>
@@ -522,10 +527,6 @@
 
     </div>
 
-    <footer style="flex: none; padding: 14px 32px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #6B4A34; border-top: 1px solid #DDD8C9; background: #EFEBDF; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
-      <span>AgroAlerta · protótipo acadêmico integrado às APIs configuradas</span>
-      <span>Clima 06:10 · análise de mercado 05:40</span>
-    </footer>
   </main>
 </div>
 
@@ -550,7 +551,7 @@ class Component extends DCLogic {
       return;
     }
     this.state = {
-      page: 'alertas', sidebarOpen: true, papel: 'produtor',
+      page: 'visao', sidebarOpen: true, papel: 'produtor',
       cNome: usuarioSalvo ? usuarioSalvo.nome : '',
       cEmail: usuarioSalvo ? usuarioSalvo.email : '',
       cTelefone: '', cCidade: '',
@@ -566,11 +567,12 @@ class Component extends DCLogic {
       _mercadoCultura: 'cafe',
       _climaMetrics: null,
       _climaCidade: null,
-      _googleMapsKey: null,
       cLatitude: null, cLongitude: null,
+      cCep: '', cCepStatus: '', cCepVerificando: false,
       _mercadoResumo: '',
       _mercadoFontes: [],
       _mercadoGerarPor: null,
+      _mercadoUnidade: '',
       talhoes: [],
       alertas: [],
       precos: [],
@@ -581,7 +583,6 @@ class Component extends DCLogic {
 
   _carregarDados() {
     this._carregarConfiguracoes();
-    this._carregarConfigApp();
     this._carregarClimaCidade();
     this._carregarTalhoes();
     this._carregarInsumos();
@@ -591,20 +592,18 @@ class Component extends DCLogic {
   _carregarConfiguracoes() {
     apiFetch('/auth/configuracoes').then(function(r) { return r.json(); }).then((cfg) => {
       if (!cfg) return;
+      const novaCultura = cfg.culturaFavorita || 'cafe';
       this.setState({
         cCidade: cfg.cidade || cfg.cidadeFormatada || '',
-        cCultura: cfg.culturaFavorita || 'cafe',
+        cCultura: novaCultura,
         cUnidade: cfg.unidadeTemperatura === 'fahrenheit' ? 'F' : 'C',
         cNotificacoes: !!cfg.notificacoes,
         cLatitude: cfg.latitude != null ? cfg.latitude : null,
         cLongitude: cfg.longitude != null ? cfg.longitude : null
       });
-    }).catch(function() {});
-  }
-
-  _carregarConfigApp() {
-    fetch(API_BASE + '/config').then(function(r) { return r.json(); }).then((cfg) => {
-      this.setState({ _googleMapsKey: cfg.googleMapsApiKey || null });
+      if (novaCultura !== this.state._mercadoCultura) {
+        this._carregarMercado(novaCultura);
+      }
     }).catch(function() {});
   }
 
@@ -651,6 +650,7 @@ class Component extends DCLogic {
       });
       this.setState({
         serie: serie, noticias: noticias, _mercadoCultura: cultura,
+        _mercadoUnidade: hist.unidade || '',
         _mercadoResumo: analise.resumo || '',
         _mercadoFontes: Array.isArray(analise.fontes) ? analise.fontes : [],
         _mercadoGerarPor: analise.gerarPor || null
@@ -834,15 +834,13 @@ class Component extends DCLogic {
       : (s._dadosCarregados ? 'Previsão indisponível' : 'Previsão · carregando…');
 
     const temCoordenadas = s.cLatitude != null && s.cLongitude != null;
-    const mapaDisponivel = !!s._googleMapsKey && temCoordenadas;
+    const mapaDisponivel = temCoordenadas;
     const mapaMensagem = !s._dadosCarregados
       ? 'Carregando localização…'
-      : (!s._googleMapsKey
-        ? 'Configure GOOGLE_MAPS_API_KEY no backend para ver o mapa da propriedade.'
-        : 'Nenhuma localização cadastrada ainda.');
+      : 'Nenhuma localização cadastrada ainda.';
     const mapaSrc = mapaDisponivel
-      ? 'https://www.google.com/maps/embed/v1/place?key=' + encodeURIComponent(s._googleMapsKey) +
-        '&q=' + s.cLatitude + ',' + s.cLongitude + '&zoom=12'
+      ? 'https://www.openstreetmap.org/export/embed.html?mlat=' + s.cLatitude +
+        '&mlon=' + s.cLongitude + '&zoom=12&layer=mapnik'
       : '';
 
     return {
@@ -892,8 +890,39 @@ class Component extends DCLogic {
 
       cNome: s.cNome, cEmail: s.cEmail, cTelefone: s.cTelefone, cCidade: s.cCidade,
       cNotificacoes: s.cNotificacoes,
-      onCNome: set('cNome'), onCEmail: set('cEmail'), onCTelefone: set('cTelefone'), onCCidade: set('cCidade'),
+      onCNome: set('cNome'), onCEmail: set('cEmail'), onCTelefone: set('cTelefone'),
       onCNotificacoes: (e) => this.setState({ cNotificacoes: e.target.checked, contaSalva: false }),
+      cCep: s.cCep,
+      onCCep: (e) => this.setState({ cCep: e.target.value, cCepStatus: '', contaSalva: false }),
+      cCepBtnLabel: s.cCepVerificando ? 'Verificando…' : 'Verificar',
+      cCepStatus: s.cCepStatus,
+      cCepStatusCor: s.cCepStatus.startsWith('✓') ? '#1F7A43' : (s.cCepStatus ? '#A33A22' : 'transparent'),
+      verificarCep: () => {
+        const cep = s.cCep.replace(/\D/g, '');
+        if (cep.length !== 8) {
+          this.setState({ cCepStatus: 'Informe os 8 dígitos do CEP.' });
+          return;
+        }
+        this.setState({ cCepVerificando: true, cCepStatus: '' });
+        apiFetch('/auth/localizacao', {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cep })
+        }).then(function(r) { return r.json().then(function(c) { return { ok: r.ok, corpo: c }; }); })
+          .then((res) => {
+            if (!res.ok) {
+              this.setState({ cCepVerificando: false, cCepStatus: res.corpo.erro || 'CEP não encontrado.' });
+              return;
+            }
+            this.setState({
+              cCepVerificando: false,
+              cCepStatus: '✓ Localização atualizada',
+              cCidade: res.corpo.cidade || s.cCidade,
+              cLatitude: res.corpo.latitude,
+              cLongitude: res.corpo.longitude,
+              contaSalva: false
+            });
+          }).catch(() => this.setState({ cCepVerificando: false, cCepStatus: 'Erro ao verificar. Tente novamente.' }));
+      },
       culturasConta: [
         { valor: 'cafe', label: 'Café' }, { valor: 'soja', label: 'Soja' }, { valor: 'milho', label: 'Milho' },
         { valor: 'cana', label: 'Cana' }, { valor: 'feijao', label: 'Feijão' }
@@ -917,7 +946,15 @@ class Component extends DCLogic {
         }).then(() => apiFetch('/auth/preferencias', {
           method: 'PATCH', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ culturaFavorita: s.cCultura, unidadeTemperatura: s.cUnidade === 'F' ? 'fahrenheit' : 'celsius', notificacoes: !!s.cNotificacoes })
-        })).then(() => this.setState({ contaSalva: true })).catch(function() {});
+        })).then(() => {
+          this.setState({ contaSalva: true });
+          const u = JSON.parse(sessionStorage.getItem('agroalerta_usuario') || '{}');
+          u.nome = s.cNome;
+          sessionStorage.setItem('agroalerta_usuario', JSON.stringify(u));
+          this._carregarConfiguracoes();
+          this._carregarClimaCidade();
+          this._carregarMercado(s.cCultura || 'cafe');
+        }).catch(function() {});
       },
 
       sacas: s.sacas,
@@ -998,9 +1035,9 @@ class Component extends DCLogic {
           cor: '#A97C12'
         },
         {
-          label: 'Café arábica',
+          label: CULTURAS_NOME[s._mercadoCultura] || 'Mercado',
           value: s.serie.length > 0 ? 'R$ ' + s.serie[s.serie.length - 1].preco.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : (s._dadosCarregados ? '—' : 'carregando…'),
-          note: 'saca de 60 kg · Cepea',
+          note: (s._mercadoUnidade || 'saca 60kg') + ' · Cepea',
           cor: '#2F6E8F'
         }
       ],
@@ -1009,7 +1046,7 @@ class Component extends DCLogic {
       resumoChuva7dTexto, resumoMinimaTexto,
       ultimaCotacaoTexto, variacao12mTexto, maximaPeriodoTexto,
       resumoIATexto: s._mercadoResumo || (s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…'),
-      resumoIAFonteTexto: s._mercadoGerarPor === 'ia_com_busca' ? 'IA (Claude) com busca na web' : 'Modo simulado · sem ANTHROPIC_API_KEY configurada',
+      resumoIAFonteTexto: s._mercadoGerarPor === 'ia' || s._mercadoGerarPor === 'ia_com_busca' ? 'Análise · Claude' : 'Análise de mercado',
       fontesUsadasTexto: s._mercadoFontes.length > 0
         ? s._mercadoFontes.map(function(f) { return f.titulo; }).join(', ')
         : 'Nenhuma fonte retornada nesta consulta.',

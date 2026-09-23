@@ -1,35 +1,40 @@
 /**
- * Combina a verificação de CEP (ViaCEP, autoritativo para "essa cidade/
- * região existe") com a geocodificação (Google Maps, para obter
- * latitude/longitude e alimentar o serviço de clima).
+ * Combina a verificação de CEP (ViaCEP) com a geocodificação (Nominatim).
  *
- * O ViaCEP é quem decide se o CEP é válido; o Google Maps é usado apenas
- * como um passo best-effort para refinar as coordenadas - se ele falhar
- * ou não estiver configurado, cai no fallback simulado do próprio
- * geocoding.js, sem bloquear o cadastro (o CEP já foi confirmado real).
+ * O ViaCEP cobre todos os CEPs brasileiros e retorna cidade/UF com fidelidade.
+ * O Nominatim geocodifica a cidade para obter lat/lon. Separar as duas
+ * responsabilidades torna cada passo mais confiável do que buscar por CEP
+ * diretamente no OpenStreetMap, cuja cobertura de códigos postais é limitada.
  */
 
 const { consultarCep } = require("./viacep");
-const { geocodificarEndereco } = require("./geocoding");
+const { geocodificarComNominatim } = require("./nominatim");
+
+const FALLBACK_COORDS = { latitude: -18.5122, longitude: -44.555, fonte: "fallback" };
 
 async function resolverLocalizacaoPorCep(cep) {
-  const viacep = await consultarCep(cep);
-  if (!viacep.valido) {
-    return { valido: false, erro: viacep.erro };
+  const resultado = await consultarCep(cep);
+  if (!resultado.valido) {
+    return { valido: false, erro: resultado.erro };
   }
 
-  const coordenadas = await geocodificarEndereco(viacep.enderecoCompleto);
+  const enderecoParaGeocode = `${resultado.cidade}, ${resultado.uf}, Brasil`;
+  const coords = (await geocodificarComNominatim(enderecoParaGeocode)) || FALLBACK_COORDS;
+
+  const enderecoCompleto = [resultado.logradouro, resultado.bairro, `${resultado.cidade} - ${resultado.uf}`]
+    .filter(Boolean)
+    .join(", ");
 
   return {
     valido: true,
-    cep: viacep.cep,
-    cidade: viacep.cidade,
-    uf: viacep.uf,
-    bairro: viacep.bairro,
-    latitude: coordenadas.latitude,
-    longitude: coordenadas.longitude,
-    enderecoFormatado: coordenadas.enderecoFormatado || viacep.enderecoCompleto,
-    fonteCoordenadas: coordenadas.fonte,
+    cep: resultado.cep,
+    cidade: resultado.cidade,
+    uf: resultado.uf,
+    bairro: resultado.bairro,
+    latitude: coords.latitude,
+    longitude: coords.longitude,
+    enderecoFormatado: coords.enderecoFormatado || enderecoCompleto,
+    fonteCoordenadas: coords.fonte || "nominatim",
   };
 }
 

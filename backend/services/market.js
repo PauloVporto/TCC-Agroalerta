@@ -53,16 +53,7 @@ function obterHistorico(cultura) {
   return mercadoData[cultura] || null;
 }
 
-/**
- * Chama a API da Anthropic com a ferramenta de busca na web habilitada,
- * processando os blocos de resposta (texto + resultados de busca) e
- * retornando o texto final junto das fontes usadas.
- *
- * Essa é a peça central do "modo real" do módulo de mercado: em vez de
- * depender só de notícias fixas cadastradas manualmente, a IA busca
- * informação atual sobre clima, câmbio, comércio internacional etc.
- */
-async function chamarClaudeComBusca(prompt, maxTokens = 900) {
+async function chamarClaude(prompt, maxTokens = 900) {
   const resposta = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -71,57 +62,25 @@ async function chamarClaudeComBusca(prompt, maxTokens = 900) {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
-      tools: [
-        {
-          type: "web_search_20250305",
-          name: "web_search",
-          max_uses: 6,
-        },
-      ],
     }),
   });
 
   if (!resposta.ok) {
     const corpo = await resposta.text();
-    throw new Error("Erro na API de IA: " + resposta.status + " - " + corpo.slice(0, 200));
+    throw new Error("Erro na API: " + resposta.status + " - " + corpo.slice(0, 200));
   }
 
   const dados = await resposta.json();
-
-  // A resposta pode ter vários blocos: texto, uso de ferramenta (busca) e
-  // resultados de busca. Juntamos apenas o texto final gerado pelo modelo.
   const texto = dados.content
     .filter((bloco) => bloco.type === "text")
     .map((bloco) => bloco.text)
     .join("\n")
     .trim();
 
-  // Coleta as fontes (URLs) usadas nas buscas, quando disponíveis, para
-  // exibir de forma transparente de onde veio a informação.
-  const fontes = [];
-  for (const bloco of dados.content) {
-    if (bloco.type === "web_search_tool_result" && Array.isArray(bloco.content)) {
-      for (const item of bloco.content) {
-        if (item.url && item.title) {
-          fontes.push({ titulo: item.title, url: item.url });
-        }
-      }
-    }
-  }
-
-  return { texto, fontes: dedupFontes(fontes) };
-}
-
-function dedupFontes(fontes) {
-  const vistos = new Set();
-  return fontes.filter((f) => {
-    if (vistos.has(f.url)) return false;
-    vistos.add(f.url);
-    return true;
-  }).slice(0, 6);
+  return { texto };
 }
 
 /**
@@ -150,38 +109,37 @@ async function gerarAnaliseTendencia(cultura) {
   }
 
   const prompt =
-    "Você é um analista de mercado agrícola brasileiro, escrevendo para um produtor rural do Sul de Minas Gerais. " +
-    "Pesquise na web informações ATUAIS e relevantes sobre o mercado de " + nomeCultura + " e escreva uma análise " +
-    "qualitativa cobrindo, sempre que encontrar informação relevante: " +
-    "(1) condições climáticas nas principais regiões produtoras (Brasil e, se aplicável, outros grandes players como EUA/China/países vizinhos), " +
-    "(2) câmbio (dólar) e seu efeito sobre exportação/importação, " +
-    "(3) estoques mundiais e nível de demanda internacional, " +
-    "(4) custos de frete/logística, " +
-    "(5) políticas agrícolas, tarifas ou subsídios relevantes no momento. " +
-    "Priorize fatos recentes (últimas semanas). " +
-    "Ao final, escreva um resumo qualitativo de tendência em até 6 frases, em português, direto e sem jargão excessivo, " +
-    "citando os fatores mais relevantes que você encontrou. Não invente números específicos de preço - " +
-    "use apenas os dados de preço que eu forneço abaixo.\n\n" +
-    "Dado de referência (nosso próprio histórico, não precisa buscar isso):\n" +
+    "Você é um analista de mercado agrícola brasileiro especializado em commodities, escrevendo para um produtor rural do Sul de Minas Gerais. " +
+    "Com base nos dados históricos de preço fornecidos abaixo, elabore uma análise qualitativa de tendência para o mercado de " + nomeCultura + ". " +
+    "Cubra os principais fatores que influenciam esse mercado: " +
+    "(1) tendência recente de preço e possíveis causas sazonais, " +
+    "(2) fatores climáticos típicos desse período para as regiões produtoras brasileiras, " +
+    "(3) dinâmica de câmbio (dólar) e exportações, " +
+    "(4) estoques e demanda interna/internacional, " +
+    "(5) perspectiva de curto prazo para o produtor. " +
+    "Escreva um parágrafo coeso de 5 a 7 frases em português, direto e sem jargão excessivo. " +
+    "Não invente números de preço além dos fornecidos abaixo.\n\n" +
+    "Dados de referência:\n" +
+    "Cultura: " + nomeCultura + "\n" +
     "Variação de preço nas últimas 2 semanas: " + variacaoPercentual + "%\n" +
-    "Preço atual: " + precoAtual + " (" + historico.unidade + ")";
+    "Preço atual: R$ " + precoAtual + " (" + historico.unidade + ")";
 
   try {
-    const { texto, fontes } = await chamarClaudeComBusca(prompt);
+    const { texto } = await chamarClaude(prompt);
 
     return {
       cultura,
       variacaoPercentual: Number(variacaoPercentual),
       precoAtual,
       unidade: historico.unidade,
-      resumo: texto || "Não foi possível gerar a análise a partir da busca. Tente novamente.",
-      fontes,
-      fatoresConsiderados: fontes.length > 0 ? fontes.map((f) => f.titulo) : NOTICIAS_CURADAS_FALLBACK[cultura] || [],
-      gerarPor: "ia_com_busca",
+      resumo: texto || "Não foi possível gerar a análise. Tente novamente.",
+      fontes: [],
+      fatoresConsiderados: NOTICIAS_CURADAS_FALLBACK[cultura] || [],
+      gerarPor: "ia",
       geradoEm: new Date().toISOString(),
     };
   } catch (erro) {
-    console.error("[market] Falha ao gerar análise via IA com busca, usando fallback simulado:", erro.message);
+    console.error("[market] Falha ao chamar Claude, usando fallback simulado:", erro.message);
     return gerarAnaliseSimulada(cultura, variacaoPercentual, precoAtual, NOTICIAS_CURADAS_FALLBACK[cultura] || []);
   }
 }
@@ -210,4 +168,4 @@ function gerarAnaliseSimulada(cultura, variacaoPercentual, precoAtual, noticias)
   };
 }
 
-module.exports = { obterHistorico, gerarAnaliseTendencia, chamarClaudeComBusca };
+module.exports = { obterHistorico, gerarAnaliseTendencia, chamarClaude };

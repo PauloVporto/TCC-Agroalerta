@@ -7,6 +7,7 @@ const {
   obterConfiguracoes,
   atualizarPerfil,
   atualizarPreferencias,
+  atualizarLocalizacao,
   alterarSenha,
   excluirConta,
   exigirAutenticacao,
@@ -18,12 +19,10 @@ const { culturasSuportadas } = require("../services/rules");
 // POST /api/auth/registrar
 // body: { nome, email, senha, cep, cultura? }
 //
-// O CEP informado é validado no ViaCEP (base dos Correios, sem precisar de
-// chave) antes de criar a conta - é isso que garante que a cidade/região
-// realmente existe. A partir do endereço resolvido pelo ViaCEP, tentamos
-// geocodificar (Google Maps, se configurado) para obter lat/lon e já
-// criamos o primeiro talhão naquela localização, para que o produtor veja
-// alertas e previsão do tempo reais assim que entrar no painel.
+// O CEP é validado via Nominatim (OpenStreetMap): se encontrado, retorna
+// cidade, UF e coordenadas em uma única chamada — sem chave de API. Com
+// as coordenadas já disponíveis, cria o primeiro talhão na mesma localização
+// para que o produtor veja alertas e previsão do tempo reais ao entrar.
 router.post("/registrar", async (req, res) => {
   const { nome, email, senha, cep, cultura } = req.body;
 
@@ -116,6 +115,33 @@ router.patch("/perfil", exigirAutenticacao, async (req, res) => {
   } catch (erro) {
     res.status(409).json({ erro: erro.message });
   }
+});
+
+// PATCH /api/auth/localizacao
+// body: { cep }
+// Valida o CEP via Nominatim e atualiza a localização do usuário.
+router.patch("/localizacao", exigirAutenticacao, async (req, res) => {
+  const { cep } = req.body;
+  if (!cep) return res.status(400).json({ erro: "Informe o CEP." });
+
+  const local = await resolverLocalizacaoPorCep(cep);
+  if (!local.valido) return res.status(400).json({ erro: local.erro });
+
+  const dados = await atualizarLocalizacao(req.usuario.id, {
+    cidade: local.cidade + " - " + local.uf,
+    cidadeFormatada: local.enderecoFormatado,
+    latitude: local.latitude,
+    longitude: local.longitude,
+  });
+
+  res.json({
+    cidade: dados.cidade,
+    cidadeFormatada: dados.cidadeFormatada,
+    latitude: dados.latitude,
+    longitude: dados.longitude,
+    cep: local.cep,
+    uf: local.uf,
+  });
 });
 
 router.patch("/preferencias", exigirAutenticacao, async (req, res) => {

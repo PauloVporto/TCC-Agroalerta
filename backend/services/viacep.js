@@ -1,10 +1,9 @@
 /**
- * Serviço de verificação de CEP via ViaCEP (https://viacep.com.br).
+ * Verificação de CEP via API oficial do ViaCEP (viacep.com.br).
  *
- * É a fonte da verdade para "essa cidade/região existe de verdade":
- * é uma API brasileira, gratuita e sem necessidade de chave, mantida a
- * partir da base de CEPs dos Correios. Usada no cadastro de usuário e de
- * talhão para validar o CEP antes de geocodificar e buscar o clima.
+ * Cobertura total dos CEPs brasileiros, sem necessidade de chave de API.
+ * Retorna cidade, UF, bairro e logradouro. Coordenadas são resolvidas
+ * separadamente pelo serviço de geocodificação (nominatim.js).
  */
 
 const BASE_URL = "https://viacep.com.br/ws";
@@ -17,16 +16,22 @@ async function consultarCep(cep) {
   }
 
   try {
-    const resposta = await fetch(BASE_URL + "/" + cepLimpo + "/json/");
-    const dados = await resposta.json();
+    const url = `${BASE_URL}/${cepLimpo}/json/`;
 
-    if (!resposta.ok || dados.erro) {
-      return { valido: false, erro: "CEP não encontrado. Verifique o número digitado." };
+    const resposta = await fetch(url, {
+      headers: { "User-Agent": "AgroAlerta-TCC/1.0 (projeto academico)" },
+    });
+
+    if (!resposta.ok) {
+      console.error("[viacep] Resposta não-ok:", resposta.status);
+      return { valido: false, erro: "Não foi possível verificar o CEP agora. Tente novamente em instantes." };
     }
 
-    const enderecoCompleto = [dados.logradouro, dados.bairro, dados.localidade + " - " + dados.uf]
-      .filter(Boolean)
-      .join(", ");
+    const dados = await resposta.json();
+
+    if (dados.erro) {
+      return { valido: false, erro: "CEP não encontrado. Verifique o número digitado." };
+    }
 
     return {
       valido: true,
@@ -35,7 +40,6 @@ async function consultarCep(cep) {
       bairro: dados.bairro || "",
       cidade: dados.localidade,
       uf: dados.uf,
-      enderecoCompleto,
     };
   } catch (erro) {
     console.error("[viacep] Falha ao consultar CEP:", erro.message);
