@@ -24,7 +24,7 @@ const { culturasSuportadas } = require("../services/rules");
 // as coordenadas já disponíveis, cria o primeiro talhão na mesma localização
 // para que o produtor veja alertas e previsão do tempo reais ao entrar.
 router.post("/registrar", async (req, res) => {
-  const { nome, email, senha, cep, cultura } = req.body;
+  const { nome, email, senha, cep, cultura, telefone, papel } = req.body;
 
   if (!nome || !email || !senha || !cep) {
     return res.status(400).json({ erro: "Campos obrigatórios: nome, email, senha, cep" });
@@ -48,7 +48,7 @@ router.post("/registrar", async (req, res) => {
 
   try {
     const usuario = await criarUsuario({
-      nome, email, senha,
+      nome, email, senha, telefone, papel,
       cidade: local.cidade + " - " + local.uf,
       cidadeFormatada: local.enderecoFormatado,
       latitude: local.latitude,

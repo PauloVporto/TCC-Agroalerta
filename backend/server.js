@@ -48,6 +48,13 @@ app.use((req, res) => {
   res.status(404).json({ erro: "Rota não encontrada" });
 });
 
+// Erro dentro de rota async vira rejeição não tratada e, por padrão, derruba o
+// processo inteiro no Node 20. Aqui ele é apenas registrado: uma requisição com
+// problema não pode deixar o backend fora do ar para todos os usuários.
+process.on("unhandledRejection", (erro) => {
+  console.error("[servidor] Rejeição não tratada:", erro);
+});
+
 async function iniciar() {
   await inicializarBanco();
   app.listen(PORT, () => {

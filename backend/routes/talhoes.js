@@ -75,7 +75,9 @@ router.post("/", async (req, res) => {
   res.status(201).json(talhao);
 });
 
-async function criarTalhao(usuarioId, { nome, cultura, fase, endereco, coordenadas }) {
+// poligono/areaHa são opcionais: o cadastro por CEP não desenha a área no mapa,
+// mas as colunas existem para o desenho manual do talhão.
+async function criarTalhao(usuarioId, { nome, cultura, fase, endereco, coordenadas, poligono, areaHa }) {
   const resultado = await pool.query(
     `INSERT INTO talhoes
        (usuario_id, nome, cultura, fase, endereco, latitude, longitude, endereco_formatado, poligono, area_ha)
@@ -85,7 +87,8 @@ async function criarTalhao(usuarioId, { nome, cultura, fase, endereco, coordenad
                poligono, area_ha AS "areaHa",
                criado_em AS "criadoEm"`,
     [usuarioId, nome, cultura, fase, endereco, coordenadas.latitude,
-      coordenadas.longitude, coordenadas.enderecoFormatado]
+      coordenadas.longitude, coordenadas.enderecoFormatado,
+      poligono ? JSON.stringify(poligono) : null, areaHa != null ? areaHa : null]
   );
   return resultado.rows[0];
 }
