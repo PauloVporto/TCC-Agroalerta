@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { chamarClaudeComBusca } = require("./market");
+const { chamarClaude } = require("./market");
 
 const db = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "insumos.json"), "utf-8"));
 
@@ -52,27 +52,26 @@ async function gerarInsightCompra(categoria) {
 
   const prompt =
     "Você é um consultor agrícola ajudando um produtor rural do Sul de Minas Gerais a decidir sobre a compra de " +
-    nomeCategoria + ". Pesquise na web o cenário atual desse tipo de insumo agrícola no Brasil: " +
-    "variação recente de preço de matéria-prima relevante (ex: petróleo/gás natural para fertilizantes nitrogenados, " +
-    "potássio/fósforo para NPK, câmbio para insumos importados), tendência de oferta e demanda na safra atual, " +
-    "e qualquer notícia relevante das últimas semanas sobre custo de insumos agrícolas no Brasil. " +
-    "\n\nPreços que já temos coletados de fornecedores regionais:\n" + resumoPrecos +
-    "\n\nCom base na pesquisa, escreva uma recomendação curta (até 5 frases) sobre se é um bom momento para " +
-    "comprar agora ou se vale esperar, e por quê. Seja direto, prático e evite jargão técnico excessivo.";
+    nomeCategoria + ". Com base nos preços coletados de fornecedores regionais abaixo, elabore uma recomendação " +
+    "considerando: variação típica de preço de matéria-prima para esse insumo (ex: petróleo/gás para fertilizantes, " +
+    "câmbio para insumos importados), sazonalidade da demanda agrícola no Sul de Minas e perspectiva geral do setor. " +
+    "\n\nPreços coletados de fornecedores regionais:\n" + resumoPrecos +
+    "\n\nEscreva uma recomendação curta (até 5 frases) sobre se é um bom momento para comprar agora ou esperar, " +
+    "e por quê. Seja direto, prático e sem jargão técnico excessivo.";
 
   try {
-    const { texto, fontes } = await chamarClaudeComBusca(prompt, 600);
+    const { texto } = await chamarClaude(prompt, 600);
 
     return {
       categoria,
       nomeCategoria,
       recomendacao: texto || "Não foi possível gerar a recomendação. Tente novamente.",
-      fontes,
-      gerarPor: "ia_com_busca",
+      fontes: [],
+      gerarPor: "ia",
       geradoEm: new Date().toISOString(),
     };
   } catch (erro) {
-    console.error("[insumosIA] Falha ao gerar insight via IA, usando fallback simulado:", erro.message);
+    console.error("[insumosIA] Falha ao chamar Claude, usando fallback simulado:", erro.message);
     return gerarInsightSimulado(categoria, nomeCategoria, insumos);
   }
 }
@@ -85,9 +84,8 @@ function gerarInsightSimulado(categoria, nomeCategoria, insumos) {
   const recomendacao =
     "Entre os fornecedores da região, o melhor preço encontrado para " + nomeCategoria +
     " está em torno de R$ " + menorPrecoGeral.toFixed(2) + ". " +
-    "Recomenda-se comparar as ofertas disponíveis e considerar comprar em volume caso o insumo seja usado " +
-    "com frequência, aproveitando os melhores preços listados. " +
-    "[Recomendação gerada em modo simulado - configure ANTHROPIC_API_KEY para análise com busca real na web sobre custo de matéria-prima e cenário de mercado.]";
+    "Recomenda-se comparar as ofertas disponíveis e considerar comprar em volume caso o insumo seja utilizado " +
+    "com frequência, aproveitando os melhores preços listados.";
 
   return {
     categoria,
