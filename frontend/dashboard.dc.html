@@ -103,7 +103,7 @@
       <sc-if value="{{ pgVisao }}" hint-placeholder-val="{{ false }}">
       <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); background: #F7F5EF; border-bottom: 1px solid #DDD8C9;">
         <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
-          <div style="background: #F7F5EF; padding: 22px 26px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid #DDD8C9; border-top: 1px solid #DDD8C9; margin-top: -1px;">
+          <div style="background: #F7F5EF; padding: 22px 26px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid #DDD8C9; border-top: 1px solid #DDD8C9; margin-top: -1px; align-items: center; text-align: center;">
             <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34;">{{ k.label }}</span>
             <span style="font-family: Fraunces, Georgia, serif; font-size: 32px; font-weight: 600; color: {{ k.cor }}; line-height: 1;">{{ k.value }}</span>
             <span style="font-size: 13px; color: #4A4A42;">{{ k.note }}</span>
@@ -142,10 +142,10 @@
 
       <section style="flex: 1; padding: 28px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 32px; align-content: start;"><div style="display: contents;">
         <div>
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em;">{{ previsaoTitulo }}</h2>
-          <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px;">
+          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em; text-align: center;">{{ previsaoTitulo }}</h2>
+          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
             <sc-for list="{{ clima }}" as="d" hint-placeholder-count="7">
-              <div style="border: 1px solid #DDD8C9; background: #FFFFFF; padding: 18px 8px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
+              <div style="flex: none; width: 82px; border: 1px solid #DDD8C9; background: #FFFFFF; padding: 18px 8px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
                 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B4A34;">{{ d.dia }}</span>
                 <span style="font-family: Fraunces, Georgia, serif; font-size: 19px; font-weight: 600; color: #1F3D2B;">{{ d.max }}</span>
                 <span style="font-size: 12px; color: #4A4A42;">{{ d.min }}</span>
@@ -156,13 +156,13 @@
               </div>
             </sc-for>
           </div>
-          <div style="margin-top: 16px; border-top: 1px solid #DDD8C9; padding-top: 14px; display: flex; justify-content: space-between; gap: 16px; font-size: 13px; color: #4A4A42; flex-wrap: wrap;">
+          <div style="margin-top: 16px; border-top: 1px solid #DDD8C9; padding-top: 14px; display: flex; justify-content: center; gap: 32px; font-size: 13px; color: #4A4A42; flex-wrap: wrap;">
             <span>Chuva acumulada 7 dias: <strong style="color: #1A1A18;">{{ resumoChuva7dTexto }}</strong></span>
             <span>Mínima prevista: <strong style="color: #2F6E8F;">{{ resumoMinimaTexto }}</strong></span>
           </div>
         </div>
         <div>
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em;">Localização da propriedade</h2>
+          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em; text-align: center;">Localização da propriedade</h2>
           <sc-if value="{{ mapaDisponivel }}" hint-placeholder-val="{{ true }}">
             <iframe src="{{ mapaSrc }}" title="Mapa da localização cadastrada" style="width: 100%; height: 360px; border: 1px solid #DDD8C9; border-radius: 10px; display: block;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
           </sc-if>
@@ -177,8 +177,32 @@
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 16px; flex-wrap: wrap;">
           <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Regras disparadas nesta semana</h2>
-          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #6B4A34;">Chuva · seca · geada</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #6B4A34;">Chuva · seca · geada · Open-Meteo</span>
         </div>
+
+        <sc-if value="{{ temAlertasOficiais }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-bottom: 20px; border: 1px solid #C9A33A; background: #FBF4E0; border-radius: 10px; overflow: hidden;">
+          <div style="padding: 11px 18px; background: #F0E4B8; border-bottom: 1px solid #C9A33A; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 14px;">⚠️</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A00; font-weight: 600;">Avisos oficiais INMET · Meteorologia Nacional</span>
+          </div>
+          <div style="padding: 14px 18px; display: flex; flex-direction: column; gap: 10px;">
+            <sc-for list="{{ alertasOficiais }}" as="ao">
+            <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px 14px; padding: 12px 14px; background: #FFFFFF; border: 1px solid #E0D29A; border-radius: 8px;">
+              <span style="flex-shrink: 0; font-size: 12px; padding: 4px 11px; border-radius: 999px; border: 1px solid {{ ao.cor }}; color: {{ ao.corTexto }}; background: {{ ao.fundo }};">{{ ao.nivelLabel }}</span>
+              <div style="flex: 1; min-width: 180px;">
+                <div style="font-weight: 500; color: #1A1A18; font-size: 14px; line-height: 1.4;">{{ ao.descricao }}</div>
+                <sc-if value="{{ ao.instrucao }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size: 12px; color: #4A4A42; margin-top: 5px; line-height: 1.4;">{{ ao.instrucao }}</div>
+                </sc-if>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8A8272; margin-top: 6px;">Válido: {{ ao.janela }}</div>
+              </div>
+            </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
         <div style="overflow-x: auto; border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px;">
           <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px;">
             <thead>
@@ -325,22 +349,45 @@
       <sc-if value="{{ pgMercado }}" hint-placeholder-val="{{ false }}">
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 18px; flex-wrap: wrap;">
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Café arábica · saca de 60 kg</h2>
-          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #6B4A34;">Série Cepea/USP · 12 meses</span>
+          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">{{ mercadoTituloGrafico }}</h2>
         </div>
         <div style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px; padding: 24px;">
           <div style="display: flex; align-items: flex-end; gap: 10px; height: 180px;">
             <sc-for list="{{ serie }}" as="s" hint-placeholder-count="12">
-              <div style="flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 8px; min-width: 0;">
+              <div style="flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #4A4A42; white-space: nowrap; line-height: 1;">{{ s.valor }}</span>
                 <div style="width: 100%; background: {{ s.cor }}; height: {{ s.altura }}; border-radius: 6px 6px 0 0; min-height: 4px;"></div>
-                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6B4A34;">{{ s.mes }}</span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6B4A34;">{{ s.mes }}</span>
               </div>
             </sc-for>
           </div>
           <div style="margin-top: 18px; border-top: 1px solid #DDD8C9; padding-top: 16px; display: flex; gap: 32px; flex-wrap: wrap; font-size: 13px; color: #4A4A42;">
             <span>Última cotação: <strong style="color: #1A1A18;">{{ ultimaCotacaoTexto }}</strong></span>
-            <span>Variação 12 meses: <strong style="color: #1F3D2B;">{{ variacao12mTexto }}</strong></span>
+            <span>Variação no período: <strong style="color: #1F3D2B;">{{ variacao12mTexto }}</strong></span>
             <span>Máxima do período: <strong style="color: #A97C12;">{{ maximaPeriodoTexto }}</strong></span>
+          </div>
+        </div>
+      </section>
+
+      <section style="padding: 16px 32px; border-bottom: 1px solid #DDD8C9; background: #FAFAF7;">
+        <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34;">Dados externos · fontes nacionais e internacionais</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+          <div style="background: #FFFFFF; border: 1px solid #DDD8C9; border-radius: 10px; padding: 16px 18px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34; margin-bottom: 8px;">Câmbio PTAX (venda)</div>
+            <div style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ ptaxTexto }}</div>
+            <div style="margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #9A9587; line-height: 1.4;">{{ ptaxFonte }}</div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid #DDD8C9; border-radius: 10px; padding: 16px 18px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34; margin-bottom: 8px;">Cotação internacional</div>
+            <div style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ cotacaoIntlTexto }}</div>
+            <div style="margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #9A9587; line-height: 1.4;">{{ cotacaoIntlFonte }}</div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid #DDD8C9; border-radius: 10px; padding: 16px 18px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34; margin-bottom: 8px;">IC-Br Agropecuário · 12 meses</div>
+            <div style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ icbrTexto }}</div>
+            <div style="margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #9A9587; line-height: 1.4;">{{ icbrFonte }}</div>
           </div>
         </div>
       </section>
@@ -358,7 +405,7 @@
         <div>
           <div style="border: 1px solid #E8DCB8; background: #F8F2DF; border-radius: 12px; padding: 22px; margin-bottom: 24px;">
             <h3 style="font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; margin: 0 0 4px; color: #1A1A18;">Simular venda</h3>
-            <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.5; color: #6B4A34;">Estimativa pela cotação de hoje, R$ 2.418/sc.</p>
+            <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.5; color: #6B4A34;">Estimativa pela cotação de hoje: {{ ultimaCotacaoTexto }}.</p>
             <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
               Sacas de 60 kg
               <input type="number" value="{{ sacas }}" onChange="{{ onSacas }}" min="0" step="10" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 12px 13px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
@@ -373,7 +420,10 @@
             <sc-for list="{{ noticias }}" as="n" hint-placeholder-count="3">
               <li style="padding: 14px 0; border-bottom: 1px solid #DDD8C9;">
                 <div style="font-size: 14px; line-height: 1.5; color: #1A1A18;">{{ n.titulo }}</div>
-                <div style="margin-top: 5px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #6B4A34;">{{ n.fonte }}</div>
+                <div style="margin-top: 5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #6B4A34;">{{ n.fonte }}</span>
+                  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #9A9587;">{{ n.dataTexto }}</span>
+                </div>
               </li>
             </sc-for>
           </ul>
@@ -488,12 +538,6 @@
             </sc-for>
           </div>
 
-          <span style="display: block; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #2F6E8F;">Unidade de temperatura</span>
-          <div style="display: flex; gap: 8px; margin: 10px 0 20px;">
-            <button type="button" onClick="{{ contaCelsius }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: {{ cCelsiusFg }}; background: {{ cCelsiusBg }}; border: 1px solid {{ cCelsiusBorda }}; padding: 8px 16px; border-radius: 999px; cursor: pointer;" style-hover="border-color: #2F6E8F;">°C</button>
-            <button type="button" onClick="{{ contaFahrenheit }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: {{ cFahrenheitFg }}; background: {{ cFahrenheitBg }}; border: 1px solid {{ cFahrenheitBorda }}; padding: 8px 16px; border-radius: 999px; cursor: pointer;" style-hover="border-color: #2F6E8F;">°F</button>
-          </div>
-
           <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer; border-top: 1px solid #CFE0E8; padding-top: 16px;">
             <input type="checkbox" checked="{{ cNotificacoes }}" onChange="{{ onCNotificacoes }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
             Receber alertas climáticos por e-mail e SMS.
@@ -573,8 +617,13 @@ class Component extends DCLogic {
       _mercadoFontes: [],
       _mercadoGerarPor: null,
       _mercadoUnidade: '',
+      _mercadoFonte: '',
+      _ptax: null,
+      _icbr: null,
+      _cotacaoIntl: null,
       talhoes: [],
       alertas: [],
+      alertasOficiais: [],
       precos: [],
       serie: [],
       noticias: []
@@ -624,7 +673,11 @@ class Component extends DCLogic {
 
   _carregarAlertas(talhaoId) {
     apiFetch('/alertas/' + talhaoId).then(function(r) { return r.json(); }).then((dados) => {
-      this.setState({ alertas: Array.isArray(dados.alertas) ? dados.alertas : [], _climaMetrics: dados.clima || null });
+      this.setState({
+        alertas: Array.isArray(dados.alertas) ? dados.alertas : [],
+        alertasOficiais: Array.isArray(dados.alertasOficiais) ? dados.alertasOficiais : [],
+        _climaMetrics: dados.clima || null
+      });
     }).catch(function() {});
   }
 
@@ -634,7 +687,20 @@ class Component extends DCLogic {
     }).catch(function() {});
   }
 
+  _carregarCotacoes(cultura) {
+    fetch(API_BASE + '/mercado/cotacoes?cultura=' + (cultura || 'cafe'))
+      .then(function(r) { return r.json(); })
+      .then((dados) => {
+        this.setState({
+          _ptax: dados.ptax || null,
+          _icbr: dados.icbr || null,
+          _cotacaoIntl: dados.cotacaoInternacional || null
+        });
+      }).catch(function() {});
+  }
+
   _carregarMercado(cultura) {
+    this._carregarCotacoes(cultura);
     Promise.all([
       fetch(API_BASE + '/mercado/' + cultura + '/historico').then(function(r) { return r.json(); }),
       fetch(API_BASE + '/mercado/' + cultura + '/analise').then(function(r) { return r.json(); })
@@ -645,12 +711,14 @@ class Component extends DCLogic {
       const noticias = fatores.map(function(f) {
         return {
           titulo: typeof f === 'string' ? f : (f.titulo || ''),
-          fonte: analise.gerarPor === 'ia_com_busca' ? 'IA + busca na web' : 'modo simulado'
+          fonte: typeof f === 'object' && f.fonte ? f.fonte : 'Google News',
+          dataTexto: typeof f === 'object' && f.dataTexto ? f.dataTexto : ''
         };
       });
       this.setState({
         serie: serie, noticias: noticias, _mercadoCultura: cultura,
         _mercadoUnidade: hist.unidade || '',
+        _mercadoFonte: hist.fonte || '',
         _mercadoResumo: analise.resumo || '',
         _mercadoFontes: Array.isArray(analise.fontes) ? analise.fontes : [],
         _mercadoGerarPor: analise.gerarPor || null
@@ -724,7 +792,7 @@ class Component extends DCLogic {
     }
 
     const NIVEL_DISPLAY = { alto: 'Alto', medio: 'Médio', baixo: 'Baixo' };
-    const CULTURAS_NOME = { cafe: 'Café arábica', soja: 'Soja', milho: 'Milho', cana: 'Cana-de-açúcar', feijao: 'Feijão' };
+    const CULTURAS_NOME = { cafe: 'Café', soja: 'Soja' };
 
     const alertas = s.alertas.map((a) => {
       const talhaoAtual = s.talhoes.find(function(t) { return t.id === s._talhaoSelecionadoId; });
@@ -737,7 +805,7 @@ class Component extends DCLogic {
         detalhe: a.mensagem,
         contexto: contexto,
         insumo: a.recomendacao,
-        janela: '—',
+        janela: a.janela || '—',
         envio: 'Verificar no painel'
       });
     });
@@ -750,8 +818,17 @@ class Component extends DCLogic {
       cultura: CULTURAS_NOME[a.cultura] || a.cultura,
       fase: (a.fase || '').replace(/_/g, ' '),
       regra: a.mensagem,
-      janela: '—'
+      janela: a.janela || '—'
     }));
+
+    const INMET_NIVEL_LABEL = { alto: 'Vermelho', medio: 'Laranja', baixo: 'Amarelo' };
+    const alertasOficiais = (s.alertasOficiais || []).map((ao) => Object.assign({}, this.nivelCores(ao.nivel), {
+      nivelLabel: INMET_NIVEL_LABEL[ao.nivel] || ao.nivel,
+      descricao: ao.descricao || '—',
+      instrucao: ao.instrucao || '',
+      janela: ao.janela || '—',
+    }));
+    const temAlertasOficiais = alertasOficiais.length > 0;
 
     const talhoes = s.talhoes.map((t) => {
       const ehSelecionado = s._talhaoSelecionadoId === t.id;
@@ -770,7 +847,7 @@ class Component extends DCLogic {
         r: r, alerta: ehSelecionado && s.alertas.length > 0 ? s.alertas[0].titulo : 'Sem alerta',
         risco: r + '%', barra: r + '%', cor: cor, fundo: fundo, corTexto: corTexto,
         selecionarTalhao: () => {
-          this.setState({ _talhaoSelecionadoId: t.id, alertas: [], _climaMetrics: null });
+          this.setState({ _talhaoSelecionadoId: t.id, alertas: [], alertasOficiais: [], _climaMetrics: null });
           this._carregarAlertas(t.id);
         }
       };
@@ -790,31 +867,47 @@ class Component extends DCLogic {
         })
       : [];
 
-    const MESES_ABREV = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-    const serieData = s.serie.slice(-12);
+    const MESES_ABREV = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    // Agrega série diária/mensal em médias mensais para exibir 12 meses distintos
+    const porMes = {};
+    s.serie.forEach(function(p) {
+      const d = new Date(p.data + 'T00:00:00Z');
+      const chave = d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0');
+      if (!porMes[chave]) porMes[chave] = { soma: 0, count: 0, mes: d.getUTCMonth() };
+      porMes[chave].soma += p.preco;
+      porMes[chave].count++;
+    });
+    const chavesOrdenadas = Object.keys(porMes).sort().slice(-12);
+    const serieData = chavesOrdenadas.map(function(k) {
+      const m = porMes[k];
+      return { preco: m.soma / m.count, mes: m.mes };
+    });
     const precosMercado = serieData.map(function(p) { return p.preco; });
     const maxP = precosMercado.length > 0 ? Math.max.apply(null, precosMercado) * 1.05 : 2600;
     const minP = precosMercado.length > 0 ? Math.min.apply(null, precosMercado) * 0.95 : 1900;
     const serie = serieData.map(function(p, i) {
-      const d = new Date(p.data + 'T00:00:00Z');
       return {
-        mes: MESES_ABREV[d.getUTCMonth()],
+        mes: MESES_ABREV[p.mes],
+        valor: Math.round(p.preco).toLocaleString('pt-BR'),
         altura: Math.round(((p.preco - minP) / (maxP - minP || 1)) * 148) + 'px',
         cor: i >= serieData.length - 3 ? '#D4A537' : '#1F3D2B'
       };
     });
 
-    const precoMercadoAtual = s.serie.length > 0 ? s.serie[s.serie.length - 1].preco : 2418;
-
-    const serie12m = s.serie.slice(-365);
-    const ultimaCotacaoTexto = s.serie.length > 0
-      ? 'R$ ' + precoMercadoAtual.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '/sc'
-      : 'carregando…';
-    const variacao12mTexto = serie12m.length > 1
-      ? (((precoMercadoAtual - serie12m[0].preco) / serie12m[0].preco) * 100).toFixed(1).replace('.', ',').replace(/^(-?)/, function(_, sinal) { return sinal ? '−' : '+'; }) + '%'
+    // Estatísticas calculadas sobre os dados mensais agregados (mesma base do gráfico)
+    const precoMercadoAtual = serieData.length > 0 ? serieData[serieData.length - 1].preco : 0;
+    const unidadeMercado = s._mercadoUnidade || '';
+    const ehSaca = unidadeMercado.toLowerCase().includes('saca') || unidadeMercado.toLowerCase().includes('60kg');
+    const formatarPreco = function(v) {
+      const n = v.toLocaleString('pt-BR', { maximumFractionDigits: ehSaca ? 0 : 2 });
+      return ehSaca ? 'R$ ' + n + '/sc' : n + (unidadeMercado ? ' ' + unidadeMercado : '');
+    };
+    const ultimaCotacaoTexto = serieData.length > 0 ? formatarPreco(precoMercadoAtual) : 'carregando…';
+    const variacao12mTexto = serieData.length > 1
+      ? (((precoMercadoAtual - serieData[0].preco) / serieData[0].preco) * 100).toFixed(1).replace('.', ',').replace(/^(-?)/, function(_, sinal) { return sinal ? '−' : '+'; }) + '%'
       : '—';
-    const maximaPeriodoTexto = serie12m.length > 0
-      ? 'R$ ' + Math.max.apply(null, serie12m.map(function(p) { return p.preco; })).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '/sc'
+    const maximaPeriodoTexto = serieData.length > 0
+      ? formatarPreco(Math.max.apply(null, serieData.map(function(p) { return p.preco; })))
       : '—';
 
     const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
@@ -838,9 +931,12 @@ class Component extends DCLogic {
     const mapaMensagem = !s._dadosCarregados
       ? 'Carregando localização…'
       : 'Nenhuma localização cadastrada ainda.';
+    const mapaDelta = 0.04; // ~4.5 km — zoom equivalente a nível de cidade/bairro
     const mapaSrc = mapaDisponivel
-      ? 'https://www.openstreetmap.org/export/embed.html?mlat=' + s.cLatitude +
-        '&mlon=' + s.cLongitude + '&zoom=12&layer=mapnik'
+      ? 'https://www.openstreetmap.org/export/embed.html?' +
+        'bbox=' + (s.cLongitude - mapaDelta) + ',' + (s.cLatitude - mapaDelta) + ',' +
+        (s.cLongitude + mapaDelta) + ',' + (s.cLatitude + mapaDelta) +
+        '&layer=mapnik&marker=' + s.cLatitude + ',' + s.cLongitude
       : '';
 
     return {
@@ -924,8 +1020,7 @@ class Component extends DCLogic {
           }).catch(() => this.setState({ cCepVerificando: false, cCepStatus: 'Erro ao verificar. Tente novamente.' }));
       },
       culturasConta: [
-        { valor: 'cafe', label: 'Café' }, { valor: 'soja', label: 'Soja' }, { valor: 'milho', label: 'Milho' },
-        { valor: 'cana', label: 'Cana' }, { valor: 'feijao', label: 'Feijão' }
+        { valor: 'cafe', label: 'Café' }, { valor: 'soja', label: 'Soja' }
       ].map((c) => {
         const on = s.cCultura === c.valor;
         return {
@@ -934,10 +1029,6 @@ class Component extends DCLogic {
           pick: () => this.setState({ cCultura: c.valor, contaSalva: false })
         };
       }),
-      contaCelsius: () => this.setState({ cUnidade: 'C', contaSalva: false }),
-      contaFahrenheit: () => this.setState({ cUnidade: 'F', contaSalva: false }),
-      cCelsiusBg: s.cUnidade === 'C' ? '#2F6E8F' : '#FFFFFF', cCelsiusFg: s.cUnidade === 'C' ? '#F7F5EF' : '#24505F', cCelsiusBorda: s.cUnidade === 'C' ? '#2F6E8F' : '#CFE0E8',
-      cFahrenheitBg: s.cUnidade === 'F' ? '#2F6E8F' : '#FFFFFF', cFahrenheitFg: s.cUnidade === 'F' ? '#F7F5EF' : '#24505F', cFahrenheitBorda: s.cUnidade === 'F' ? '#2F6E8F' : '#CFE0E8',
       salvarContaLabel: s.contaSalva ? 'Alterações salvas' : 'Salvar alterações',
       salvarConta: () => {
         apiFetch('/auth/perfil', {
@@ -945,7 +1036,7 @@ class Component extends DCLogic {
           body: JSON.stringify({ nome: s.cNome, email: s.cEmail })
         }).then(() => apiFetch('/auth/preferencias', {
           method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ culturaFavorita: s.cCultura, unidadeTemperatura: s.cUnidade === 'F' ? 'fahrenheit' : 'celsius', notificacoes: !!s.cNotificacoes })
+          body: JSON.stringify({ culturaFavorita: s.cCultura, unidadeTemperatura: 'celsius', notificacoes: !!s.cNotificacoes })
         })).then(() => {
           this.setState({ contaSalva: true });
           const u = JSON.parse(sessionStorage.getItem('agroalerta_usuario') || '{}');
@@ -991,8 +1082,7 @@ class Component extends DCLogic {
       tSalvando: s.tSalvando, tSalvarLabel: s.tSalvando ? 'Verificando CEP…' : 'Cadastrar',
       onTNome: set('tNome'), onTCultura: set('tCultura'), onTFase: set('tFase'), onTCep: set('tCep'),
       culturasTalhao: [
-        { valor: 'cafe', label: 'Café' }, { valor: 'soja', label: 'Soja' }, { valor: 'milho', label: 'Milho' },
-        { valor: 'cana', label: 'Cana' }, { valor: 'feijao', label: 'Feijão' }
+        { valor: 'cafe', label: 'Café' }, { valor: 'soja', label: 'Soja' }
       ],
       cadastrarTalhao: (e) => {
         e.preventDefault();
@@ -1025,7 +1115,7 @@ class Component extends DCLogic {
         {
           label: 'Talhões cadastrados',
           value: String(s.talhoes.length),
-          note: s.talhoes.slice(0, 2).map(function(t) { return t.nome; }).join(' · ') || (s._dadosCarregados ? 'nenhum cadastrado' : 'carregando…'),
+          note: s.talhoes.length > 0 ? 'ativos nesta safra' : (s._dadosCarregados ? 'nenhum cadastrado' : 'carregando…'),
           cor: '#1F3D2B'
         },
         {
@@ -1036,20 +1126,33 @@ class Component extends DCLogic {
         },
         {
           label: CULTURAS_NOME[s._mercadoCultura] || 'Mercado',
-          value: s.serie.length > 0 ? 'R$ ' + s.serie[s.serie.length - 1].preco.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : (s._dadosCarregados ? '—' : 'carregando…'),
-          note: (s._mercadoUnidade || 'saca 60kg') + ' · Cepea',
+          value: serieData.length > 0 ? formatarPreco(precoMercadoAtual) : (s._dadosCarregados ? '—' : 'carregando…'),
+          note: (s._mercadoUnidade || 'saca 60kg').split('(')[0].trim() + ' · ' + (s._mercadoFonte || 'Cepea').split('(')[0].trim(),
           cor: '#2F6E8F'
         }
       ],
-      alertas, regras, talhoes, precos, serie, clima, previsaoTitulo,
+      alertas, regras, talhoes, alertasOficiais, temAlertasOficiais, precos, serie, clima, previsaoTitulo,
       mapaDisponivel, mapaIndisponivel: !mapaDisponivel, mapaSrc, mapaMensagem,
       resumoChuva7dTexto, resumoMinimaTexto,
       ultimaCotacaoTexto, variacao12mTexto, maximaPeriodoTexto,
+      mercadoTituloGrafico: (CULTURAS_NOME[s._mercadoCultura] || 'Mercado') + (s._mercadoUnidade ? ' · ' + s._mercadoUnidade : ''),
+      ptaxTexto: s._ptax ? 'R$ ' + s._ptax.cotacaoVenda.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) + ' / US$' : '—',
+      ptaxFonte: s._ptax ? s._ptax.fonte : '',
+      cotacaoIntlTexto: s._cotacaoIntl ? s._cotacaoIntl.valorAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + s._cotacaoIntl.unidade : '—',
+      cotacaoIntlFonte: s._cotacaoIntl ? (s._cotacaoIntl.simbolo || '') + ' · ' + s._cotacaoIntl.fonte : '',
+      icbrTexto: s._icbr ? (s._icbr.variacao12m !== null ? (parseFloat(s._icbr.variacao12m) >= 0 ? '+' : '') + s._icbr.variacao12m + '%' : '—') : '—',
+      icbrFonte: s._icbr ? s._icbr.fonte : '',
+      temDadosExternos: !!(s._ptax || s._cotacaoIntl || s._icbr),
       resumoIATexto: s._mercadoResumo || (s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…'),
       resumoIAFonteTexto: s._mercadoGerarPor === 'ia' || s._mercadoGerarPor === 'ia_com_busca' ? 'Análise · Claude' : 'Análise de mercado',
-      fontesUsadasTexto: s._mercadoFontes.length > 0
-        ? s._mercadoFontes.map(function(f) { return f.titulo; }).join(', ')
-        : 'Nenhuma fonte retornada nesta consulta.',
+      fontesUsadasTexto: (function() {
+        const fontes = s.noticias
+          .map(function(n) { return n.fonte; })
+          .filter(function(f, i, arr) { return f && f !== 'Google News' && arr.indexOf(f) === i; });
+        return fontes.length > 0
+          ? fontes.join(' · ')
+          : 'Google News RSS (Globo Rural, Canal Rural, Notícias Agrícolas)';
+      })(),
       noticias: s.noticias.length > 0 ? s.noticias : [
         { titulo: s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…', fonte: s._dadosCarregados ? '—' : 'aguarde' }
       ],
