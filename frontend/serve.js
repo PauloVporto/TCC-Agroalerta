@@ -18,7 +18,7 @@ const TIPOS = {
 
 http
   .createServer((req, res) => {
-    let caminho = req.url === "/" ? "/index.html" : req.url;
+    let caminho = req.url === "/" ? "/AgroAlerta.dc.html" : req.url;
     caminho = path.join(DIR, decodeURIComponent(caminho.split("?")[0]));
 
     fs.readFile(caminho, (erro, conteudo) => {

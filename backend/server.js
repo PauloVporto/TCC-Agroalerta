@@ -7,6 +7,7 @@ const alertasRouter = require("./routes/alertas");
 const insumosRouter = require("./routes/insumos");
 const mercadoRouter = require("./routes/mercado");
 const authRouter = require("./routes/auth");
+const climaRouter = require("./routes/clima");
 const { culturasSuportadas } = require("./services/rules");
 const { inicializarBanco } = require("./services/db");
 
@@ -27,7 +28,7 @@ app.get("/api/health", (req, res) => {
     status: "ok",
     modoClima: process.env.OPENWEATHER_API_KEY ? "real" : "simulado",
     modoIA: process.env.ANTHROPIC_API_KEY ? "real" : "simulado",
-    modoMapas: process.env.GOOGLE_MAPS_API_KEY ? "real" : "simulado",
+    modoMapas: "nominatim",
   });
 });
 
@@ -35,7 +36,9 @@ app.get("/api/culturas", (req, res) => {
   res.json(culturasSuportadas());
 });
 
+
 app.use("/api/auth", authRouter);
+app.use("/api/clima", climaRouter);
 app.use("/api/talhoes", talhoesRouter);
 app.use("/api/alertas", alertasRouter);
 app.use("/api/insumos", insumosRouter);
@@ -52,7 +55,7 @@ async function iniciar() {
     console.log("  AgroAlerta - backend rodando em http://localhost:" + PORT);
     console.log("  Modo clima: " + (process.env.OPENWEATHER_API_KEY ? "REAL (OpenWeatherMap)" : "SIMULADO"));
     console.log("  Modo IA:    " + (process.env.ANTHROPIC_API_KEY ? "REAL (Anthropic)" : "SIMULADO"));
-    console.log("  Modo mapas: " + (process.env.GOOGLE_MAPS_API_KEY ? "REAL (Google Maps)" : "SIMULADO"));
+    console.log("  Modo mapas: OpenStreetMap (Nominatim, sem chave necessária)");
     console.log("");
   });
 }

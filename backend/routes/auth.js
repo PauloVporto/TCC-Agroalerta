@@ -7,25 +7,56 @@ const {
   obterConfiguracoes,
   atualizarPerfil,
   atualizarPreferencias,
+  atualizarLocalizacao,
   alterarSenha,
   excluirConta,
   exigirAutenticacao,
 } = require("../services/auth");
+const { resolverLocalizacaoPorCep } = require("../services/localizacao");
+const { criarTalhao } = require("./talhoes");
+const { culturasSuportadas } = require("../services/rules");
 
 // POST /api/auth/registrar
-// body: { nome, email, senha }
+// body: { nome, email, senha, cep, cultura? }
+//
+// O CEP é validado via Nominatim (OpenStreetMap): se encontrado, retorna
+// cidade, UF e coordenadas em uma única chamada — sem chave de API. Com
+// as coordenadas já disponíveis, cria o primeiro talhão na mesma localização
+// para que o produtor veja alertas e previsão do tempo reais ao entrar.
 router.post("/registrar", async (req, res) => {
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, cep, cultura } = req.body;
 
-  if (!nome || !email || !senha) {
-    return res.status(400).json({ erro: "Campos obrigatórios: nome, email, senha" });
+  if (!nome || !email || !senha || !cep) {
+    return res.status(400).json({ erro: "Campos obrigatórios: nome, email, senha, cep" });
   }
   if (senha.length < 6) {
     return res.status(400).json({ erro: "A senha deve ter pelo menos 6 caracteres." });
   }
 
+  const local = await resolverLocalizacaoPorCep(cep);
+  if (!local.valido) {
+    return res.status(400).json({ erro: local.erro });
+  }
+
+  const culturaEscolhida = culturasSuportadas().includes(cultura) ? cultura : "cafe";
+
   try {
-    const usuario = await criarUsuario({ nome, email, senha });
+    const usuario = await criarUsuario({
+      nome, email, senha,
+      cidade: local.cidade + " - " + local.uf,
+      cidadeFormatada: local.enderecoFormatado,
+      latitude: local.latitude,
+      longitude: local.longitude,
+    });
+
+    await criarTalhao(usuario.id, {
+      nome: "Talhão principal - " + local.cidade,
+      cultura: culturaEscolhida,
+      fase: "vegetativo",
+      endereco: local.enderecoFormatado,
+      coordenadas: local,
+    });
+
     // Já loga o usuário automaticamente após o cadastro
     const { token } = await autenticar({ email, senha });
     res.status(201).json({ usuario, token });
@@ -75,6 +106,33 @@ router.patch("/perfil", exigirAutenticacao, async (req, res) => {
   } catch (erro) {
     res.status(409).json({ erro: erro.message });
   }
+});
+
+// PATCH /api/auth/localizacao
+// body: { cep }
+// Valida o CEP via Nominatim e atualiza a localização do usuário.
+router.patch("/localizacao", exigirAutenticacao, async (req, res) => {
+  const { cep } = req.body;
+  if (!cep) return res.status(400).json({ erro: "Informe o CEP." });
+
+  const local = await resolverLocalizacaoPorCep(cep);
+  if (!local.valido) return res.status(400).json({ erro: local.erro });
+
+  const dados = await atualizarLocalizacao(req.usuario.id, {
+    cidade: local.cidade + " - " + local.uf,
+    cidadeFormatada: local.enderecoFormatado,
+    latitude: local.latitude,
+    longitude: local.longitude,
+  });
+
+  res.json({
+    cidade: dados.cidade,
+    cidadeFormatada: dados.cidadeFormatada,
+    latitude: dados.latitude,
+    longitude: dados.longitude,
+    cep: local.cep,
+    uf: local.uf,
+  });
 });
 
 router.patch("/preferencias", exigirAutenticacao, async (req, res) => {

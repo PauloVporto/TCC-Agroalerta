@@ -12,8 +12,17 @@ async function inicializarBanco() {
       email TEXT NOT NULL UNIQUE,
       senha_hash TEXT NOT NULL,
       salt TEXT NOT NULL,
+      cidade TEXT,
+      cidade_formatada TEXT,
+      latitude DOUBLE PRECISION,
+      longitude DOUBLE PRECISION,
       criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cidade TEXT;
+    ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cidade_formatada TEXT;
+    ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION;
+    ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION;
 
     CREATE TABLE IF NOT EXISTS sessoes (
       token TEXT PRIMARY KEY,

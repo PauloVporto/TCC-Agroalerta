@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { geocodificarEndereco } = require("../services/geocoding");
+const { resolverLocalizacaoPorCep } = require("../services/localizacao");
 const { culturasSuportadas } = require("../services/rules");
 const { exigirAutenticacao } = require("../services/auth");
 const { pool } = require("../services/db");
@@ -22,13 +22,13 @@ router.get("/", async (req, res) => {
 });
 
 // POST /api/talhoes - cadastra um novo talhão para o usuário logado
-// body: { nome, cultura, fase, endereco }
+// body: { nome, cultura, fase, cep }
 router.post("/", async (req, res) => {
-  const { nome, cultura, fase, endereco } = req.body;
+  const { nome, cultura, fase, cep } = req.body;
 
-  if (!nome || !cultura || !fase || !endereco) {
+  if (!nome || !cultura || !fase || !cep) {
     return res.status(400).json({
-      erro: "Campos obrigatórios: nome, cultura, fase, endereco",
+      erro: "Campos obrigatórios: nome, cultura, fase, cep",
     });
   }
 
@@ -38,8 +38,18 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const coordenadas = await geocodificarEndereco(endereco);
+  const local = await resolverLocalizacaoPorCep(cep);
+  if (!local.valido) {
+    return res.status(400).json({ erro: local.erro });
+  }
 
+  const talhao = await criarTalhao(req.usuario.id, {
+    nome, cultura, fase, endereco: local.enderecoFormatado, coordenadas: local,
+  });
+  res.status(201).json(talhao);
+});
+
+async function criarTalhao(usuarioId, { nome, cultura, fase, endereco, coordenadas }) {
   const resultado = await pool.query(
     `INSERT INTO talhoes
        (usuario_id, nome, cultura, fase, endereco, latitude, longitude, endereco_formatado)
@@ -47,11 +57,11 @@ router.post("/", async (req, res) => {
      RETURNING id, usuario_id AS "usuarioId", nome, cultura, fase, endereco,
                latitude, longitude, endereco_formatado AS "enderecoFormatado",
                criado_em AS "criadoEm"`,
-    [req.usuario.id, nome, cultura, fase, endereco, coordenadas.latitude,
+    [usuarioId, nome, cultura, fase, endereco, coordenadas.latitude,
       coordenadas.longitude, coordenadas.enderecoFormatado]
   );
-  res.status(201).json(resultado.rows[0]);
-});
+  return resultado.rows[0];
+}
 
 // DELETE /api/talhoes/:id - remove um talhão (só o dono pode remover)
 router.delete("/:id", async (req, res) => {
@@ -113,14 +123,4 @@ async function buscarTalhaoPorId(id) {
   return resultado.rows[0] || null;
 }
 
-async function seedTalhaoExemplo(usuarioId) {
-  await pool.query(
-    `INSERT INTO talhoes
-      (usuario_id, nome, cultura, fase, endereco, latitude, longitude)
-     VALUES ($1, 'Talhão exemplo - Sítio Boa Esperança', 'cafe', 'floracao',
-             'Santa Rita do Sapucaí, MG', -22.2461, -45.7008)`,
-    [usuarioId]
-  );
-}
-
-module.exports = { router, buscarTalhaoPorId, seedTalhaoExemplo };
+module.exports = { router, buscarTalhaoPorId, criarTalhao };
