@@ -115,7 +115,10 @@ async function buscarClimaOpenMeteo(lat, lon) {
   let diasSemChuva = 0;
   if (histResult.status === 'fulfilled') {
     const precipHist = histResult.value.daily?.precipitation_sum || [];
-    diasSemChuva = precipHist.filter((v) => (v == null ? 0 : v) < 1.0).length;
+    // Dias secos consecutivos até ontem (chuva < 1 mm), não o total de dias secos do mês.
+    for (let i = precipHist.length - 1; i >= 0 && (precipHist[i] == null ? 0 : precipHist[i]) < 1.0; i--) {
+      diasSemChuva++;
+    }
   }
 
   const previsaoDiaria = times.slice(0, 7).map((data, i) => ({
@@ -140,4 +143,33 @@ async function buscarClimaOpenMeteo(lat, lon) {
   };
 }
 
-module.exports = { buscarClimaOpenMeteo };
+/**
+ * Série diária observada/reanalisada em um intervalo arbitrário (YYYY-MM-DD).
+ * Usada pelos relatórios para comparar períodos.
+ * Retorna [{ data, chuva, tmin, tmax, et0 }].
+ */
+async function buscarSerieDiaria(lat, lon, inicio, fim) {
+  const chave = _cacheKey('om_serie', lat, lon, inicio + '_' + fim);
+  const agora = Date.now();
+  if (_cache[chave] && agora - _cache[chave].ts < CACHE_TTL_MS) return _cache[chave].dados;
+
+  const url =
+    'https://historical-forecast-api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+    '&start_date=' + inicio + '&end_date=' + fim +
+    '&daily=precipitation_sum,temperature_2m_min,temperature_2m_max,et0_fao_evapotranspiration' +
+    '&timezone=America%2FSao_Paulo';
+
+  const resp = await _fetch(url);
+  const d = resp.daily || {};
+  const dados = (d.time || []).map((data, i) => ({
+    data,
+    chuva: d.precipitation_sum ? d.precipitation_sum[i] : null,
+    tmin: d.temperature_2m_min ? d.temperature_2m_min[i] : null,
+    tmax: d.temperature_2m_max ? d.temperature_2m_max[i] : null,
+    et0: d.et0_fao_evapotranspiration ? d.et0_fao_evapotranspiration[i] : null,
+  }));
+  _cache[chave] = { ts: agora, dados };
+  return dados;
+}
+
+module.exports = { buscarClimaOpenMeteo, buscarSerieDiaria };
