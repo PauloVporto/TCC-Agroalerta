@@ -3,7 +3,7 @@ const router = express.Router();
 const { obterHistorico, gerarAnaliseTendencia } = require("../services/market");
 const { buscarCotacaoAV } = require("../services/alphavantage");
 const { buscarCotacaoStooq, buscarHistoricoMensalStooq } = require("../services/stooq");
-const { buscarPtax, buscarIndiceCommoditiesAgro } = require("../services/bcb");
+const { buscarPtax, buscarIndiceCommoditiesAgro, SERIES_ICBR } = require("../services/bcb");
 
 // GET /api/mercado/cotacoes?cultura=cafe
 // Dados externos: PTAX (BCB), cotação internacional (Alpha Vantage → Stooq) e IC-Br Agropecuário (BCB).
@@ -27,6 +27,7 @@ router.get("/cotacoes", async (req, res) => {
   res.json({
     ptax: ptaxResult.status === "fulfilled" ? ptaxResult.value : null,
     icbr: icbrResult.status === "fulfilled" ? icbrResult.value : null,
+    icbrSeries: SERIES_ICBR.map(Number),
     cotacaoInternacional: cotacaoIntl,
   });
 });

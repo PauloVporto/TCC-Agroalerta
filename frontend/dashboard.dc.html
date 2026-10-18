@@ -835,12 +835,12 @@ class Component extends DCLogic {
           _icbr: dados.icbr || null,
           _cotacaoIntl: dados.cotacaoInternacional || null
         });
-        if (!dados.icbr) this._icbrPeloNavegador();
+        if (!dados.icbr || dados.icbr.desatualizado) this._icbrPeloNavegador(dados.icbrSeries);
       }).catch(function() {});
   }
 
   // O BCB às vezes bloqueia requisições vindas do servidor; o navegador costuma passar.
-  _icbrPeloNavegador() {
+  _icbrPeloNavegador(series) {
     const ler = function(codigo) {
       return fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.' + codigo + '/dados/ultimos/13?formato=json', { signal: AbortSignal.timeout(10000) })
         .then(function(r) { return r.json(); })
@@ -849,7 +849,7 @@ class Component extends DCLogic {
           return { codigo: codigo, json: json };
         });
     };
-    Promise.any([27575, 29039].map(ler)).then((res) => {
+    Promise.any((Array.isArray(series) && series.length ? series : [27575, 29039]).map(ler)).then((res) => {
       const serie = res.json.map(function(d) { return { data: d.data, valor: parseFloat(String(d.valor).replace(',', '.')) }; })
         .filter(function(d) { return !isNaN(d.valor); });
       if (serie.length < 2) return;
@@ -1305,7 +1305,7 @@ class Component extends DCLogic {
       cotacaoIntlTexto: s._cotacaoIntl ? s._cotacaoIntl.valorAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + s._cotacaoIntl.unidade : '—',
       cotacaoIntlFonte: s._cotacaoIntl ? (s._cotacaoIntl.simbolo || '') + ' · ' + s._cotacaoIntl.fonte : '',
       icbrTexto: s._icbr ? (s._icbr.variacao12m !== null ? (parseFloat(s._icbr.variacao12m) >= 0 ? '+' : '') + s._icbr.variacao12m + '%' : '—') : '—',
-      icbrFonte: s._icbr ? s._icbr.fonte : '',
+      icbrFonte: s._icbr ? s._icbr.fonte + (s._icbr.desatualizado && s._icbr.obtidoEm ? ' · desatualizado (obtido em ' + new Date(s._icbr.obtidoEm).toLocaleDateString('pt-BR') + ')' : '') : '',
       temDadosExternos: !!(s._ptax || s._cotacaoIntl || s._icbr),
       resumoIATexto: s._mercadoResumo || (s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…'),
       resumoIAFonteTexto: s._mercadoGerarPor === 'ia' || s._mercadoGerarPor === 'ia_com_busca' ? 'Análise · Claude' : 'Análise de mercado',

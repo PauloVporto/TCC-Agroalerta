@@ -118,4 +118,4 @@ async function buscarIndiceCommoditiesAgro() {
   }
 }
 
-module.exports = { buscarPtax, buscarIndiceCommoditiesAgro };
+module.exports = { buscarPtax, buscarIndiceCommoditiesAgro, SERIES_ICBR };
