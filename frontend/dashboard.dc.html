@@ -550,19 +550,59 @@
 
       <sc-if value="{{ pgRelatorios }}" hint-placeholder-val="{{ false }}">
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
-        <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0 0 4px; color: #1A1A18; letter-spacing: -0.01em;">Disponíveis para exportação</h2>
-        <p style="margin: 0 0 18px; font-size: 13px; color: #6B4A34;">Gerados a partir dos alertas, das comparações de preço e das análises de mercado.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 18px; flex-wrap: wrap;">
+          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Histórico de relatórios gerados</h2>
+          <button type="button" onClick="{{ toggleRelNovo }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 10px 18px; cursor: pointer;" style-hover="background: #162C1F;">{{ relNovoLabel }}</button>
+        </div>
+
+        <sc-if value="{{ relNovoAberto }}" hint-placeholder-val="{{ false }}">
+        <form onSubmit="{{ gerarRelatorio }}" style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px; padding: 22px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: end;">
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Tipo de relatório
+            <select value="{{ relTipo }}" onChange="{{ onRelTipo }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px;">
+              <sc-for list="{{ tiposRelatorio }}" as="t" hint-placeholder-count="4">
+                <option value="{{ t.valor }}">{{ t.label }}</option>
+              </sc-for>
+            </select>
+          </label>
+          <sc-if value="{{ relMostrarPeriodo }}" hint-placeholder-val="{{ true }}">
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Período · de
+            <input type="date" value="{{ relDe }}" max="{{ relHoje }}" onChange="{{ onRelDe }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 10px 12px;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Período · até
+            <input type="date" value="{{ relAte }}" max="{{ relHoje }}" onChange="{{ onRelAte }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 10px 12px;" />
+          </label>
+          </sc-if>
+          <p style="grid-column: 1 / -1; margin: 0; font-size: 13px; line-height: 1.5; color: #6B4A34;">{{ relDescricao }}</p>
+          <button type="submit" disabled="{{ relGerando }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #6B4A34; border: 1px solid #6B4A34; padding: 12px 20px; cursor: pointer;" style-hover="background: #563A28;">{{ relGerarLabel }}</button>
+        </form>
+        </sc-if>
+
         <div style="display: flex; flex-direction: column; border-top: 1px solid #DDD8C9;">
+          <sc-if value="{{ semRelatorios }}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 0; padding: 22px 0; font-size: 14px; color: #6B4A34; border-bottom: 1px solid #DDD8C9;">Nenhum relatório gerado ainda. Use o botão acima para gerar o primeiro.</p>
+          </sc-if>
           <sc-for list="{{ relatorios }}" as="r" hint-placeholder-count="4">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 0; border-bottom: 1px solid #DDD8C9; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 14px; min-width: 0;">
-                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#2F6E8F" stroke-width="1.4" style="flex: none;"><rect x="3" y="1.5" width="10" height="13"></rect><line x1="5.5" y1="5" x2="10.5" y2="5"></line><line x1="5.5" y1="8" x2="10.5" y2="8"></line><line x1="5.5" y1="11" x2="8.5" y2="11"></line></svg>
-                <div>
-                  <div style="font-size: 15px; font-weight: 500; color: #1A1A18;">{{ r.titulo }}</div>
-                  <div style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #6B4A34;">{{ r.meta }}</div>
+            <div style="border-bottom: 1px solid #DDD8C9;">
+              <div onClick="{{ r.alternar }}" style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 0; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 14px; min-width: 0;">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#2F6E8F" stroke-width="1.4" style="flex: none;"><rect x="3" y="1.5" width="10" height="13"></rect><line x1="5.5" y1="5" x2="10.5" y2="5"></line><line x1="5.5" y1="8" x2="10.5" y2="8"></line><line x1="5.5" y1="11" x2="8.5" y2="11"></line></svg>
+                  <div>
+                    <div style="font-size: 15px; font-weight: 500; color: #1A1A18;">{{ r.titulo }}</div>
+                    <div style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #6B4A34;">{{ r.meta }}</div>
+                  </div>
                 </div>
+                <span style="font-size: 11px; color: #6B4A34;">{{ r.seta }}</span>
               </div>
-              <button type="button" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #1F3D2B; background: transparent; border: 1px solid #C9C3B0; padding: 9px 16px; cursor: pointer;" style-hover="border-color: #1F3D2B;">Baixar PDF</button>
+              <sc-if value="{{ r.expandido }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; gap: 10px; padding: 0 0 16px 32px; flex-wrap: wrap;">
+                <button type="button" onClick="{{ r.preview }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #1F3D2B; background: transparent; border: 1px solid #C9C3B0; padding: 9px 16px; cursor: pointer;" style-hover="border-color: #1F3D2B;">Visualizar</button>
+                <button type="button" onClick="{{ r.baixar }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #1F3D2B; background: transparent; border: 1px solid #C9C3B0; padding: 9px 16px; cursor: pointer;" style-hover="border-color: #1F3D2B;">Baixar PDF</button>
+                <button type="button" onClick="{{ r.remover }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #A33A22; background: transparent; border: 1px solid #C9C3B0; padding: 9px 16px; cursor: pointer;" style-hover="border-color: #A33A22;">Remover do histórico</button>
+              </div>
+              </sc-if>
             </div>
           </sc-for>
         </div>
@@ -626,11 +666,110 @@ class Component extends DCLogic {
       alertasOficiais: [],
       precos: [],
       serie: [],
-      noticias: []
+      noticias: [],
+      _relHistorico: [],
+      _relNovoAberto: false,
+      _relItemAberto: null,
+      _relTipo: 'alertas',
+      _relDe: '',
+      _relAte: '',
+      _relGerando: false
     };
   }
 
+  _relChave() {
+    const u = JSON.parse(sessionStorage.getItem('agroalerta_usuario') || '{}');
+    return 'agroalerta_relatorios_' + (u.id || 'anon');
+  }
+
+  _carregarHistoricoRelatorios() {
+    try {
+      const salvo = JSON.parse(localStorage.getItem(this._relChave()) || '[]');
+      this.setState({ _relHistorico: Array.isArray(salvo) ? salvo : [] });
+    } catch (e) {}
+  }
+
+  _persistirHistorico(lista) {
+    try { localStorage.setItem(this._relChave(), JSON.stringify(lista)); } catch (e) {}
+    this.setState({ _relHistorico: lista });
+  }
+
+  async _buscarPdf(item) {
+    const token = sessionStorage.getItem('agroalerta_token');
+    const q = [];
+    if (item.de) q.push('de=' + item.de);
+    if (item.ate) q.push('ate=' + item.ate);
+    if (item.cultura) q.push('cultura=' + item.cultura);
+    const resp = await fetch(API_BASE + '/relatorios/' + item.tipo + (q.length ? '?' + q.join('&') : ''), {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+    });
+    if (!resp.ok) throw new Error('status ' + resp.status);
+    return resp.blob();
+  }
+
+  async _baixarRelatorio(item) {
+    try {
+      const blob = await this._buscarPdf(item);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'AgroAlerta-' + item.tipo + '-' + new Date().toISOString().slice(0, 10) + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      return true;
+    } catch (e) {
+      alert('Erro ao baixar o relatório. Tente novamente.');
+      return false;
+    }
+  }
+
+  async _previewRelatorio(item) {
+    const janela = window.open("", "_blank");
+    try {
+      const blob = await this._buscarPdf(item);
+      const url = URL.createObjectURL(blob);
+      if (janela) janela.location.href = url; else window.open(url, "_blank");
+    } catch (e) {
+      if (janela) janela.close();
+      alert("Erro ao abrir o preview. Tente novamente.");
+    }
+  }
+
+  async _gerarNovoRelatorio() {
+    const s = this.state;
+    const tipo = s._relTipo || "alertas";
+    const ano = new Date().getFullYear();
+    const NOMES = { cafe: "Café", soja: "Soja", milho: "Milho", cana: "Cana-de-açúcar", feijao: "Feijão" };
+    const TITULOS = {
+      alertas: "Relatório de risco climático",
+      insumos: "Relatório de compras e economia de insumos",
+      mercado: "Relatório de mercado – " + (NOMES[s.cCultura] || "Café"),
+      validacoes: "Laudo técnico para validação do agrônomo"
+    };
+    const PADRAO = { alertas: "últimos 30 dias", insumos: "preços de referência atuais", mercado: "últimos 12 meses", validacoes: "safra " + ano + "/" + (ano + 1) };
+    const fmt = function(iso) { const p = iso.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; };
+    let de = tipo === "insumos" ? "" : s._relDe;
+    let ate = tipo === "insumos" ? "" : s._relAte;
+    if (de && ate && de > ate) { const t = de; de = ate; ate = t; }
+    let periodo = PADRAO[tipo];
+    if (de && ate) periodo = fmt(de) + " a " + fmt(ate);
+    else if (de) periodo = "a partir de " + fmt(de);
+    else if (ate) periodo = "até " + fmt(ate);
+    const item = { id: String(Date.now()), tipo: tipo, titulo: TITULOS[tipo], periodo: periodo, de: de, ate: ate, cultura: tipo === "mercado" ? s.cCultura : "", geradoEm: new Date().toISOString() };
+    this.setState({ _relGerando: true });
+    const ok = await this._baixarRelatorio(item);
+    if (ok) {
+      this._persistirHistorico([item].concat(s._relHistorico || []).slice(0, 30));
+      this.setState({ _relNovoAberto: false, _relDe: "", _relAte: "", _relGerando: false });
+    } else {
+      this.setState({ _relGerando: false });
+    }
+  }
+
   _carregarDados() {
+    this._carregarHistoricoRelatorios();
     this._carregarConfiguracoes();
     this._carregarClimaCidade();
     this._carregarTalhoes();
@@ -696,7 +835,32 @@ class Component extends DCLogic {
           _icbr: dados.icbr || null,
           _cotacaoIntl: dados.cotacaoInternacional || null
         });
+        if (!dados.icbr || dados.icbr.desatualizado) this._icbrPeloNavegador(dados.icbrSeries);
       }).catch(function() {});
+  }
+
+  // O BCB às vezes bloqueia requisições vindas do servidor; o navegador costuma passar.
+  _icbrPeloNavegador(series) {
+    const ler = function(codigo) {
+      return fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.' + codigo + '/dados/ultimos/13?formato=json', { signal: AbortSignal.timeout(10000) })
+        .then(function(r) { return r.json(); })
+        .then(function(json) {
+          if (!Array.isArray(json) || json.length < 2) throw new Error('vazia');
+          return { codigo: codigo, json: json };
+        });
+    };
+    Promise.any((Array.isArray(series) && series.length ? series : [27575, 29039]).map(ler)).then((res) => {
+      const serie = res.json.map(function(d) { return { data: d.data, valor: parseFloat(String(d.valor).replace(',', '.')) }; })
+        .filter(function(d) { return !isNaN(d.valor); });
+      if (serie.length < 2) return;
+      const primeiro = serie[0].valor, ultimo = serie[serie.length - 1].valor;
+      this.setState({ _icbr: {
+        fonte: 'Banco Central do Brasil (IC-Br Agropecuário · SGS ' + res.codigo + ')',
+        valorAtual: ultimo,
+        variacao12m: primeiro > 0 ? (((ultimo - primeiro) / primeiro) * 100).toFixed(1) : null,
+        serie: serie.slice(-12)
+      } });
+    }).catch(function() {});
   }
 
   _carregarMercado(cultura) {
@@ -1141,7 +1305,7 @@ class Component extends DCLogic {
       cotacaoIntlTexto: s._cotacaoIntl ? s._cotacaoIntl.valorAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + s._cotacaoIntl.unidade : '—',
       cotacaoIntlFonte: s._cotacaoIntl ? (s._cotacaoIntl.simbolo || '') + ' · ' + s._cotacaoIntl.fonte : '',
       icbrTexto: s._icbr ? (s._icbr.variacao12m !== null ? (parseFloat(s._icbr.variacao12m) >= 0 ? '+' : '') + s._icbr.variacao12m + '%' : '—') : '—',
-      icbrFonte: s._icbr ? s._icbr.fonte : '',
+      icbrFonte: s._icbr ? s._icbr.fonte + (s._icbr.desatualizado && s._icbr.obtidoEm ? ' · desatualizado (obtido em ' + new Date(s._icbr.obtidoEm).toLocaleDateString('pt-BR') + ')' : '') : '',
       temDadosExternos: !!(s._ptax || s._cotacaoIntl || s._icbr),
       resumoIATexto: s._mercadoResumo || (s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…'),
       resumoIAFonteTexto: s._mercadoGerarPor === 'ia' || s._mercadoGerarPor === 'ia_com_busca' ? 'Análise · Claude' : 'Análise de mercado',
@@ -1156,12 +1320,49 @@ class Component extends DCLogic {
       noticias: s.noticias.length > 0 ? s.noticias : [
         { titulo: s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…', fonte: s._dadosCarregados ? '—' : 'aguarde' }
       ],
-      relatorios: [
-        { titulo: 'Histórico de alertas climáticos por talhão', meta: 'set 2026 · 7 páginas · gerado 14/09 06:30' },
-        { titulo: 'Comparativo de preços de insumos', meta: 'últimos 30 dias · 5 páginas · gerado 13/09' },
-        { titulo: 'Análise de tendência de mercado – café e soja', meta: '12 meses · 9 páginas · gerado 12/09' },
-        { titulo: 'Registro de validações do agrônomo', meta: 'safra 2026/27 · 4 páginas · gerado 14/09' }
-      ]
+      relatorios: (s._relHistorico || []).map((item) => {
+        const d = new Date(item.geradoEm);
+        return {
+          titulo: item.titulo,
+          meta: item.periodo + ' · gerado em ' + d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          expandido: s._relItemAberto === item.id,
+          seta: s._relItemAberto === item.id ? '▲' : '▼',
+          alternar: () => this.setState({ _relItemAberto: s._relItemAberto === item.id ? null : item.id }),
+          preview: () => this._previewRelatorio(item),
+          baixar: () => this._baixarRelatorio(item),
+          remover: () => {
+            this._persistirHistorico((s._relHistorico || []).filter(function(r) { return r.id !== item.id; }));
+            this.setState({ _relItemAberto: null });
+          }
+        };
+      }),
+      semRelatorios: (s._relHistorico || []).length === 0,
+      relNovoAberto: s._relNovoAberto,
+      relNovoLabel: s._relNovoAberto ? 'Cancelar' : '+ Gerar relatório',
+      toggleRelNovo: () => this.setState({ _relNovoAberto: !s._relNovoAberto }),
+      relTipo: s._relTipo,
+      onRelTipo: (e) => this.setState({ _relTipo: e.target.value }),
+      relDe: s._relDe,
+      relAte: s._relAte,
+      relHoje: new Date().toISOString().slice(0, 10),
+      onRelDe: (e) => this.setState({ _relDe: e.target.value }),
+      onRelAte: (e) => this.setState({ _relAte: e.target.value }),
+      tiposRelatorio: [
+        { valor: 'alertas', label: 'Risco climático por talhão' },
+        { valor: 'insumos', label: 'Compras e economia de insumos' },
+        { valor: 'mercado', label: 'Mercado e momento de venda' },
+        { valor: 'validacoes', label: 'Laudo técnico do agrônomo' }
+      ],
+      relMostrarPeriodo: s._relTipo !== 'insumos',
+      relDescricao: ({
+        alertas: 'Compara o clima do período (chuva, seca, frio, balanço hídrico) com o período anterior e lista os alertas ativos por talhão. Serve para decidir irrigação e proteção e priorizar onde agir.',
+        insumos: 'Compara fornecedores, mostra a economia ao comprar do menor preço e indica insumos para os alertas ativos. Serve para decidir onde e o que comprar. Usa os preços de referência atuais.',
+        mercado: 'Mostra a evolução do preço da sua cultura, compara com o período anterior, e traz câmbio e referências externas. Serve para decidir quando vender ou estocar.',
+        validacoes: 'Documento para o agrônomo registrar a decisão técnica sobre cada alerta, com evidências e assinatura. Serve como histórico da safra para assistência técnica, crédito e seguro.'
+      })[s._relTipo] || '',
+      gerarRelatorio: (e) => { if (e && e.preventDefault) e.preventDefault(); this._gerarNovoRelatorio(); },
+      relGerando: s._relGerando,
+      relGerarLabel: s._relGerando ? 'Gerando…' : 'Gerar PDF'
     };
   }
 }

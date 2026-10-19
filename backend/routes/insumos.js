@@ -3,6 +3,7 @@ const router = express.Router();
 const fs = require("fs");
 const path = require("path");
 const { gerarInsightCompra } = require("../services/insumosIA");
+const { MAPA_ALERTA_CATEGORIA } = require("../services/alertaInsumos");
 
 const db = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "insumos.json"), "utf-8"));
 
@@ -31,25 +32,7 @@ router.get("/", (req, res) => {
 // GET /api/insumos/recomendados/:alertaId
 // Recomenda insumos com base no id de uma regra de alerta (ex: "cafe_geada")
 router.get("/recomendados/:alertaId", (req, res) => {
-  const mapaAlertaCategoria = {
-    cafe_geada: ["protecao_termica"],
-    cafe_estiagem: ["irrigacao", "hidrogel"],
-    cafe_excesso_chuva: ["fungicida"],
-    soja_estiagem: ["irrigacao", "hidrogel"],
-    soja_chuva_colheita: [],
-    soja_vento_forte: [],
-    milho_estiagem: ["irrigacao", "hidrogel"],
-    milho_vento_forte: [],
-    milho_excesso_chuva: ["fungicida"],
-    cana_estiagem_prolongada: ["irrigacao"],
-    cana_geada: ["protecao_termica"],
-    cana_chuva_colheita: [],
-    feijao_estiagem: ["irrigacao", "hidrogel"],
-    feijao_excesso_chuva: ["fungicida"],
-    feijao_chuva_colheita: [],
-  };
-
-  const categorias = mapaAlertaCategoria[req.params.alertaId];
+  const categorias = MAPA_ALERTA_CATEGORIA[req.params.alertaId];
 
   if (!categorias) {
     return res.status(404).json({ erro: "Regra de alerta desconhecida" });
