@@ -4,6 +4,7 @@ const { obterHistorico, gerarAnaliseTendencia } = require("../services/market");
 const { buscarCotacaoAV } = require("../services/alphavantage");
 const { buscarCotacaoStooq, buscarHistoricoMensalStooq } = require("../services/stooq");
 const { buscarPtax, buscarIndiceCommoditiesAgro } = require("../services/bcb");
+const { montarSerieComProjecao } = require("../services/marketProjection");
 
 // GET /api/mercado/cotacoes?cultura=cafe
 // Dados externos: PTAX (BCB), cotação internacional (Alpha Vantage → Stooq) e IC-Br Agropecuário (BCB).
@@ -50,6 +51,18 @@ router.get("/:cultura/historico", async (req, res) => {
     return res.status(404).json({ erro: "Cultura não encontrada" });
   }
   res.json(historico);
+});
+
+// GET /api/mercado/:cultura/serie
+// Histórico em R$/saca + projeção mensal na mesma unidade, para o gráfico do painel.
+// Usa sempre a base local: o /historico pode vir do Stooq em centavos de dólar,
+// o que não combinaria com a projeção nem com o simulador de venda em R$.
+router.get("/:cultura/serie", (req, res) => {
+  const base = obterHistorico(req.params.cultura);
+  if (!base || !Array.isArray(base.historico)) {
+    return res.status(404).json({ erro: "Cultura não encontrada" });
+  }
+  res.json(montarSerieComProjecao(base, req.params.cultura));
 });
 
 // GET /api/mercado/:cultura/analise

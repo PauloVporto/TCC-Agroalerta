@@ -36,6 +36,7 @@ async function inicializarBanco() {
       usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
       nome TEXT NOT NULL,
       cultura TEXT NOT NULL,
+      variedade TEXT,
       fase TEXT NOT NULL,
       endereco TEXT NOT NULL,
       latitude DOUBLE PRECISION NOT NULL,
@@ -43,6 +44,7 @@ async function inicializarBanco() {
       endereco_formatado TEXT,
       poligono JSONB,
       area_ha DOUBLE PRECISION,
+      area_unidade TEXT NOT NULL DEFAULT 'ha',
       criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -150,6 +152,8 @@ async function inicializarBanco() {
       ADD COLUMN IF NOT EXISTS expira_em TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '7 days');
     ALTER TABLE talhoes ADD COLUMN IF NOT EXISTS poligono JSONB;
     ALTER TABLE talhoes ADD COLUMN IF NOT EXISTS area_ha DOUBLE PRECISION;
+    ALTER TABLE talhoes ADD COLUMN IF NOT EXISTS variedade TEXT;
+    ALTER TABLE talhoes ADD COLUMN IF NOT EXISTS area_unidade TEXT NOT NULL DEFAULT 'ha';
     ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS papel TEXT NOT NULL DEFAULT 'produtor';
     ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cidade TEXT;
     ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS telefone TEXT;

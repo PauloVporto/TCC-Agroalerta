@@ -58,7 +58,7 @@ router.post("/registrar", async (req, res) => {
     await criarTalhao(usuario.id, {
       nome: "Talhão principal - " + local.cidade,
       cultura: culturaEscolhida,
-      fase: "vegetativo",
+      fase: "plantio",
       endereco: local.enderecoFormatado,
       coordenadas: local,
     });

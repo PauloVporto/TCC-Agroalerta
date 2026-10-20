@@ -1,6 +1,15 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { avaliarAlertas, culturasSuportadas } = require("../services/rules");
+const { avaliarAlertas, culturasSuportadas, fasesSuportadas } = require("../services/rules");
+
+test("fases do talhão são plantio, floração e colheita", () => {
+  assert.deepEqual(fasesSuportadas(), ["plantio", "floracao", "colheita"]);
+});
+
+test("fasesSuportadas devolve cópia: alterar o retorno não afeta a lista", () => {
+  fasesSuportadas().push("vegetativo");
+  assert.deepEqual(fasesSuportadas(), ["plantio", "floracao", "colheita"]);
+});
 
 test("culturas suportadas incluem as cinco do TCC", () => {
   assert.deepEqual(culturasSuportadas().sort(), ["cafe", "cana", "feijao", "milho", "soja"]);

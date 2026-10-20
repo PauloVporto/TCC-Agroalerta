@@ -256,7 +256,27 @@
           </label>
           <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
             Fase atual
-            <input type="text" value="{{ tFase }}" onChange="{{ onTFase }}" placeholder="floracao" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+            <select value="{{ tFase }}" onChange="{{ onTFase }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px;">
+              <option value="">Selecione a fase</option>
+              <sc-for list="{{ fasesTalhao }}" as="f" hint-placeholder-count="3">
+                <option value="{{ f.valor }}">{{ f.label }}</option>
+              </sc-for>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Variedade (opcional)
+            <input type="text" value="{{ tVariedade }}" onChange="{{ onTVariedade }}" placeholder="{{ tVariedadeExemplo }}" maxLength="60" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Área (opcional)
+            <div style="display: flex; gap: 6px;">
+              <input type="number" min="0" step="0.01" value="{{ tArea }}" onChange="{{ onTArea }}" placeholder="{{ tAreaExemplo }}" style="flex: 1; min-width: 0; font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+              <select value="{{ tAreaUnidade }}" onChange="{{ onTAreaUnidade }}" title="Unidade da área" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 8px;">
+                <sc-for list="{{ unidadesArea }}" as="u" hint-placeholder-count="2">
+                  <option value="{{ u.valor }}">{{ u.label }}</option>
+                </sc-for>
+              </select>
+            </div>
           </label>
           <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
             CEP da área
@@ -269,6 +289,60 @@
         </form>
         </sc-if>
 
+        <sc-if value="{{ edicaoAberta }}" hint-placeholder-val="{{ false }}">
+        <form onSubmit="{{ salvarTalhao }}" style="border: 1px solid #1F3D2B; background: #FFFFFF; border-radius: 10px; padding: 22px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: end;">
+          <div style="grid-column: 1 / -1; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
+            <div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34;">Editando talhão</div>
+              <div style="margin-top: 4px; font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; color: #1A1A18;">{{ eTitulo }}</div>
+              <div style="margin-top: 2px; font-size: 12px; color: #6B4A34;">{{ eEndereco }}</div>
+            </div>
+            <button type="button" onClick="{{ fecharTalhao }}" style="font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: #4A4A42; background: transparent; border: 1px solid #C9C3B0; padding: 7px 14px; cursor: pointer;" style-hover="border-color: #1F3D2B;">Fechar</button>
+          </div>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Nome do talhão
+            <input type="text" value="{{ eNome }}" onChange="{{ onENome }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Cultura
+            <select value="{{ eCultura }}" onChange="{{ onECultura }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px;">
+              <sc-for list="{{ culturasTalhao }}" as="c" hint-placeholder-count="2">
+                <option value="{{ c.valor }}">{{ c.label }}</option>
+              </sc-for>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Fase
+            <select value="{{ eFase }}" onChange="{{ onEFase }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px;">
+              <option value="">Selecione a fase</option>
+              <sc-for list="{{ fasesTalhao }}" as="f" hint-placeholder-count="3">
+                <option value="{{ f.valor }}">{{ f.label }}</option>
+              </sc-for>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Variedade (opcional)
+            <input type="text" value="{{ eVariedade }}" onChange="{{ onEVariedade }}" placeholder="{{ eVariedadeExemplo }}" maxLength="60" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
+            Área (opcional)
+            <div style="display: flex; gap: 6px;">
+              <input type="number" min="0" step="0.01" value="{{ eArea }}" onChange="{{ onEArea }}" placeholder="{{ eAreaExemplo }}" style="flex: 1; min-width: 0; font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+              <select value="{{ eAreaUnidade }}" onChange="{{ onEAreaUnidade }}" title="Unidade da área" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 8px;">
+                <sc-for list="{{ unidadesArea }}" as="u" hint-placeholder-count="2">
+                  <option value="{{ u.valor }}">{{ u.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+          </label>
+          <button type="submit" disabled="{{ eSalvando }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 12px 20px; cursor: pointer;" style-hover="background: #162C1F;">{{ eSalvarLabel }}</button>
+          <sc-if value="{{ eErro }}" hint-placeholder-val="{{ false }}">
+            <span style="grid-column: 1 / -1; font-size: 12px; color: #A33A22;">{{ eErro }}</span>
+          </sc-if>
+        </form>
+        </sc-if>
+
+        <p style="margin: 0 0 10px; font-size: 12px; color: #6B4A34;">Clique em um talhão para editar cultura, variedade, fase e área.</p>
         <div style="overflow-x: auto; border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px;">
           <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 720px;">
             <thead>
@@ -283,7 +357,7 @@
             </thead>
             <tbody>
               <sc-for list="{{ talhoes }}" as="t" hint-placeholder-count="6">
-                <tr>
+                <tr onClick="{{ t.abrir }}" title="Abrir talhão para editar" style="cursor: pointer; background: {{ t.linhaBg }};" style-hover="background: #F7F5EF;">
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-weight: 500; color: #1A1A18;">{{ t.id }}<div style="font-size: 12px; color: #6B4A34; font-weight: 400;">{{ t.setor }}</div></td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #1A1A18;">{{ t.cultura }}<div style="font-size: 12px; color: #6B4A34;">{{ t.variedade }}</div></td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #1A1A18;">{{ t.area }}</td>
@@ -350,21 +424,37 @@
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 18px; flex-wrap: wrap;">
           <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">{{ mercadoTituloGrafico }}</h2>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <sc-for list="{{ periodosMercado }}" as="p" hint-placeholder-count="6">
+              <button type="button" onClick="{{ p.pick }}" disabled="{{ p.desabilitado }}" title="{{ p.dica }}" style="font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: {{ p.fg }}; background: {{ p.bg }}; border: 1px solid {{ p.borda }}; padding: 7px 13px; border-radius: 999px; cursor: {{ p.cursor }}; opacity: {{ p.opacidade }};">{{ p.label }}</button>
+            </sc-for>
+            <select value="{{ mercadoAno }}" onChange="{{ onMercadoAno }}" title="Ano exibido no gráfico" style="font-family: Archivo, sans-serif; font-size: 12px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 7px 10px; border-radius: 999px; cursor: pointer;">
+              <sc-for list="{{ anosMercado }}" as="a" hint-placeholder-count="3">
+                <option value="{{ a.valor }}">{{ a.label }}</option>
+              </sc-for>
+            </select>
+          </div>
         </div>
         <div style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px; padding: 24px;">
-          <div style="display: flex; align-items: flex-end; gap: 10px; height: 180px;">
-            <sc-for list="{{ serie }}" as="s" hint-placeholder-count="12">
-              <div style="flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0;">
-                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #4A4A42; white-space: nowrap; line-height: 1;">{{ s.valor }}</span>
-                <div style="width: 100%; background: {{ s.cor }}; height: {{ s.altura }}; border-radius: 6px 6px 0 0; min-height: 4px;"></div>
-                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6B4A34;">{{ s.mes }}</span>
+          <sc-if value="{{ mercadoSemDados }}" hint-placeholder-val="{{ false }}">
+            <div style="height: 180px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #6B4A34;">{{ mercadoSemDadosTexto }}</div>
+          </sc-if>
+          <sc-if value="{{ mercadoTemDados }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; align-items: flex-end; gap: {{ mercadoBarrasGap }}; height: 180px;">
+            <sc-for list="{{ barrasMercado }}" as="b" hint-placeholder-count="12">
+              <div title="{{ b.dica }}" style="flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0; cursor: default;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #4A4A42; white-space: nowrap; line-height: 1;">{{ b.valor }}</span>
+                <div style="width: 100%; background: {{ b.cor }}; height: {{ b.altura }}; border-radius: 6px 6px 0 0; min-height: 4px;" style-hover="opacity: 0.8;"></div>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6B4A34; white-space: nowrap; min-height: 11px;">{{ b.rotulo }}</span>
               </div>
             </sc-for>
           </div>
-          <div style="margin-top: 18px; border-top: 1px solid #DDD8C9; padding-top: 16px; display: flex; gap: 32px; flex-wrap: wrap; font-size: 13px; color: #4A4A42;">
-            <span>Última cotação: <strong style="color: #1A1A18;">{{ ultimaCotacaoTexto }}</strong></span>
-            <span>Variação no período: <strong style="color: #1F3D2B;">{{ variacao12mTexto }}</strong></span>
-            <span>Máxima do período: <strong style="color: #A97C12;">{{ maximaPeriodoTexto }}</strong></span>
+          </sc-if>
+          <p style="margin: 14px 0 0; font-size: 12px; line-height: 1.5; color: #6B4A34;">{{ mercadoNota }}</p>
+          <div style="margin-top: 14px; border-top: 1px solid #DDD8C9; padding-top: 16px; display: flex; gap: 32px; flex-wrap: wrap; font-size: 13px; color: #4A4A42;">
+            <span>{{ mercadoStat1Rotulo }}: <strong style="color: #1A1A18;">{{ mercadoStat1Valor }}</strong></span>
+            <span>{{ mercadoStat2Rotulo }}: <strong style="color: #1F3D2B;">{{ mercadoStat2Valor }}</strong></span>
+            <span>{{ mercadoStat3Rotulo }}: <strong style="color: #A97C12;">{{ mercadoStat3Valor }}</strong></span>
           </div>
         </div>
       </section>
@@ -405,7 +495,7 @@
         <div>
           <div style="border: 1px solid #E8DCB8; background: #F8F2DF; border-radius: 12px; padding: 22px; margin-bottom: 24px;">
             <h3 style="font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; margin: 0 0 4px; color: #1A1A18;">Simular venda</h3>
-            <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.5; color: #6B4A34;">Estimativa pela cotação de hoje: {{ ultimaCotacaoTexto }}.</p>
+            <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.5; color: #6B4A34;">Estimativa pela cotação mais recente: {{ cotacaoAtualTexto }}.</p>
             <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
               Sacas de 60 kg
               <input type="number" value="{{ sacas }}" onChange="{{ onSacas }}" min="0" step="10" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 12px 13px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
@@ -586,6 +676,151 @@ function apiFetch(path, opts) {
   return fetch(API_BASE + path, Object.assign({}, opts, { headers: headers }));
 }
 
+// Mesmas fases aceitas pelo backend (services/rules.js → FASES).
+const FASES_TALHAO = [
+  { valor: 'plantio', label: 'Plantio' },
+  { valor: 'floracao', label: 'Floração' },
+  { valor: 'colheita', label: 'Colheita' }
+];
+
+// Exemplo de cultivar exibido no campo de variedade, conforme a cultura escolhida.
+const EXEMPLO_VARIEDADE = { cafe: 'Ex.: Catuaí Vermelho 144', soja: 'Ex.: BRS 1003 IPRO' };
+
+// Converte o texto digitado em hectares (aceita vírgula); campo vazio vira null.
+function lerArea(texto) {
+  const limpo = String(texto == null ? '' : texto).trim().replace(',', '.');
+  if (limpo === '') return { valida: true, valor: null };
+  const valor = Number(limpo);
+  return { valida: Number.isFinite(valor) && valor > 0, valor: valor };
+}
+
+// A área é gravada sempre em hectares; a unidade escolhida só muda como o usuário digita e vê.
+const UNIDADES_AREA = [{ valor: 'ha', label: 'ha' }, { valor: 'm2', label: 'm²' }];
+const EXEMPLO_AREA = { ha: '12,5', m2: '5000' };
+const M2_POR_HECTARE = 10000;
+
+function paraHectares(valor, unidade) {
+  return unidade === 'm2' ? valor / M2_POR_HECTARE : valor;
+}
+
+function deHectares(hectares, unidade) {
+  // toFixed evita resíduo de ponto flutuante (ex.: 0,1234 ha → 1233,9999… m²)
+  return Number((unidade === 'm2' ? hectares * M2_POR_HECTARE : hectares).toFixed(2));
+}
+
+function formatarArea(hectares, unidade) {
+  const rotulo = unidade === 'm2' ? ' m²' : ' ha';
+  return deHectares(hectares, unidade).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + rotulo;
+}
+
+// Talhões antigos podem ter fases fora da lista (ex.: "vegetativo"): exibe o texto legível.
+function rotuloFase(fase) {
+  const conhecida = FASES_TALHAO.find(function(f) { return f.valor === fase; });
+  if (conhecida) return conhecida.label;
+  const texto = String(fase || '').replace(/_/g, ' ');
+  return texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : '—';
+}
+
+const PERIODOS_MERCADO = [
+  { valor: '7', label: 'Semana' },
+  { valor: 'mes', label: 'Mês' },
+  { valor: '90', label: '90 dias' },
+  { valor: '3meses', label: '3 meses' },
+  { valor: '6meses', label: '6 meses' },
+  { valor: 'ano', label: 'Ano' }
+];
+const MESES_CURTOS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESES_LONGOS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DIA_MS = 86400000;
+const MAX_ROTULOS_MERCADO = 12;
+
+// Datas tratadas sempre em UTC para não deslocar um dia conforme o fuso do navegador.
+function paraTimestamp(iso) {
+  return Date.parse(String(iso).slice(0, 10) + 'T00:00:00Z');
+}
+
+function partesData(iso) {
+  const p = String(iso).slice(0, 10).split('-');
+  return { ano: p[0], mes: Number(p[1]), dia: p[2] };
+}
+
+function dataCurta(iso) {
+  const p = partesData(iso);
+  return p.dia + '/' + String(p.mes).padStart(2, '0');
+}
+
+// Recorta o histórico no ano escolhido e, dentro dele, na janela móvel que
+// termina no último ponto disponível daquele ano.
+function janelaDoHistorico(pontos, periodo, ano) {
+  const doAno = pontos.filter(function(p) { return p.data.startsWith(ano + '-'); });
+  if (periodo === 'ano' || doAno.length === 0) return doAno;
+
+  const corte = new Date(paraTimestamp(doAno[doAno.length - 1].data));
+  if (periodo === '7') corte.setUTCDate(corte.getUTCDate() - 7);
+  else if (periodo === 'mes') corte.setUTCMonth(corte.getUTCMonth() - 1);
+  else if (periodo === '90') corte.setUTCDate(corte.getUTCDate() - 90);
+  else if (periodo === '3meses') corte.setUTCMonth(corte.getUTCMonth() - 3);
+  else if (periodo === '6meses') corte.setUTCMonth(corte.getUTCMonth() - 6);
+
+  const limite = corte.getTime();
+  return doAno.filter(function(p) { return paraTimestamp(p.data) > limite; });
+}
+
+// Agrupa por dia, semana ou mês conforme a extensão da janela, para o gráfico
+// de barras continuar legível de uma semana a um ano inteiro.
+function agruparParaBarras(pontos) {
+  if (pontos.length === 0) return { escala: 'dia', grupos: [] };
+  const inicio = paraTimestamp(pontos[0].data);
+  const dias = (paraTimestamp(pontos[pontos.length - 1].data) - inicio) / DIA_MS + 1;
+  const escala = dias <= 31 ? 'dia' : (dias <= 120 ? 'semana' : 'mes');
+
+  const ordem = [];
+  const porChave = {};
+  pontos.forEach(function(p) {
+    const chave = escala === 'dia' ? p.data
+      : escala === 'semana' ? String(Math.floor((paraTimestamp(p.data) - inicio) / (7 * DIA_MS)))
+      : p.data.slice(0, 7);
+    if (!porChave[chave]) {
+      porChave[chave] = [];
+      ordem.push(chave);
+    }
+    porChave[chave].push(p);
+  });
+
+  const grupos = ordem.map(function(chave) {
+    const doGrupo = porChave[chave];
+    const primeiro = doGrupo[0];
+    const ultimo = doGrupo[doGrupo.length - 1];
+    const data = partesData(primeiro.data);
+    return {
+      preco: doGrupo.reduce(function(soma, p) { return soma + p.preco; }, 0) / doGrupo.length,
+      rotulo: escala === 'mes' ? MESES_CURTOS[data.mes - 1] : dataCurta(primeiro.data),
+      periodo: escala === 'dia' ? dataCurta(primeiro.data) + '/' + data.ano
+        : escala === 'semana' ? 'Semana de ' + dataCurta(primeiro.data) + ' a ' + dataCurta(ultimo.data) + ' (média)'
+        : MESES_LONGOS[data.mes - 1] + ' de ' + data.ano + ' (média)'
+    };
+  });
+  return { escala: escala, grupos: grupos };
+}
+
+function barrasDaProjecao(pontos) {
+  return pontos.map(function(p) {
+    const data = partesData(p.data);
+    return {
+      preco: p.preco,
+      rotulo: MESES_CURTOS[data.mes - 1],
+      periodo: MESES_LONGOS[data.mes - 1] + ' de ' + data.ano + ' (projeção)'
+    };
+  });
+}
+
+function anosDistintos(pontos) {
+  return pontos
+    .map(function(p) { return p.data.slice(0, 4); })
+    .filter(function(ano, i, lista) { return lista.indexOf(ano) === i; })
+    .sort();
+}
+
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -602,7 +837,9 @@ class Component extends DCLogic {
       cCultura: 'cafe', cUnidade: 'C', cNotificacoes: true, contaSalva: false,
       sacas: 500,
       novaOfertaAberta: false, oNome: '', oCategoria: '', oUnidade: '', oPreco: '', ofertaError: '',
-      novoTalhaoAberto: false, tNome: '', tCultura: 'cafe', tFase: '', tCep: '', tErro: '', tSalvando: false,
+      novoTalhaoAberto: false, tNome: '', tCultura: 'cafe', tFase: '', tVariedade: '', tArea: '', tAreaUnidade: 'ha', tCep: '', tErro: '', tSalvando: false,
+      _talhaoEditandoId: null, eNome: '', eCultura: 'cafe', eFase: '', eVariedade: '', eArea: '', eAreaUnidade: 'ha', eErro: '', eSalvando: false,
+      mercadoPeriodo: '6meses', mercadoAno: '',
       ofertas: [
         { nome: 'Protetor foliar 5 L', categoria: 'Protetor foliar', unidade: 'frasco 5 L', preco: 289, cidade: '' }
       ],
@@ -625,7 +862,8 @@ class Component extends DCLogic {
       alertas: [],
       alertasOficiais: [],
       precos: [],
-      serie: [],
+      _mercadoHistorico: [],
+      _mercadoProjecao: [],
       noticias: []
     };
   }
@@ -662,13 +900,29 @@ class Component extends DCLogic {
     }).catch(function() {});
   }
 
-  _carregarTalhoes() {
+  // idPreferido mantém selecionado o talhão recém-editado; sem ele, seleciona o primeiro.
+  _carregarTalhoes(idPreferido) {
     apiFetch('/talhoes').then(function(r) { return r.json(); }).then((dados) => {
       const lista = Array.isArray(dados) ? dados : [];
-      const primId = lista.length > 0 ? lista[0].id : null;
-      this.setState({ talhoes: lista, _talhaoSelecionadoId: primId });
-      if (primId) this._carregarAlertas(primId);
+      const preferido = lista.find(function(t) { return t.id === idPreferido; });
+      const selecionado = preferido ? preferido.id : (lista.length > 0 ? lista[0].id : null);
+      this.setState({ talhoes: lista, _talhaoSelecionadoId: selecionado });
+      if (selecionado) this._carregarAlertas(selecionado);
     }).catch(function() {});
+  }
+
+  _abrirTalhao(talhao) {
+    const faseValida = FASES_TALHAO.some(function(f) { return f.valor === talhao.fase; });
+    this.setState({
+      _talhaoEditandoId: talhao.id, _talhaoSelecionadoId: talhao.id,
+      eNome: talhao.nome, eCultura: talhao.cultura, eFase: faseValida ? talhao.fase : '',
+      eVariedade: talhao.variedade || '',
+      eAreaUnidade: talhao.areaUnidade || 'ha',
+      eArea: talhao.areaHa != null ? String(deHectares(talhao.areaHa, talhao.areaUnidade || 'ha')) : '',
+      eErro: '', novoTalhaoAberto: false,
+      alertas: [], alertasOficiais: [], _climaMetrics: null
+    });
+    this._carregarAlertas(talhao.id);
   }
 
   _carregarAlertas(talhaoId) {
@@ -702,11 +956,10 @@ class Component extends DCLogic {
   _carregarMercado(cultura) {
     this._carregarCotacoes(cultura);
     Promise.all([
-      fetch(API_BASE + '/mercado/' + cultura + '/historico').then(function(r) { return r.json(); }),
+      fetch(API_BASE + '/mercado/' + cultura + '/serie').then(function(r) { return r.json(); }),
       fetch(API_BASE + '/mercado/' + cultura + '/analise').then(function(r) { return r.json(); })
     ]).then((results) => {
       const hist = results[0], analise = results[1];
-      const serie = Array.isArray(hist.historico) ? hist.historico : [];
       const fatores = Array.isArray(analise.fatoresConsiderados) ? analise.fatoresConsiderados : [];
       const noticias = fatores.map(function(f) {
         return {
@@ -716,7 +969,10 @@ class Component extends DCLogic {
         };
       });
       this.setState({
-        serie: serie, noticias: noticias, _mercadoCultura: cultura,
+        _mercadoHistorico: Array.isArray(hist.historico) ? hist.historico : [],
+        _mercadoProjecao: Array.isArray(hist.projecao) ? hist.projecao : [],
+        _mercadoTendencia: typeof hist.tendenciaAnual === 'number' ? hist.tendenciaAnual : null,
+        noticias: noticias, _mercadoCultura: cultura,
         _mercadoUnidade: hist.unidade || '',
         _mercadoFonte: hist.fonte || '',
         _mercadoResumo: analise.resumo || '',
@@ -797,7 +1053,7 @@ class Component extends DCLogic {
     const alertas = s.alertas.map((a) => {
       const talhaoAtual = s.talhoes.find(function(t) { return t.id === s._talhaoSelecionadoId; });
       const contexto = talhaoAtual
-        ? (CULTURAS_NOME[talhaoAtual.cultura] || talhaoAtual.cultura) + ' · ' + talhaoAtual.fase.replace(/_/g, ' ') + ' · ' + (talhaoAtual.enderecoFormatado || talhaoAtual.endereco || '—')
+        ? (CULTURAS_NOME[talhaoAtual.cultura] || talhaoAtual.cultura) + ' · ' + rotuloFase(talhaoAtual.fase) + ' · ' + (talhaoAtual.enderecoFormatado || talhaoAtual.endereco || '—')
         : '—';
       return Object.assign({}, this.nivelCores(a.nivel), {
         nivel: NIVEL_DISPLAY[a.nivel] || a.nivel,
@@ -816,7 +1072,7 @@ class Component extends DCLogic {
       risco: a.titulo,
       talhao: talhaoParaRegras ? talhaoParaRegras.nome : '—',
       cultura: CULTURAS_NOME[a.cultura] || a.cultura,
-      fase: (a.fase || '').replace(/_/g, ' '),
+      fase: rotuloFase(a.fase),
       regra: a.mensagem,
       janela: a.janela || '—'
     }));
@@ -830,6 +1086,7 @@ class Component extends DCLogic {
     }));
     const temAlertasOficiais = alertasOficiais.length > 0;
 
+    const talhaoEditando = s.talhoes.find(function(t) { return t.id === s._talhaoEditandoId; }) || null;
     const talhoes = s.talhoes.map((t) => {
       const ehSelecionado = s._talhaoSelecionadoId === t.id;
       const nivelAlerta = ehSelecionado && s.alertas.length > 0 ? s.alertas[0].nivel : 'baixo';
@@ -842,14 +1099,13 @@ class Component extends DCLogic {
         id: t.nome,
         setor: t.enderecoFormatado || t.endereco || '—',
         cultura: CULTURAS_NOME[t.cultura] || t.cultura,
-        variedade: '—', area: '—',
-        fase: t.fase.replace(/_/g, ' ').replace(/^./, function(c) { return c.toUpperCase(); }),
+        variedade: t.variedade || '—',
+        area: t.areaHa != null ? formatarArea(t.areaHa, t.areaUnidade || 'ha') : '—',
+        fase: rotuloFase(t.fase),
         r: r, alerta: ehSelecionado && s.alertas.length > 0 ? s.alertas[0].titulo : 'Sem alerta',
         risco: r + '%', barra: r + '%', cor: cor, fundo: fundo, corTexto: corTexto,
-        selecionarTalhao: () => {
-          this.setState({ _talhaoSelecionadoId: t.id, alertas: [], alertasOficiais: [], _climaMetrics: null });
-          this._carregarAlertas(t.id);
-        }
+        linhaBg: s._talhaoEditandoId === t.id ? '#EAEFE9' : 'transparent',
+        abrir: () => this._abrirTalhao(t)
       };
     });
 
@@ -867,48 +1123,73 @@ class Component extends DCLogic {
         })
       : [];
 
-    const MESES_ABREV = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-    // Agrega série diária/mensal em médias mensais para exibir 12 meses distintos
-    const porMes = {};
-    s.serie.forEach(function(p) {
-      const d = new Date(p.data + 'T00:00:00Z');
-      const chave = d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0');
-      if (!porMes[chave]) porMes[chave] = { soma: 0, count: 0, mes: d.getUTCMonth() };
-      porMes[chave].soma += p.preco;
-      porMes[chave].count++;
-    });
-    const chavesOrdenadas = Object.keys(porMes).sort().slice(-12);
-    const serieData = chavesOrdenadas.map(function(k) {
-      const m = porMes[k];
-      return { preco: m.soma / m.count, mes: m.mes };
-    });
-    const precosMercado = serieData.map(function(p) { return p.preco; });
-    const maxP = precosMercado.length > 0 ? Math.max.apply(null, precosMercado) * 1.05 : 2600;
-    const minP = precosMercado.length > 0 ? Math.min.apply(null, precosMercado) * 0.95 : 1900;
-    const serie = serieData.map(function(p, i) {
-      return {
-        mes: MESES_ABREV[p.mes],
-        valor: Math.round(p.preco).toLocaleString('pt-BR'),
-        altura: Math.round(((p.preco - minP) / (maxP - minP || 1)) * 148) + 'px',
-        cor: i >= serieData.length - 3 ? '#D4A537' : '#1F3D2B'
-      };
-    });
-
-    // Estatísticas calculadas sobre os dados mensais agregados (mesma base do gráfico)
-    const precoMercadoAtual = serieData.length > 0 ? serieData[serieData.length - 1].preco : 0;
     const unidadeMercado = s._mercadoUnidade || '';
     const ehSaca = unidadeMercado.toLowerCase().includes('saca') || unidadeMercado.toLowerCase().includes('60kg');
     const formatarPreco = function(v) {
       const n = v.toLocaleString('pt-BR', { maximumFractionDigits: ehSaca ? 0 : 2 });
       return ehSaca ? 'R$ ' + n + '/sc' : n + (unidadeMercado ? ' ' + unidadeMercado : '');
     };
-    const ultimaCotacaoTexto = serieData.length > 0 ? formatarPreco(precoMercadoAtual) : 'carregando…';
-    const variacao12mTexto = serieData.length > 1
-      ? (((precoMercadoAtual - serieData[0].preco) / serieData[0].preco) * 100).toFixed(1).replace('.', ',').replace(/^(-?)/, function(_, sinal) { return sinal ? '−' : '+'; }) + '%'
-      : '—';
-    const maximaPeriodoTexto = serieData.length > 0
-      ? formatarPreco(Math.max.apply(null, serieData.map(function(p) { return p.preco; })))
-      : '—';
+    const formatarVariacao = function(inicial, final) {
+      return (((final - inicial) / inicial) * 100).toFixed(1).replace('.', ',')
+        .replace(/^(-?)/, function(_, sinal) { return sinal ? '−' : '+'; }) + '%';
+    };
+
+    // Simulador e KPI sempre usam a cotação real mais recente, nunca a janela filtrada.
+    const historicoMercado = s._mercadoHistorico;
+    const precoMercadoAtual = historicoMercado.length > 0 ? historicoMercado[historicoMercado.length - 1].preco : 0;
+    const cotacaoAtualTexto = historicoMercado.length > 0 ? formatarPreco(precoMercadoAtual) : 'carregando…';
+
+    const anosHistorico = anosDistintos(historicoMercado);
+    const anosProjecao = anosDistintos(s._mercadoProjecao);
+    const anoPadrao = anosHistorico.length > 0 ? anosHistorico[anosHistorico.length - 1] : '';
+    const anoMercado = anosHistorico.concat(anosProjecao).indexOf(s.mercadoAno) !== -1 ? s.mercadoAno : anoPadrao;
+    const emProjecao = anosProjecao.indexOf(anoMercado) !== -1;
+
+    const pontosJanela = emProjecao
+      ? s._mercadoProjecao.filter(function(p) { return p.data.startsWith(anoMercado + '-'); })
+      : janelaDoHistorico(historicoMercado, s.mercadoPeriodo, anoMercado);
+    const agrupado = emProjecao
+      ? { escala: 'mes', grupos: barrasDaProjecao(pontosJanela) }
+      : agruparParaBarras(pontosJanela);
+
+    const precosBarras = agrupado.grupos.map(function(g) { return g.preco; });
+    const maxP = precosBarras.length > 0 ? Math.max.apply(null, precosBarras) * 1.05 : 1;
+    const minP = precosBarras.length > 0 ? Math.min.apply(null, precosBarras) * 0.95 : 0;
+    const totalBarras = agrupado.grupos.length;
+    const mostrarValores = totalBarras <= MAX_ROTULOS_MERCADO;
+    const passoRotulo = Math.ceil(totalBarras / MAX_ROTULOS_MERCADO) || 1;
+    const barrasMercado = agrupado.grupos.map(function(g, i) {
+      const rotuloVisivel = mostrarValores || i % passoRotulo === 0 || i === totalBarras - 1;
+      return {
+        valor: mostrarValores ? Math.round(g.preco).toLocaleString('pt-BR') : '',
+        rotulo: rotuloVisivel ? g.rotulo : '',
+        dica: g.periodo + ' · ' + formatarPreco(g.preco),
+        altura: Math.round(((g.preco - minP) / (maxP - minP || 1)) * 148) + 'px',
+        cor: emProjecao ? '#D4A537' : '#1F3D2B'
+      };
+    });
+
+    const precosJanela = pontosJanela.map(function(p) { return p.preco; });
+    const temJanela = precosJanela.length > 0;
+    const ESCALA_TEXTO = { dia: 'dia', semana: 'semana', mes: 'mês' };
+    const mercadoStats = emProjecao
+      ? [
+          { rotulo: 'Média projetada', valor: temJanela ? formatarPreco(precosJanela.reduce(function(a, b) { return a + b; }, 0) / precosJanela.length) : '—' },
+          { rotulo: 'Variação projetada no ano', valor: precosJanela.length > 1 ? formatarVariacao(precosJanela[0], precosJanela[precosJanela.length - 1]) : '—' },
+          { rotulo: 'Máxima projetada', valor: temJanela ? formatarPreco(Math.max.apply(null, precosJanela)) : '—' }
+        ]
+      : [
+          { rotulo: 'Última cotação', valor: temJanela ? formatarPreco(precosJanela[precosJanela.length - 1]) : (s._dadosCarregados ? '—' : 'carregando…') },
+          { rotulo: 'Variação no período', valor: precosJanela.length > 1 ? formatarVariacao(precosJanela[0], precosJanela[precosJanela.length - 1]) : '—' },
+          { rotulo: 'Máxima do período', valor: temJanela ? formatarPreco(Math.max.apply(null, precosJanela)) : '—' }
+        ];
+    const tendenciaTexto = s._mercadoTendencia != null
+      ? ' (' + (s._mercadoTendencia >= 0 ? '+' : '') + (s._mercadoTendencia * 100).toFixed(1).replace('.', ',') + '% ao ano)'
+      : '';
+    const mercadoNota = emProjecao
+      ? 'Projeção estatística: parte do preço dos últimos 3 meses e aplica a tendência histórica' + tendenciaTexto +
+        ' e a sazonalidade de cada mês. Valores ilustrativos, não são recomendação de compra ou venda.'
+      : 'Barras com o preço por ' + ESCALA_TEXTO[agrupado.escala] + (agrupado.escala === 'dia' ? '' : ' (média)') + '. Passe o mouse sobre uma barra para ver o valor exato.';
 
     const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
     const previsaoDiaria = (s._climaCidade && Array.isArray(s._climaCidade.previsaoDiaria)) ? s._climaCidade.previsaoDiaria : [];
@@ -1077,29 +1358,85 @@ class Component extends DCLogic {
 
       novoTalhaoAberto: s.novoTalhaoAberto,
       novoTalhaoLabel: s.novoTalhaoAberto ? 'Cancelar' : 'Cadastrar talhão',
-      toggleNovoTalhao: () => this.setState(st => ({ novoTalhaoAberto: !st.novoTalhaoAberto, tErro: '' })),
+      toggleNovoTalhao: () => this.setState(st => ({ novoTalhaoAberto: !st.novoTalhaoAberto, tErro: '', _talhaoEditandoId: null })),
       tNome: s.tNome, tCultura: s.tCultura, tFase: s.tFase, tCep: s.tCep, tErro: s.tErro,
+      tVariedade: s.tVariedade, tArea: s.tArea, tVariedadeExemplo: EXEMPLO_VARIEDADE[s.tCultura] || '',
+      tAreaUnidade: s.tAreaUnidade, tAreaExemplo: EXEMPLO_AREA[s.tAreaUnidade],
+      onTAreaUnidade: set('tAreaUnidade'),
+      unidadesArea: UNIDADES_AREA,
       tSalvando: s.tSalvando, tSalvarLabel: s.tSalvando ? 'Verificando CEP…' : 'Cadastrar',
       onTNome: set('tNome'), onTCultura: set('tCultura'), onTFase: set('tFase'), onTCep: set('tCep'),
+      onTVariedade: set('tVariedade'), onTArea: set('tArea'),
       culturasTalhao: [
         { valor: 'cafe', label: 'Café' }, { valor: 'soja', label: 'Soja' }
       ],
+      fasesTalhao: FASES_TALHAO,
+
+      edicaoAberta: !!talhaoEditando,
+      eTitulo: talhaoEditando ? talhaoEditando.nome : '',
+      eEndereco: talhaoEditando ? (talhaoEditando.enderecoFormatado || talhaoEditando.endereco || '') : '',
+      eNome: s.eNome, eCultura: s.eCultura, eFase: s.eFase, eErro: s.eErro, eSalvando: s.eSalvando,
+      eVariedade: s.eVariedade, eArea: s.eArea, eVariedadeExemplo: EXEMPLO_VARIEDADE[s.eCultura] || '',
+      eAreaUnidade: s.eAreaUnidade, eAreaExemplo: EXEMPLO_AREA[s.eAreaUnidade],
+      onEAreaUnidade: set('eAreaUnidade'),
+      eSalvarLabel: s.eSalvando ? 'Salvando…' : 'Salvar alterações',
+      onENome: set('eNome'), onECultura: set('eCultura'), onEFase: set('eFase'),
+      onEVariedade: set('eVariedade'), onEArea: set('eArea'),
+      fecharTalhao: () => this.setState({ _talhaoEditandoId: null, eErro: '' }),
+      salvarTalhao: (e) => {
+        e.preventDefault();
+        if (s.eNome.trim() === '' || s.eFase === '') {
+          this.setState({ eErro: 'Informe o nome do talhão e escolha a fase.' });
+          return;
+        }
+        const area = lerArea(s.eArea);
+        if (!area.valida) {
+          this.setState({ eErro: 'A área deve ser um número maior que zero.' });
+          return;
+        }
+        const id = s._talhaoEditandoId;
+        this.setState({ eSalvando: true, eErro: '' });
+        apiFetch('/talhoes/' + id, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nome: s.eNome.trim(), cultura: s.eCultura, fase: s.eFase,
+            variedade: s.eVariedade.trim(),
+            areaHa: area.valor === null ? null : paraHectares(area.valor, s.eAreaUnidade),
+            areaUnidade: s.eAreaUnidade
+          })
+        }).then(function(r) { return r.json().then(function(c) { return { ok: r.ok, corpo: c }; }); })
+          .then((res) => {
+            if (!res.ok) throw new Error(res.corpo.erro || 'Não foi possível salvar o talhão.');
+            this.setState({ eSalvando: false, _talhaoEditandoId: null });
+            this._carregarTalhoes(id);
+          }).catch((err) => this.setState({ eSalvando: false, eErro: err.message }));
+      },
       cadastrarTalhao: (e) => {
         e.preventDefault();
         if (s.tNome.trim() === '' || s.tFase.trim() === '' || s.tCep.replace(/\D/g, '').length !== 8) {
           this.setState({ tErro: 'Preencha nome, fase e um CEP válido (8 dígitos).' });
           return;
         }
+        const area = lerArea(s.tArea);
+        if (!area.valida) {
+          this.setState({ tErro: 'A área deve ser um número maior que zero.' });
+          return;
+        }
         this.setState({ tSalvando: true, tErro: '' });
         apiFetch('/talhoes', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome: s.tNome.trim(), cultura: s.tCultura, fase: s.tFase.trim(), cep: s.tCep.trim() })
+          body: JSON.stringify({
+            nome: s.tNome.trim(), cultura: s.tCultura, fase: s.tFase.trim(), cep: s.tCep.trim(),
+            variedade: s.tVariedade.trim(),
+            areaHa: area.valor === null ? null : paraHectares(area.valor, s.tAreaUnidade),
+            areaUnidade: s.tAreaUnidade
+          })
         }).then(function(r) { return r.json().then(function(c) { return { ok: r.ok, corpo: c }; }); })
           .then((res) => {
             if (!res.ok) throw new Error(res.corpo.erro || 'Não foi possível cadastrar o talhão.');
             this.setState({
               tSalvando: false, novoTalhaoAberto: false,
-              tNome: '', tCultura: 'cafe', tFase: '', tCep: ''
+              tNome: '', tCultura: 'cafe', tFase: '', tVariedade: '', tArea: '', tAreaUnidade: 'ha', tCep: ''
             });
             this._carregarTalhoes();
           }).catch((err) => this.setState({ tSalvando: false, tErro: err.message }));
@@ -1126,15 +1463,40 @@ class Component extends DCLogic {
         },
         {
           label: CULTURAS_NOME[s._mercadoCultura] || 'Mercado',
-          value: serieData.length > 0 ? formatarPreco(precoMercadoAtual) : (s._dadosCarregados ? '—' : 'carregando…'),
+          value: historicoMercado.length > 0 ? formatarPreco(precoMercadoAtual) : (s._dadosCarregados ? '—' : 'carregando…'),
           note: (s._mercadoUnidade || 'saca 60kg').split('(')[0].trim() + ' · ' + (s._mercadoFonte || 'Cepea').split('(')[0].trim(),
           cor: '#2F6E8F'
         }
       ],
-      alertas, regras, talhoes, alertasOficiais, temAlertasOficiais, precos, serie, clima, previsaoTitulo,
+      alertas, regras, talhoes, alertasOficiais, temAlertasOficiais, precos, clima, previsaoTitulo,
       mapaDisponivel, mapaIndisponivel: !mapaDisponivel, mapaSrc, mapaMensagem,
       resumoChuva7dTexto, resumoMinimaTexto,
-      ultimaCotacaoTexto, variacao12mTexto, maximaPeriodoTexto,
+
+      cotacaoAtualTexto, barrasMercado, mercadoNota,
+      mercadoBarrasGap: totalBarras > 20 ? '3px' : (totalBarras > 12 ? '6px' : '10px'),
+      mercadoTemDados: totalBarras > 0,
+      mercadoSemDados: totalBarras === 0,
+      mercadoSemDadosTexto: s._dadosCarregados ? 'Sem cotações neste período.' : 'Carregando cotações…',
+      mercadoStat1Rotulo: mercadoStats[0].rotulo, mercadoStat1Valor: mercadoStats[0].valor,
+      mercadoStat2Rotulo: mercadoStats[1].rotulo, mercadoStat2Valor: mercadoStats[1].valor,
+      mercadoStat3Rotulo: mercadoStats[2].rotulo, mercadoStat3Valor: mercadoStats[2].valor,
+      periodosMercado: PERIODOS_MERCADO.map((p) => {
+        const cores = this.chip(!emProjecao && s.mercadoPeriodo === p.valor);
+        return {
+          label: p.label, bg: cores.bg, fg: cores.fg, borda: cores.borda,
+          desabilitado: emProjecao,
+          opacidade: emProjecao ? '0.45' : '1',
+          cursor: emProjecao ? 'default' : 'pointer',
+          dica: emProjecao ? 'A projeção é mensal: o ano projetado aparece inteiro.' : 'Mostrar ' + p.label.toLowerCase(),
+          pick: () => this.setState({ mercadoPeriodo: p.valor })
+        };
+      }),
+      mercadoAno: anoMercado,
+      // Do ano mais recente para o mais antigo: projeções no topo, depois o histórico.
+      anosMercado: anosHistorico.concat(anosProjecao).reverse().map(function(ano) {
+        return { valor: ano, label: anosProjecao.indexOf(ano) !== -1 ? ano + ' · projeção' : ano };
+      }),
+      onMercadoAno: (e) => this.setState({ mercadoAno: e.target.value }),
       mercadoTituloGrafico: (CULTURAS_NOME[s._mercadoCultura] || 'Mercado') + (s._mercadoUnidade ? ' · ' + s._mercadoUnidade : ''),
       ptaxTexto: s._ptax ? 'R$ ' + s._ptax.cotacaoVenda.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) + ' / US$' : '—',
       ptaxFonte: s._ptax ? s._ptax.fonte : '',

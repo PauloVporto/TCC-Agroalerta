@@ -196,4 +196,12 @@ function culturasSuportadas() {
   return Object.keys(REGRAS_POR_CULTURA);
 }
 
-module.exports = { avaliarAlertas, culturasSuportadas, NIVEIS };
+// Fases que o produtor escolhe para o talhão. As regras acima reagem a
+// "floracao" e "colheita"; em "plantio" valem só as regras sem fase (geada, chuva, vento).
+const FASES = ["plantio", "floracao", "colheita"];
+
+function fasesSuportadas() {
+  return [...FASES];
+}
+
+module.exports = { avaliarAlertas, culturasSuportadas, fasesSuportadas, NIVEIS };
