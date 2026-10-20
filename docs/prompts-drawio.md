@@ -229,27 +229,30 @@ Não altere nenhum texto, tipo, acentuação ou multiplicidade.
 
 ---
 
-## 3. Diagrama de casos de uso
+## 3. Diagrama de casos de uso (com banco e APIs)
 
 ```
-Gere o XML mxGraph do draw.io para um diagrama de casos de uso UML, simples.
+Gere o XML mxGraph do draw.io para um diagrama de casos de uso UML em PRETO E BRANCO.
 Responda APENAS com o XML, começando em <mxGraphModel> e terminando em </mxGraphModel>,
 sem markdown e sem comentários, pronto para colar em "Extras → Editar Diagrama".
 
-ESTILOS:
-- Casos de uso: ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2BB3C0;strokeWidth=2;fontSize=14;
-- Atores: shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;
-  fillColor=#D6F1F4;strokeColor=#2BB3C0;strokeWidth=2;fontStyle=1;
-- Fronteira do sistema: rounded=1;fillColor=none;strokeColor=#2BB3C0;strokeWidth=3;
-  dashed=1;dashPattern=1 6;verticalAlign=top;fontStyle=1;fontSize=16;
-- Associação ator–caso: endArrow=none;html=1;strokeColor=#4A4A4A;
-- Generalização entre atores: endArrow=block;endFill=0;endSize=16;html=1;strokeColor=#4A4A4A;
-- «include» e «extend»: dashed=1;endArrow=open;endFill=0;endSize=12;html=1;strokeColor=#4A4A4A;fontSize=12;
+ESTILOS (tudo preto sobre branco, sem cores):
+- Casos de uso: ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=12;
+- Atores primários: shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;
+  fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=11;
+- Atores secundários (banco e APIs): rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;
+  strokeColor=#000000;fontColor=#000000;verticalAlign=top;align=center;fontSize=11;
+- Fronteira do sistema: rounded=1;fillColor=none;strokeColor=#000000;strokeWidth=4;dashed=1;
+  dashPattern=12 10;verticalAlign=top;fontStyle=1;fontSize=13;fontColor=#000000;
+- Associação ator–caso: endArrow=none;html=1;strokeColor=#000000;
+- Generalização entre atores: endArrow=block;endFill=0;endSize=16;html=1;strokeColor=#000000;
+- «include» e «extend»: dashed=1;endArrow=open;endFill=0;endSize=12;html=1;strokeColor=#000000;fontSize=11;
+- Acesso a banco/API: dashed=1;endArrow=none;html=1;strokeColor=#000000;
 
 FRONTEIRA DO SISTEMA: x=300, y=50, largura=890, altura=1040, rótulo "Sistema AgroAlerta".
-Todos os casos de uso ficam dentro dela. Os três atores ficam fora, à esquerda.
+Os casos de uso ficam dentro; os atores primários à esquerda e os secundários à direita, fora dela.
 
-ATORES (largura=80, altura=120):
+ATORES PRIMÁRIOS (largura=80, altura=120):
 - "Fornecedor de insumos" — x=110, y=100
 - "Usuário" — x=110, y=435 — nome em itálico (ator abstrato)
 - "Produtor rural" — x=110, y=870
@@ -261,19 +264,19 @@ CASOS DE USO (altura=64):
 - "Comparar preços de insumos" — x=555, y=448, largura=290
 - "Consultar mercado" — x=580, y=538, largura=240
 - "Simular venda" — x=590, y=658, largura=220
-- "Gerar análise com IA" — x=910, y=538, largura=240
+- "Gerar análise com IA" — x=900, y=678, largura=220
 - "Gerenciar talhões" — x=580, y=808, largura=240
 - "Consultar alertas climáticos" — x=560, y=898, largura=280
 - "Receber alertas por e-mail/SMS" — x=550, y=988, largura=300
 
-ASSOCIAÇÕES (linha sem seta, sem rótulo):
+ASSOCIAÇÕES (linha contínua sem seta):
 - Fornecedor de insumos → "Publicar ofertas de insumos"
 - Usuário → "Fazer login", "Configurar conta", "Comparar preços de insumos",
   "Consultar mercado", "Simular venda"
 - Produtor rural → "Gerenciar talhões", "Consultar alertas climáticos",
   "Receber alertas por e-mail/SMS"
 
-GENERALIZAÇÃO ENTRE ATORES (triângulo vazio apontando para Usuário):
+GENERALIZAÇÃO (triângulo vazio apontando para Usuário):
 - Fornecedor de insumos → Usuário
 - Produtor rural → Usuário
 
@@ -281,7 +284,48 @@ RELAÇÕES ENTRE CASOS DE USO:
 - "Consultar mercado" → "Gerar análise com IA", rótulo «include»
 - "Simular venda" → "Consultar mercado", rótulo «extend»
 
+ATORES SECUNDÁRIOS (todos em x=1440, largura=300, fora da fronteira). A ordem vertical segue
+a altura média dos casos de uso que cada um atende — é o que evita linhas se cruzando.
+Cada caixa tem o estereótipo na primeira linha, o nome em negrito na segunda e os detalhes abaixo:
+1) y=290, altura=112: «sistema externo» / <b>APIs de localização</b> /
+   ViaCEP (CEP → cidade/UF) / Nominatim/OSM (coordenadas)
+2) y=440, altura=132: «banco de dados» / <b>Banco de Dados</b> / PostgreSQL 16 /
+   usuários, sessões, talhões, ofertas e mensagens
+3) y=610, altura=132: «sistema externo» / <b>APIs de mercado</b> /
+   BCB — PTAX e índices / Alpha Vantage · Stooq / Google News
+4) y=780, altura=112: «sistema externo» / <b>IA</b> /
+   Anthropic Claude (análise com busca na web)
+5) y=920, altura=112: «sistema externo» / <b>APIs de clima</b> /
+   OpenWeatherMap · Open-Meteo / INMET (avisos oficiais)
+6) y=1070, altura=112: «sistema externo» / <b>Notificações</b> / SMTP (e-mail) / Twilio (SMS)
+
+ACESSOS A BANCO E APIS (linha tracejada preta, sem seta):
+- "Publicar ofertas de insumos" → Banco de Dados
+- "Fazer login" → Banco de Dados e APIs de localização
+- "Configurar conta" → Banco de Dados e APIs de localização
+- "Comparar preços de insumos" → Banco de Dados e IA
+- "Consultar mercado" → APIs de mercado
+- "Gerar análise com IA" → IA
+- "Gerenciar talhões" → Banco de Dados e APIs de localização
+- "Consultar alertas climáticos" → APIs de clima
+- "Receber alertas por e-mail/SMS" → Banco de Dados e Notificações
+("Simular venda" não tem acesso próprio: usa a consulta de mercado que ele estende.)
+
+ROTEAMENTO (é o que mantém o lado direito legível — siga à risca):
+Use edgeStyle=orthogonalEdgeStyle;rounded=0; em TODAS as ligações tracejadas, com apenas
+ângulos retos, nunca diagonais. Cada ator secundário tem uma "pista" vertical exclusiva:
+APIs de clima = x1210, APIs de mercado = x1248, Notificações = x1286,
+IA = x1324, APIs de localização = x1362, Banco de Dados = x1400.
+A ordem não é aleatória: as pistas mais longas (Banco e Localização, que atendem casos de uso
+espalhados de cima a baixo) ficam por fora, assim cruzam o mínimo possível das outras.
+O caminho de cada ligação é sempre: sai pela DIREITA da elipse na horizontal → vira na pista
+do seu destino → sobe ou desce por ela → entra na caixa pela esquerda.
+Quando um caso de uso tem duas ligações, separe as saídas em alturas diferentes
+(cerca de 16 px acima e abaixo do centro da elipse) para as linhas não se sobreporem.
+
+LEGENDA no canto inferior esquerdo (x=60, y=1215): linha contínua = "associação com o ator";
+linha tracejada = "acesso ao banco ou à API externa".
+
 REGRAS: não invente atores, casos de uso ou ligações além dos listados. Não altere nenhum texto.
-Nenhuma linha deve atravessar uma elipse — os casos de uso estão agrupados em três faixas
-horizontais, cada uma na altura do seu ator, justamente para evitar isso.
+Use apenas preto e branco.
 ```
