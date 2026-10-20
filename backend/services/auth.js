@@ -89,6 +89,7 @@ async function obterConfiguracoes(usuarioId) {
   const resultado = await pool.query(
     `SELECT u.id, u.nome, u.email, u.criado_em AS "criadoEm",
             u.papel, u.cidade, u.telefone,
+            u.cidade_formatada AS "cidadeFormatada", u.latitude, u.longitude,
             COALESCE(p.cultura_favorita, 'cafe') AS "culturaFavorita",
             COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura",
             COALESCE(p.notificacoes, TRUE) AS notificacoes
