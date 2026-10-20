@@ -4,6 +4,7 @@ const { gerarInsightCompra } = require("../services/insumosIA");
 const { listarInsumos, insumosParaAlerta, catalogo } = require("../services/insumosCatalog");
 const { exigirAutenticacao, exigirPapel } = require("../services/auth");
 const { pool } = require("../services/db");
+const { MAPA_ALERTA_CATEGORIA } = require("../services/alertaInsumos");
 
 router.get("/", async (req, res) => {
   try {
@@ -17,6 +18,12 @@ router.get("/", async (req, res) => {
 router.get("/recomendados/:alertaId", async (req, res) => {
   const insumos = await insumosParaAlerta(req.params.alertaId);
   if (insumos === null) {
+// GET /api/insumos/recomendados/:alertaId
+// Recomenda insumos com base no id de uma regra de alerta (ex: "cafe_geada")
+router.get("/recomendados/:alertaId", (req, res) => {
+  const categorias = MAPA_ALERTA_CATEGORIA[req.params.alertaId];
+
+  if (!categorias) {
     return res.status(404).json({ erro: "Regra de alerta desconhecida" });
   }
   res.json(insumos);

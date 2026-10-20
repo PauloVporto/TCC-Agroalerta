@@ -20,6 +20,7 @@ pnpm-debug.log*
 logs/
 
 # Runtime data
+backend/data/cache-icbr.json
 pids/
 *.pid
 *.seed

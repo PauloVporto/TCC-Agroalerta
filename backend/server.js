@@ -8,6 +8,7 @@ const insumosRouter = require("./routes/insumos");
 const mercadoRouter = require("./routes/mercado");
 const authRouter = require("./routes/auth");
 const climaRouter = require("./routes/clima");
+const relatoriosRouter = require("./routes/relatorios");
 const { culturasSuportadas } = require("./services/rules");
 const { inicializarBanco } = require("./services/db");
 
@@ -43,6 +44,7 @@ app.use("/api/talhoes", talhoesRouter);
 app.use("/api/alertas", alertasRouter);
 app.use("/api/insumos", insumosRouter);
 app.use("/api/mercado", mercadoRouter);
+app.use("/api/relatorios", relatoriosRouter);
 
 app.use((req, res) => {
   res.status(404).json({ erro: "Rota não encontrada" });
