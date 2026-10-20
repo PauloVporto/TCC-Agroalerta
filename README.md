@@ -113,6 +113,17 @@ modo **real** ou **simulado**.
 reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 `frontend/config.js` ao seu `.gitignore` também.
 
+## Notificações por e-mail e SMS
+
+O produtor escolhe no cadastro, de forma independente, se quer receber e-mail e/ou SMS
+(as duas opções começam desmarcadas). Os canais autorizados recebem boas-vindas, e o
+monitoramento climático automático (Open-Meteo) avisa sobre riscos reais nos talhões,
+pela fila persistente no PostgreSQL. E-mail pelo **Resend**, SMS pela **SMSGo**; sem
+`*_SENDING_ENABLED=true`, tudo roda em modo simulado, sem custo.
+
+Configuração, testes reais, ativação, limites de custo e diagnóstico:
+[`docs/NOTIFICACOES.md`](docs/NOTIFICACOES.md).
+
 ## Autenticação
 
 - Cadastro e login com e-mail/senha (senha armazenada com hash `scrypt`, nunca em texto puro)
@@ -131,6 +142,7 @@ reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 | 4. Análise de mercado (IA + busca web) | Histórico de preço + leitura de tendência com busca em tempo real (clima, câmbio, exportação/importação, estoques, frete, política agrícola), para as 5 culturas | `backend/services/market.js` |
 | Insight de compra de insumos (IA + busca web) | Recomendação sobre comprar agora ou esperar, considerando preços coletados e cenário de custo de matéria-prima/mercado | `backend/services/insumosIA.js` |
 | Mapa de talhões | Visualização geográfica dos talhões cadastrados (Google Maps) | `frontend/app.js` (`inicializarMapa`) |
+| Notificações | Consentimento por canal, boas-vindas, alertas automáticos, fila, limites de custo e histórico | `backend/services/notificacoes/`, `backend/services/monitoramento.js`, `docs/NOTIFICACOES.md` |
 
 ## Próximos passos sugeridos (para o desenvolvimento do TCC)
 

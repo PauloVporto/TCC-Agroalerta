@@ -16,15 +16,15 @@ function hashSenha(senha, salt) {
   return crypto.scryptSync(senha, salt, 64).toString("hex");
 }
 
-async function criarUsuario({ nome, email, senha, cidade, cidadeFormatada, latitude, longitude }) {
+async function criarUsuario({ nome, email, senha, telefone, cidade, cidadeFormatada, latitude, longitude }) {
   const salt = crypto.randomBytes(16).toString("hex");
   try {
     const resultado = await pool.query(
-      `INSERT INTO usuarios (nome, email, senha_hash, salt, cidade, cidade_formatada, latitude, longitude)
-       VALUES ($1, LOWER($2), $3, $4, $5, $6, $7, $8)
-       RETURNING id, nome, email, salt, cidade, cidade_formatada AS "cidadeFormatada",
+      `INSERT INTO usuarios (nome, email, senha_hash, salt, telefone, cidade, cidade_formatada, latitude, longitude)
+       VALUES ($1, LOWER($2), $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, nome, email, salt, telefone, cidade, cidade_formatada AS "cidadeFormatada",
                  latitude, longitude, criado_em AS "criadoEm"`,
-      [nome, email, hashSenha(senha, salt), salt, cidade || null, cidadeFormatada || null,
+      [nome, email, hashSenha(senha, salt), salt, telefone || null, cidade || null, cidadeFormatada || null,
         latitude != null ? latitude : null, longitude != null ? longitude : null]
     );
     const usuario = sanitizar(resultado.rows[0]);
@@ -74,11 +74,10 @@ async function usuarioPorToken(token) {
 
 async function obterConfiguracoes(usuarioId) {
   const resultado = await pool.query(
-    `SELECT u.id, u.nome, u.email, u.cidade, u.cidade_formatada AS "cidadeFormatada",
+    `SELECT u.id, u.nome, u.email, u.telefone, u.cidade, u.cidade_formatada AS "cidadeFormatada",
             u.latitude, u.longitude, u.criado_em AS "criadoEm",
             COALESCE(p.cultura_favorita, 'cafe') AS "culturaFavorita",
-            COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura",
-            COALESCE(p.notificacoes, TRUE) AS notificacoes
+            COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura"
      FROM usuarios u
      LEFT JOIN preferencias_usuario p ON p.usuario_id = u.id
      WHERE u.id = $1`,
@@ -87,12 +86,12 @@ async function obterConfiguracoes(usuarioId) {
   return resultado.rows[0] || null;
 }
 
-async function atualizarPerfil(usuarioId, { nome, email }) {
+async function atualizarPerfil(usuarioId, { nome, email, telefone }) {
   try {
     const resultado = await pool.query(
-      `UPDATE usuarios SET nome = $1, email = LOWER($2) WHERE id = $3
-       RETURNING id, nome, email, criado_em AS "criadoEm"`,
-      [nome, email, usuarioId]
+      `UPDATE usuarios SET nome = $1, email = LOWER($2), telefone = $3 WHERE id = $4
+       RETURNING id, nome, email, telefone, criado_em AS "criadoEm"`,
+      [nome, email, telefone || null, usuarioId]
     );
     return resultado.rows[0] ? sanitizar(resultado.rows[0]) : null;
   } catch (erro) {
@@ -101,19 +100,19 @@ async function atualizarPerfil(usuarioId, { nome, email }) {
   }
 }
 
+// As notificações por canal ficam em /api/notificacoes/preferencias (consentimento por canal).
 async function atualizarPreferencias(usuarioId, preferencias) {
   const resultado = await pool.query(
     `INSERT INTO preferencias_usuario
-       (usuario_id, cultura_favorita, unidade_temperatura, notificacoes, atualizado_em)
-     VALUES ($1, $2, $3, $4, NOW())
+       (usuario_id, cultura_favorita, unidade_temperatura, atualizado_em)
+     VALUES ($1, $2, $3, NOW())
      ON CONFLICT (usuario_id) DO UPDATE SET
        cultura_favorita = EXCLUDED.cultura_favorita,
        unidade_temperatura = EXCLUDED.unidade_temperatura,
-       notificacoes = EXCLUDED.notificacoes,
        atualizado_em = NOW()
      RETURNING cultura_favorita AS "culturaFavorita",
-               unidade_temperatura AS "unidadeTemperatura", notificacoes`,
-    [usuarioId, preferencias.culturaFavorita, preferencias.unidadeTemperatura, preferencias.notificacoes]
+               unidade_temperatura AS "unidadeTemperatura"`,
+    [usuarioId, preferencias.culturaFavorita, preferencias.unidadeTemperatura]
   );
   return resultado.rows[0];
 }

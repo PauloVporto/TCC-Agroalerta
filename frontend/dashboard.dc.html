@@ -43,6 +43,10 @@
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="1.5" y="3.5" width="13" height="9"></rect><line x1="5.8" y1="3.5" x2="5.8" y2="12.5"></line><line x1="10.2" y1="3.5" x2="10.2" y2="12.5"></line></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Talhões</span>
       </button>
+      <button type="button" onClick="{{ goNotificacoes }}" title="Notificações" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navNotificacoesBg }}; color: {{ navNotificacoesFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navNotificacoesBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><path d="M4 11.5V7a4 4 0 0 1 8 0v4.5l1.2 1.3H2.8z"></path><path d="M6.6 14a1.5 1.5 0 0 0 2.8 0"></path></svg>
+        <span style="white-space: nowrap; display: {{ labelDisplay }};">Notificações</span>
+      </button>
       </sc-if>
       <button type="button" onClick="{{ goInsumos }}" title="Insumos e preços" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navInsumosBg }}; color: {{ navInsumosFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navInsumosBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="4.5" y="5.5" width="7" height="9"></rect><line x1="6.5" y1="1.5" x2="9.5" y2="1.5"></line><line x1="8" y1="1.5" x2="8" y2="5.5"></line></svg>
@@ -305,6 +309,73 @@
       </section>
       </sc-if>
 
+      <sc-if value="{{ pgNotificacoes }}" hint-placeholder-val="{{ false }}">
+      <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <sc-for list="{{ canaisNotificacao }}" as="c" hint-placeholder-count="2">
+          <div style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 9px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+              <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 19px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">{{ c.titulo }}</h2>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: {{ c.chipCor }}; background: {{ c.chipFundo }}; border: 1px solid {{ c.chipCor }}; padding: 4px 10px; border-radius: 999px; white-space: nowrap;">{{ c.situacao }}</span>
+            </div>
+            <div style="font-size: 14px; color: #1A1A18;">{{ c.destino }}</div>
+            <div style="font-size: 13px; color: #4A4A42;">{{ c.nivel }}</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: {{ c.modoCor }};">{{ c.modo }}</div>
+            <div style="font-size: 12px; color: #6B4A34;">{{ c.atualizado }}</div>
+          </div>
+        </sc-for>
+        <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: #4A4A42;">
+          <span>Para autorizar, revogar ou mudar a gravidade de cada canal, use Configurar conta.</span>
+          <button type="button" onClick="{{ goConta }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #1F3D2B; background: transparent; border: 1px solid #C9C3B0; padding: 9px 16px; cursor: pointer;" style-hover="border-color: #1F3D2B;">Configurar notificações</button>
+        </div>
+      </section>
+
+      <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 16px; flex-wrap: wrap;">
+          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Histórico de notificações</h2>
+          <button type="button" onClick="{{ atualizarHistorico }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 10px 18px; cursor: pointer;" style-hover="background: #162C1F;">{{ atualizarHistoricoLabel }}</button>
+        </div>
+        <sc-if value="{{ semHistorico }}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; padding: 20px; border: 1px dashed #C9C3B0; border-radius: 10px; font-size: 14px; line-height: 1.55; color: #6B4A34;">{{ historicoVazioTexto }}</p>
+        </sc-if>
+        <sc-if value="{{ temHistorico }}" hint-placeholder-val="{{ true }}">
+        <div style="overflow-x: auto; border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 1040px;">
+            <thead>
+              <tr style="background: #EFEBDF;">
+                <th style="text-align: left; padding: 12px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #4A4A42; font-weight: 500; border-bottom: 1px solid #DDD8C9;">Data e hora</th>
+                <th style="text-align: left; padding: 12px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #4A4A42; font-weight: 500; border-bottom: 1px solid #DDD8C9;">Tipo</th>
+                <th style="text-align: left; padding: 12px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #4A4A42; font-weight: 500; border-bottom: 1px solid #DDD8C9;">Canal</th>
+                <th style="text-align: left; padding: 12px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #4A4A42; font-weight: 500; border-bottom: 1px solid #DDD8C9;">Destinatário</th>
+                <th style="text-align: left; padding: 12px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #4A4A42; font-weight: 500; border-bottom: 1px solid #DDD8C9;">Status</th>
+                <th style="text-align: left; padding: 12px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #4A4A42; font-weight: 500; border-bottom: 1px solid #DDD8C9;">Região</th>
+                <th style="text-align: left; padding: 12px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #4A4A42; font-weight: 500; border-bottom: 1px solid #DDD8C9;">Descrição</th>
+                <th style="text-align: left; padding: 12px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #4A4A42; font-weight: 500; border-bottom: 1px solid #DDD8C9;">Motivo da falha</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ historico }}" as="h" hint-placeholder-count="5">
+                <tr>
+                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #1A1A18; white-space: nowrap;">{{ h.data }}</td>
+                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #1A1A18;">{{ h.tipo }}</td>
+                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ h.canal }}</td>
+                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ h.destino }}</td>
+                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA;">
+                    <span style="display: inline-block; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid {{ h.cor }}; color: {{ h.corTexto }}; background: {{ h.fundo }}; white-space: nowrap;">{{ h.status }}</span>
+                    <div style="margin-top: 5px; font-size: 11px; color: #6B4A34;">{{ h.nota }}</div>
+                  </td>
+                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ h.regiao }}</td>
+                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #1A1A18;">{{ h.descricao }}</td>
+                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-size: 13px; line-height: 1.45; color: #7A2C19;">{{ h.motivo }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        </sc-if>
+        <p style="margin: 12px 0 0; font-size: 12px; line-height: 1.5; color: #6B4A34;">"Aceito pelo provedor" significa que o Resend (e-mail) ou a SMSGo (SMS) recebeu a mensagem; "Entregue" só aparece quando o provedor confirma a entrega.</p>
+      </section>
+      </sc-if>
+
       <sc-if value="{{ pgInsumos }}" hint-placeholder-val="{{ false }}">
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
         <div style="border: 1px solid #CFE0E8; background: #EEF5F8; border-radius: 10px; padding: 18px 20px; margin-bottom: 22px;">
@@ -538,12 +609,31 @@
             </sc-for>
           </div>
 
-          <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer; border-top: 1px solid #CFE0E8; padding-top: 16px;">
-            <input type="checkbox" checked="{{ cNotificacoes }}" onChange="{{ onCNotificacoes }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
-            Receber alertas climáticos por e-mail e SMS.
-          </label>
+          <div style="border-top: 1px solid #CFE0E8; padding-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #2F6E8F;">Notificações</span>
+            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer;">
+              <input type="checkbox" checked="{{ cNotifEmail }}" onChange="{{ onCNotifEmail }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
+              Autorizo receber alertas climáticos por e-mail.
+            </label>
+            <select value="{{ cNivelEmail }}" onChange="{{ onCNivelEmail }}" disabled="{{ cNivelEmailDesativado }}" style="font-family: Archivo, sans-serif; font-size: 13px; color: #1A1A18; background: #FFFFFF; border: 1px solid #CFE0E8; padding: 9px 11px; margin-left: 25px;">
+              <option value="medio">Alertas de risco médio e alto</option>
+              <option value="alto">Somente alertas de risco alto</option>
+            </select>
+            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer;">
+              <input type="checkbox" checked="{{ cNotifSms }}" onChange="{{ onCNotifSms }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
+              Autorizo receber alertas climáticos por SMS no celular cadastrado.
+            </label>
+            <select value="{{ cNivelSms }}" onChange="{{ onCNivelSms }}" disabled="{{ cNivelSmsDesativado }}" style="font-family: Archivo, sans-serif; font-size: 13px; color: #1A1A18; background: #FFFFFF; border: 1px solid #CFE0E8; padding: 9px 11px; margin-left: 25px;">
+              <option value="alto">Somente alertas de risco alto</option>
+              <option value="medio">Alertas de risco médio e alto</option>
+            </select>
+            <span style="font-size: 12px; line-height: 1.5; color: #24505F;">{{ cNotifNota }}</span>
+          </div>
 
-          <button type="button" onClick="{{ salvarConta }}" style="margin-top: 20px; width: 100%; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #2F6E8F; border: 1px solid #2F6E8F; padding: 13px 20px; cursor: pointer;" style-hover="background: #24505F;">{{ salvarContaLabel }}</button>
+          <sc-if value="{{ contaErro }}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 16px 0 0; font-size: 13px; line-height: 1.5; color: #A33A22;">{{ contaErro }}</p>
+          </sc-if>
+          <button type="button" onClick="{{ salvarConta }}" disabled="{{ contaSalvando }}" style="margin-top: 20px; width: 100%; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #2F6E8F; border: 1px solid #2F6E8F; padding: 13px 20px; cursor: pointer;" style-hover="background: #24505F;">{{ salvarContaLabel }}</button>
         </div>
       </section>
       </sc-if>
@@ -626,6 +716,13 @@ function apiFetch(path, opts) {
   return fetch(API_BASE + path, Object.assign({}, opts, { headers: headers }));
 }
 
+// "+5535999990000" → "(35) 99999-0000" (o backend guarda o telefone em E.164)
+function formatarTelefone(telefone) {
+  const d = String(telefone || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '');
+  if (d.length < 10) return telefone || '';
+  return '(' + d.slice(0, 2) + ') ' + d.slice(2, d.length - 4) + '-' + d.slice(-4);
+}
+
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -639,7 +736,9 @@ class Component extends DCLogic {
       cNome: usuarioSalvo ? usuarioSalvo.nome : '',
       cEmail: usuarioSalvo ? usuarioSalvo.email : '',
       cTelefone: '', cCidade: '',
-      cCultura: 'cafe', cUnidade: 'C', cNotificacoes: true, contaSalva: false,
+      cCultura: 'cafe', cUnidade: 'C', contaSalva: false, contaSalvando: false, contaErro: '',
+      cNotifEmail: false, cNotifSms: false, cNivelEmail: 'medio', cNivelSms: 'alto',
+      _notif: null, _historico: [], _historicoCarregado: false, _historicoCarregando: false,
       sacas: 500,
       novaOfertaAberta: false, oNome: '', oCategoria: '', oUnidade: '', oPreco: '', ofertaError: '',
       novoTalhaoAberto: false, tNome: '', tCultura: 'cafe', tFase: '', tCep: '', tErro: '', tSalvando: false,
@@ -771,6 +870,8 @@ class Component extends DCLogic {
   _carregarDados() {
     this._carregarHistoricoRelatorios();
     this._carregarConfiguracoes();
+    this._carregarNotificacoes();
+    this._carregarHistoricoNotificacoes();
     this._carregarClimaCidade();
     this._carregarTalhoes();
     this._carregarInsumos();
@@ -783,9 +884,9 @@ class Component extends DCLogic {
       const novaCultura = cfg.culturaFavorita || 'cafe';
       this.setState({
         cCidade: cfg.cidade || cfg.cidadeFormatada || '',
+        cTelefone: formatarTelefone(cfg.telefone),
         cCultura: novaCultura,
         cUnidade: cfg.unidadeTemperatura === 'fahrenheit' ? 'F' : 'C',
-        cNotificacoes: !!cfg.notificacoes,
         cLatitude: cfg.latitude != null ? cfg.latitude : null,
         cLongitude: cfg.longitude != null ? cfg.longitude : null
       });
@@ -793,6 +894,28 @@ class Component extends DCLogic {
         this._carregarMercado(novaCultura);
       }
     }).catch(function() {});
+  }
+
+  // Autorização, gravidade mínima, destino e modo (simulado/sandbox/real) de cada canal.
+  _carregarNotificacoes() {
+    apiFetch('/notificacoes/preferencias').then(function(r) { return r.json(); }).then((p) => {
+      if (!p || !p.email) return;
+      this.setState({
+        _notif: p,
+        cNotifEmail: p.email.consentido, cNivelEmail: p.email.nivelMinimo,
+        cNotifSms: p.sms.consentido, cNivelSms: p.sms.nivelMinimo
+      });
+    }).catch(function() {});
+  }
+
+  _carregarHistoricoNotificacoes() {
+    this.setState({ _historicoCarregando: true });
+    apiFetch('/notificacoes/historico?limite=100').then(function(r) { return r.json(); }).then((dados) => {
+      this.setState({
+        _historico: Array.isArray(dados.envios) ? dados.envios : [],
+        _historicoCarregado: true, _historicoCarregando: false
+      });
+    }).catch(() => this.setState({ _historicoCarregado: true, _historicoCarregando: false }));
   }
 
   _carregarClimaCidade() {
@@ -915,6 +1038,7 @@ class Component extends DCLogic {
       visao: { title: 'Painel da safra' },
       alertas: { title: 'Alertas climáticos' },
       talhoes: { title: 'Talhões' },
+      notificacoes: { title: 'Notificações' },
       insumos: { title: 'Insumos e preços' },
       ofertas: { title: 'Minhas ofertas' },
       conta: { title: 'Configurar conta' },
@@ -925,7 +1049,7 @@ class Component extends DCLogic {
 
   paginaAtual() {
     const s = this.state;
-    const soProdutor = ['visao', 'alertas', 'talhoes'];
+    const soProdutor = ['visao', 'alertas', 'talhoes', 'notificacoes'];
     if (s.papel === 'fornecedor' && soProdutor.indexOf(s.page) !== -1) return 'ofertas';
     return s.page;
   }
@@ -957,6 +1081,19 @@ class Component extends DCLogic {
 
     const NIVEL_DISPLAY = { alto: 'Alto', medio: 'Médio', baixo: 'Baixo' };
     const CULTURAS_NOME = { cafe: 'Café', soja: 'Soja' };
+    const ORDEM_NIVEL = { baixo: 0, medio: 1, alto: 2 };
+    const notif = s._notif;
+    const dataHora = function(iso) {
+      return iso ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+    };
+    // Por quais canais um alerta deste nível seria avisado, conforme autorização e gravidade mínima.
+    const avisoDoAlerta = function(nivel) {
+      if (!notif) return 'Avisos: carregando…';
+      const canais = [];
+      if (notif.email.consentido && ORDEM_NIVEL[nivel] >= ORDEM_NIVEL[notif.email.nivelMinimo]) canais.push('e-mail');
+      if (notif.sms.consentido && ORDEM_NIVEL[nivel] >= ORDEM_NIVEL[notif.sms.nivelMinimo]) canais.push('SMS');
+      return canais.length ? 'Aviso automático por ' + canais.join(' e ') : 'Sem aviso automático (veja Configurar conta)';
+    };
 
     const alertas = s.alertas.map((a) => {
       const talhaoAtual = s.talhoes.find(function(t) { return t.id === s._talhaoSelecionadoId; });
@@ -970,9 +1107,65 @@ class Component extends DCLogic {
         contexto: contexto,
         insumo: a.recomendacao,
         janela: a.janela || '—',
-        envio: 'Verificar no painel'
+        envio: avisoDoAlerta(a.nivel)
       });
     });
+
+    const MODO_CANAL = {
+      simulado: { texto: 'Servidor em modo simulado: nenhuma mensagem sai do sistema', cor: '#6B4A34' },
+      sandbox: { texto: 'Servidor no sandbox da SMSGo: teste sem cobrança e sem entrega', cor: '#2F6E8F' },
+      real: { texto: 'Envio real ativado no servidor', cor: '#1F7A43' }
+    };
+    const NIVEL_MINIMO_TEXTO = { medio: 'Recebe alertas de risco médio e alto', alto: 'Recebe só alertas de risco alto' };
+    const canaisNotificacao = !notif ? [] : [['email', 'E-mail'], ['sms', 'SMS']].map(function(par) {
+      const c = notif[par[0]];
+      const modo = MODO_CANAL[c.modo] || { texto: c.modo, cor: '#6B4A34' };
+      return {
+        titulo: par[1],
+        situacao: c.consentido ? 'Autorizado' : 'Não autorizado',
+        chipCor: c.consentido ? '#1F7A43' : '#6B4A34',
+        chipFundo: c.consentido ? '#EAEFE9' : '#F7F5EF',
+        destino: c.destino || (par[0] === 'sms' ? 'Nenhum celular cadastrado' : '—'),
+        nivel: c.consentido ? NIVEL_MINIMO_TEXTO[c.nivelMinimo] : 'Não recebe alertas por este canal',
+        modo: modo.texto,
+        modoCor: modo.cor,
+        atualizado: c.atualizadoEm
+          ? (c.consentido ? 'Autorizado em ' : 'Revogado em ') + dataHora(c.atualizadoEm)
+          : 'Nenhuma autorização registrada'
+      };
+    });
+
+    const STATUS_ENVIO = {
+      pendente: { rotulo: 'Na fila', cor: '#D4A537', corTexto: '#6B4A34', fundo: '#F8F1DE' },
+      processando: { rotulo: 'Enviando', cor: '#2F6E8F', corTexto: '#24505F', fundo: '#EEF5F8' },
+      simulado: { rotulo: 'Simulado', cor: '#9A9587', corTexto: '#4A4A42', fundo: '#F2F0EA' },
+      enviado: { rotulo: 'Aceito pelo provedor', cor: '#2F6E8F', corTexto: '#24505F', fundo: '#EEF5F8' },
+      entregue: { rotulo: 'Entregue', cor: '#1F7A43', corTexto: '#1F3D2B', fundo: '#EAEFE9' },
+      falhou: { rotulo: 'Falhou', cor: '#A33A22', corTexto: '#7A2C19', fundo: '#F6EBE6' },
+      bloqueado: { rotulo: 'Bloqueado', cor: '#6B4A34', corTexto: '#6B4A34', fundo: '#F3ECE4' }
+    };
+    const TIPO_ENVIO = { boas_vindas: 'Boas-vindas', alerta_climatico: 'Alerta climático', teste: 'Teste' };
+    const historico = (s._historico || []).map(function(e) {
+      const st = STATUS_ENVIO[e.status] || STATUS_ENVIO.pendente;
+      let nota = '';
+      if (e.status === 'simulado') nota = 'nenhuma mensagem saiu do sistema';
+      else if (e.status === 'pendente' && e.erroCodigo) nota = 'nova tentativa automática';
+      else if (e.status === 'entregue' && e.entregueEm) nota = 'confirmado em ' + dataHora(e.entregueEm);
+      else if (e.status === 'enviado' && e.modo === 'sandbox') nota = 'sandbox: sem entrega real';
+      const comMotivo = e.status === 'falhou' || e.status === 'bloqueado' || (e.status === 'pendente' && e.erroMensagem);
+      return {
+        data: dataHora(e.criadoEm),
+        tipo: TIPO_ENVIO[e.tipo] || e.tipo,
+        canal: e.canal === 'sms' ? 'SMS' : 'E-mail',
+        destino: e.destino || '—',
+        status: st.rotulo, cor: st.cor, corTexto: st.corTexto, fundo: st.fundo, nota: nota,
+        regiao: e.regiao || '—',
+        descricao: e.resumo,
+        motivo: comMotivo ? (e.erroMensagem || e.erroCodigo) : '—'
+      };
+    });
+    const telefoneDigitos = String(s.cTelefone || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '');
+    const celularDigitado = telefoneDigitos.length === 11 && telefoneDigitos.charAt(2) === '9';
 
     const talhaoParaRegras = s.talhoes.find(function(t) { return t.id === s._talhaoSelecionadoId; });
     const regras = s.alertas.map((a) => Object.assign({}, this.nivelCores(a.nivel), {
@@ -1117,6 +1310,7 @@ class Component extends DCLogic {
       pgVisao: s.page === 'visao' && s.papel !== 'fornecedor',
       pgAlertas: s.page === 'alertas' && s.papel !== 'fornecedor',
       pgTalhoes: s.page === 'talhoes' && s.papel !== 'fornecedor',
+      pgNotificacoes: s.page === 'notificacoes' && s.papel !== 'fornecedor',
       pgInsumos: s.page === 'insumos',
       pgMercado: s.page === 'mercado',
       pgRelatorios: s.page === 'relatorios',
@@ -1125,6 +1319,10 @@ class Component extends DCLogic {
       goVisao: () => this.setState({ page: 'visao' }),
       goAlertas: () => this.setState({ page: 'alertas' }),
       goTalhoes: () => this.setState({ page: 'talhoes' }),
+      goNotificacoes: () => {
+        this.setState({ page: 'notificacoes' });
+        this._carregarHistoricoNotificacoes();
+      },
       goInsumos: () => this.setState({ page: 'insumos' }),
       goMercado: () => this.setState({ page: 'mercado' }),
       goRelatorios: () => this.setState({ page: 'relatorios' }),
@@ -1134,6 +1332,7 @@ class Component extends DCLogic {
       navVisaoBg: this.navStyle('visao').bg, navVisaoFg: this.navStyle('visao').fg, navVisaoBar: this.navStyle('visao').bar,
       navAlertasBg: this.navStyle('alertas').bg, navAlertasFg: this.navStyle('alertas').fg, navAlertasBar: this.navStyle('alertas').bar,
       navTalhoesBg: this.navStyle('talhoes').bg, navTalhoesFg: this.navStyle('talhoes').fg, navTalhoesBar: this.navStyle('talhoes').bar,
+      navNotificacoesBg: this.navStyle('notificacoes').bg, navNotificacoesFg: this.navStyle('notificacoes').fg, navNotificacoesBar: this.navStyle('notificacoes').bar,
       navInsumosBg: this.navStyle('insumos').bg, navInsumosFg: this.navStyle('insumos').fg, navInsumosBar: this.navStyle('insumos').bar,
       navMercadoBg: this.navStyle('mercado').bg, navMercadoFg: this.navStyle('mercado').fg, navMercadoBar: this.navStyle('mercado').bar,
       navRelatoriosBg: this.navStyle('relatorios').bg, navRelatoriosFg: this.navStyle('relatorios').fg, navRelatoriosBar: this.navStyle('relatorios').bar,
@@ -1149,9 +1348,28 @@ class Component extends DCLogic {
       pageTitle: (this.pageMeta()[this.paginaAtual()] || {}).title,
 
       cNome: s.cNome, cEmail: s.cEmail, cTelefone: s.cTelefone, cCidade: s.cCidade,
-      cNotificacoes: s.cNotificacoes,
       onCNome: set('cNome'), onCEmail: set('cEmail'), onCTelefone: set('cTelefone'),
-      onCNotificacoes: (e) => this.setState({ cNotificacoes: e.target.checked, contaSalva: false }),
+      cNotifEmail: s.cNotifEmail, cNotifSms: s.cNotifSms, cNivelEmail: s.cNivelEmail, cNivelSms: s.cNivelSms,
+      onCNotifEmail: (e) => this.setState({ cNotifEmail: e.target.checked, contaSalva: false }),
+      onCNotifSms: (e) => this.setState({ cNotifSms: e.target.checked, contaSalva: false }),
+      onCNivelEmail: (e) => this.setState({ cNivelEmail: e.target.value, contaSalva: false }),
+      onCNivelSms: (e) => this.setState({ cNivelSms: e.target.value, contaSalva: false }),
+      cNivelEmailDesativado: !s.cNotifEmail,
+      cNivelSmsDesativado: !s.cNotifSms,
+      cNotifNota: s.cNotifSms && !celularDigitado
+        ? 'Para receber SMS, informe em Telefone um celular com DDD, ex.: (35) 99999-0000.'
+        : 'Cada autorização pode ser revogada a qualquer momento. O histórico de envios fica em Notificações.',
+      contaErro: s.contaErro,
+      contaSalvando: s.contaSalvando,
+      canaisNotificacao,
+      historico,
+      temHistorico: historico.length > 0,
+      semHistorico: historico.length === 0,
+      historicoVazioTexto: s._historicoCarregado
+        ? 'Nenhuma notificação registrada ainda. Mensagens de boas-vindas e alertas aparecem aqui assim que entram na fila.'
+        : 'Carregando histórico…',
+      atualizarHistorico: () => this._carregarHistoricoNotificacoes(),
+      atualizarHistoricoLabel: s._historicoCarregando ? 'Atualizando…' : 'Atualizar',
       cCep: s.cCep,
       onCCep: (e) => this.setState({ cCep: e.target.value, cCepStatus: '', contaSalva: false }),
       cCepBtnLabel: s.cCepVerificando ? 'Verificando…' : 'Verificar',
@@ -1193,23 +1411,40 @@ class Component extends DCLogic {
           pick: () => this.setState({ cCultura: c.valor, contaSalva: false })
         };
       }),
-      salvarContaLabel: s.contaSalva ? 'Alterações salvas' : 'Salvar alterações',
+      salvarContaLabel: s.contaSalvando ? 'Salvando…' : (s.contaSalva ? 'Alterações salvas' : 'Salvar alterações'),
       salvarConta: () => {
-        apiFetch('/auth/perfil', {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome: s.cNome, email: s.cEmail })
-        }).then(() => apiFetch('/auth/preferencias', {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ culturaFavorita: s.cCultura, unidadeTemperatura: 'celsius', notificacoes: !!s.cNotificacoes })
-        })).then(() => {
-          this.setState({ contaSalva: true });
-          const u = JSON.parse(sessionStorage.getItem('agroalerta_usuario') || '{}');
-          u.nome = s.cNome;
-          sessionStorage.setItem('agroalerta_usuario', JSON.stringify(u));
-          this._carregarConfiguracoes();
-          this._carregarClimaCidade();
-          this._carregarMercado(s.cCultura || 'cafe');
-        }).catch(function() {});
+        this.setState({ contaSalvando: true, contaErro: '' });
+        const enviar = function(caminho, metodo, corpo) {
+          return apiFetch(caminho, {
+            method: metodo, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo)
+          }).then(function(r) {
+            return r.json().then(function(c) {
+              if (!r.ok) throw new Error(c.erro || 'Não foi possível salvar as alterações.');
+              return c;
+            });
+          });
+        };
+        const perfil = () => enviar('/auth/perfil', 'PATCH', { nome: s.cNome, email: s.cEmail, telefone: s.cTelefone });
+        const notificacoes = () => enviar('/notificacoes/preferencias', 'PUT', {
+          email: { consentido: !!s.cNotifEmail, nivelMinimo: s.cNivelEmail },
+          sms: { consentido: !!s.cNotifSms, nivelMinimo: s.cNivelSms }
+        });
+        const preferencias = () => enviar('/auth/preferencias', 'PATCH', { culturaFavorita: s.cCultura, unidadeTemperatura: 'celsius' });
+        // Desligar o SMS vem antes de apagar o telefone; ligar, depois de cadastrar o celular.
+        const desligandoSms = !!(s._notif && s._notif.sms.consentido && !s.cNotifSms);
+        const passos = desligandoSms ? [notificacoes, perfil, preferencias] : [perfil, notificacoes, preferencias];
+        passos.reduce(function(anterior, passo) { return anterior.then(passo); }, Promise.resolve())
+          .then(() => {
+            this.setState({ contaSalva: true, contaSalvando: false });
+            const u = JSON.parse(sessionStorage.getItem('agroalerta_usuario') || '{}');
+            u.nome = s.cNome;
+            sessionStorage.setItem('agroalerta_usuario', JSON.stringify(u));
+            this._carregarConfiguracoes();
+            this._carregarNotificacoes();
+            this._carregarClimaCidade();
+            this._carregarMercado(s.cCultura || 'cafe');
+          })
+          .catch((erro) => this.setState({ contaSalvando: false, contaErro: erro.message }));
       },
 
       sacas: s.sacas,

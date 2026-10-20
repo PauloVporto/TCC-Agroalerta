@@ -44,21 +44,23 @@ router.post("/", async (req, res) => {
   }
 
   const talhao = await criarTalhao(req.usuario.id, {
-    nome, cultura, fase, endereco: local.enderecoFormatado, coordenadas: local,
+    nome, cultura, fase, endereco: local.enderecoFormatado,
+    regiao: local.cidade + " - " + local.uf, coordenadas: local,
   });
   res.status(201).json(talhao);
 });
 
-async function criarTalhao(usuarioId, { nome, cultura, fase, endereco, coordenadas }) {
+// `regiao` ("Cidade - UF") identifica a área afetada nas notificações de alerta.
+async function criarTalhao(usuarioId, { nome, cultura, fase, endereco, regiao, coordenadas }) {
   const resultado = await pool.query(
     `INSERT INTO talhoes
-       (usuario_id, nome, cultura, fase, endereco, latitude, longitude, endereco_formatado)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       (usuario_id, nome, cultura, fase, endereco, latitude, longitude, endereco_formatado, regiao)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      RETURNING id, usuario_id AS "usuarioId", nome, cultura, fase, endereco,
-               latitude, longitude, endereco_formatado AS "enderecoFormatado",
+               latitude, longitude, endereco_formatado AS "enderecoFormatado", regiao,
                criado_em AS "criadoEm"`,
     [usuarioId, nome, cultura, fase, endereco, coordenadas.latitude,
-      coordenadas.longitude, coordenadas.enderecoFormatado]
+      coordenadas.longitude, coordenadas.enderecoFormatado, regiao]
   );
   return resultado.rows[0];
 }

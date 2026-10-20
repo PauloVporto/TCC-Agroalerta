@@ -15,6 +15,18 @@ const NIVEIS = {
   ALTO: "alto",
 };
 
+const SEM_DATA_DEFINIDA = "próximos dias";
+
+// Janela real do risco: do primeiro ao último dia da previsão que atende à
+// condição ("21/10" ou "21/10 a 23/10"). Sem previsão diária, devolve null.
+function periodoDaPrevisao(clima, condicao) {
+  const dias = (clima.previsaoDiaria || []).filter(condicao).map((d) => d.data);
+  if (dias.length === 0) return null;
+  const formatar = (iso) => iso.slice(8, 10) + "/" + iso.slice(5, 7);
+  const inicio = formatar(dias[0]);
+  return dias.length === 1 ? inicio : inicio + " a " + formatar(dias[dias.length - 1]);
+}
+
 // Regras por cultura. Cada regra é uma função pura: (clima, faseAtual) => alerta|null
 const REGRAS_POR_CULTURA = {
   cafe: [
@@ -31,7 +43,7 @@ const REGRAS_POR_CULTURA = {
               "°C. Risco alto de geada, que pode causar perda severa em lavouras de café.",
             recomendacao:
               "Considere métodos de proteção contra geada (irrigação por aspersão, cobertura) nas próximas noites.",
-            janela: "próximas 48h",
+            janela: periodoDaPrevisao(clima, (d) => d.tempMin <= 2) || SEM_DATA_DEFINIDA,
           };
         }
         if (clima.temperaturaMinima <= 5) {
@@ -42,7 +54,7 @@ const REGRAS_POR_CULTURA = {
               clima.temperaturaMinima +
               "°C. Risco moderado de geada.",
             recomendacao: "Monitore a previsão nas próximas 48h.",
-            janela: "próximas 48h",
+            janela: periodoDaPrevisao(clima, (d) => d.tempMin <= 5) || SEM_DATA_DEFINIDA,
           };
         }
         return null;
@@ -80,14 +92,15 @@ const REGRAS_POR_CULTURA = {
       id: "cafe_excesso_chuva",
       titulo: "Excesso de chuva",
       avaliar: (clima) => {
+        // chuvaAcumulada7dias é a soma da PREVISÃO dos próximos dias (Open-Meteo/OpenWeather).
         if (clima.chuvaAcumulada7dias >= 150) {
           return {
             nivel: NIVEIS.MEDIO,
             mensagem:
               clima.chuvaAcumulada7dias +
-              "mm de chuva acumulada nos últimos 7 dias. Risco de doenças fúngicas (ferrugem).",
+              " mm de chuva previstos para os próximos dias. Risco de doenças fúngicas (ferrugem).",
             recomendacao: "Avalie a necessidade de aplicação preventiva de fungicida.",
-            janela: "últimos 7 dias",
+            janela: periodoDaPrevisao(clima, () => true) || SEM_DATA_DEFINIDA,
           };
         }
         return null;
@@ -136,7 +149,7 @@ const REGRAS_POR_CULTURA = {
               clima.probabilidadeChuva7dias +
               "% de chuva nos próximos 7 dias durante a janela de colheita.",
             recomendacao: "Avalie antecipar a colheita, se a umidade dos grãos permitir.",
-            janela: "próximos 7 dias",
+            janela: periodoDaPrevisao(clima, (d) => d.chuvaProbabilidade >= 60) || SEM_DATA_DEFINIDA,
           };
         return null;
       },
@@ -150,7 +163,7 @@ const REGRAS_POR_CULTURA = {
             nivel: NIVEIS.ALTO,
             mensagem: "Ventos de até " + clima.ventoMaximoKmh + " km/h previstos.",
             recomendacao: "Risco de acamamento da lavoura. Evite aplicações aéreas nesse período.",
-            janela: "próximas 24h",
+            janela: periodoDaPrevisao(clima, (d) => d.ventoMaxKmh >= 60) || SEM_DATA_DEFINIDA,
           };
         }
         return null;
