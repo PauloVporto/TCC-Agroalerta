@@ -1,5 +1,8 @@
 # Boletim diário e alertas climáticos — 21/10/2026
 
+> Registro da implementação anterior à implantação. A publicação e a ativação
+> posteriores estão documentadas em [Ativação operacional](ATIVACAO_BOLETIM_ALERTAS.md).
+
 Branch: `feat/boletim-diario-alertas-climaticos`, criada sobre
 `927456734784512afa83e4159e7e667e4806fdcd`, também registrado em
 `origin/feat/evolution-api-migration`. Nenhum commit, push ou merge nesta etapa.
