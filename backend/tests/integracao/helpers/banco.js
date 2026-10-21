@@ -38,13 +38,14 @@ function prepararBanco() {
 
 async function limparBanco() {
   await pool.query(
-    `TRUNCATE notificacao_webhooks, notificacao_eventos, notificacao_envios, notificacao_consentimentos,
+    `TRUNCATE clima_controle, boletim_execucoes, notificacao_webhooks, notificacao_eventos, notificacao_envios, notificacao_consentimentos,
               notificacao_preferencias, administracao_eventos, whatsapp_controle, alertas_gerados,
               leituras_clima, sessoes, talhoes, preferencias_usuario, usuarios
      RESTART IDENTITY CASCADE`
   );
   // A linha de controle volta ao padrão da migration: envios bloqueados.
   await pool.query("INSERT INTO whatsapp_controle (id) VALUES (1)");
+  await pool.query("INSERT INTO clima_controle (id) VALUES (1)");
 }
 
 /**

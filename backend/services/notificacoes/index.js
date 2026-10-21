@@ -133,6 +133,7 @@ function iniciarNotificacoes({ config = lerConfiguracao(), log = console.log } =
   iniciarFila({ config, provedores, log });
   iniciarConsultaDeEntrega({ provedores, log });
   if (config.monitoramento.ativo) iniciarMonitoramento({ config, log });
+  if(config.boletim?.ativo)require("./boletim").iniciar(config,log);
   return {
     email: modoDoCanal(config, "email"),
     whatsapp: modoDoCanal(config, "whatsapp"),
@@ -142,7 +143,7 @@ function iniciarNotificacoes({ config = lerConfiguracao(), log = console.log } =
 
 async function pararNotificacoes() {
   pararConsultaDeEntrega();
-  await Promise.all([pararFila(), pararMonitoramento()]);
+  await Promise.all([pararFila(), pararMonitoramento(),require("./boletim").parar()]);
 }
 
 module.exports = { registrarEscolhasDoCadastro, salvarEscolhasDoPainel, iniciarNotificacoes, pararNotificacoes };

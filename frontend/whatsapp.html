@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/whatsapp.css">
   <script src="/config.js"></script>
   <script src="/whatsapp.js" defer></script>
+  <script src="/clima-admin.js" defer></script>
 </head>
 <body>
   <header><a href="/dashboard.dc.html">🌱 Agro Alerta</a><span>Administração · WhatsApp</span></header>
@@ -61,7 +62,11 @@
         <p id="summary">Carregando…</p>
         <div class="table-scroll"><table><thead><tr><th scope="col">Data</th><th scope="col">Destinatário</th><th scope="col">Mensagem</th><th scope="col">Status / recibo</th></tr></thead><tbody id="history"></tbody></table></div>
       </section>
-      <button id="logout" class="secondary">Sair</button>
+      <section><h2>Boletim e alertas climáticos</h2><p id="clima-status">Carregando…</p><p id="clima-agenda"></p>
+<form id="clima-controles"><label><input id="pausar-boletins" type="checkbox"> Pausar boletins</label><label><input id="pausar-alertas" type="checkbox"> Pausar novos alertas climáticos (chuva, vento e calor)</label><button>Salvar controles climáticos</button></form>
+<p>As pausas não substituem as flags de implantação nem o bloqueio geral. A geada existente mantém seu controle próprio.</p>
+<label>Categoria do histórico <select id="clima-filtro"><option value="">Todas</option><option value="boletim_diario">Boletim</option><option value="geada">Geada</option><option value="chuva_intensa">Chuva</option><option value="vento_forte">Vento</option><option value="calor_extremo">Calor</option></select></label><div id="clima-historico"></div></section>
+<button id="logout" class="secondary">Sair</button>
     </div>
   </main>
 </body>

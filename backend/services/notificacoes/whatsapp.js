@@ -52,6 +52,11 @@ async function liberacaoDoDespacho(config) {
   const tipos = [];
   if (controle.boasVindasAtivas) tipos.push("boas_vindas");
   if (controle.alertasAtivos) tipos.push("alerta_climatico");
+  if(config.boletim?.ativo||config.novosAlertas?.ativo){
+    const novo=await require("./climaControle").consultar();
+    if(config.boletim?.ativo&&!novo.boletins_pausados)tipos.push("boletim_diario");
+    if(config.novosAlertas?.ativo&&!novo.novos_alertas_pausados&&controle.alertasAtivos)tipos.push("alerta_meteorologico");
+  }
   if (tipos.length === 0) return retido("Boas-vindas e alertas automáticos bloqueados pelo administrador.");
 
   let conexao;

@@ -17,7 +17,7 @@ const STATUS = [
   "pendente", "processando", "simulado", "enviado", "confirmado_servidor", "entregue",
   "lido", "falhou", "bloqueado", "incerto", "cancelado", "expirado",
 ];
-const TIPOS = ["boas_vindas", "alerta_climatico", "teste"];
+const TIPOS = ["boas_vindas", "alerta_climatico", "teste","boletim_diario","alerta_meteorologico"];
 const CANAIS = ["email", "sms", "whatsapp"];
 
 class AcaoRecusada extends Error {}
