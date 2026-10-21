@@ -30,7 +30,7 @@ const ERRO_TELEFONE = "Telefone inválido. Informe DDD e número, ex.: (35) 9999
 // Os canais de notificação só ficam autorizados se o produtor marcar cada um;
 // para cada canal autorizado, a mensagem de boas-vindas entra na fila.
 router.post("/registrar", async (req, res) => {
-  const { nome, email, senha, cep, cultura, telefone, notificacoes, telefone, papel } = req.body;
+  const { nome, email, senha, cep, cultura, telefone, notificacoes, papel } = req.body;
 
   if (!nome || !email || !senha || !cep) {
     return res.status(400).json({ erro: "Campos obrigatórios: nome, email, senha, cep" });
@@ -40,6 +40,23 @@ router.post("/registrar", async (req, res) => {
   }
   if (senha.length < 6) {
     return res.status(400).json({ erro: "A senha deve ter pelo menos 6 caracteres." });
+  }
+  const telefoneNormalizado = telefone ? normalizarTelefone(telefone) : null;
+  if (telefone && !telefoneNormalizado) {
+    return res.status(400).json({ erro: ERRO_TELEFONE });
+  }
+  const escolhas = {
+    email: Boolean(notificacoes && notificacoes.email === true),
+    sms: Boolean(notificacoes && notificacoes.sms === true),
+  };
+  if (escolhas.sms && !ehCelular(telefoneNormalizado)) {
+    return res.status(400).json({ erro: "Para receber SMS, informe um celular válido com DDD." });
+  }
+  const digitosTel = String(telefone || "").replace(/\D/g, "");
+  if (digitosTel.length < 10) {
+    return res.status(400).json({
+      erro: "Informe o celular com DDD. Os alertas climáticos serão enviados por SMS e e-mail.",
+    });
   }
 
   const local = await resolverLocalizacaoPorCep(cep);
@@ -51,7 +68,8 @@ router.post("/registrar", async (req, res) => {
 
   try {
     const usuario = await criarUsuario({
-      nome, email, senha,
+      nome, email, senha, papel,
+      telefone: telefoneNormalizado,
       cidade: local.cidade + " - " + local.uf,
       cidadeFormatada: local.enderecoFormatado,
       latitude: local.latitude,
@@ -119,7 +137,7 @@ router.get("/configuracoes", exigirAutenticacao, async (req, res) => {
 // PATCH /api/auth/perfil
 // body: { nome, email, telefone? } - sem o campo telefone, o número atual é mantido.
 router.patch("/perfil", exigirAutenticacao, async (req, res) => {
-  const { nome, email } = req.body;
+  const { nome, email, telefone, cidade } = req.body;
   if (!nome || !email) return res.status(400).json({ erro: "Nome e e-mail são obrigatórios." });
   if (!emailValido(email)) return res.status(400).json({ erro: "E-mail em formato inválido." });
 
@@ -137,7 +155,9 @@ router.patch("/perfil", exigirAutenticacao, async (req, res) => {
   }
 
   try {
-    res.json(await atualizarPerfil(req.usuario.id, { nome, email }));
+    const payload = { nome, email, telefone: telefoneFinal };
+    if (Object.prototype.hasOwnProperty.call(req.body, "cidade")) payload.cidade = cidade;
+    res.json(await atualizarPerfil(req.usuario.id, payload));
   } catch (erro) {
     res.status(409).json({ erro: erro.message });
   }
