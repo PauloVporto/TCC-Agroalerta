@@ -7,7 +7,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const PORT = 5173;
+const PORT = Number(process.env.PORT) || 5173;
 const DIR = __dirname;
 
 const TIPOS = {

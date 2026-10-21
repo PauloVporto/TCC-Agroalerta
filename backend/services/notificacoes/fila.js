@@ -63,14 +63,14 @@ async function enfileirar(db, m) {
   const { rows } = await db.query(
     `INSERT INTO notificacao_envios
        (usuario_id, alerta_id, canal, tipo, chave_idempotencia, destino, assunto,
-        conteudo, conteudo_html, resumo, regiao, nivel, max_tentativas, expira_em)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        conteudo, conteudo_html, resumo, regiao, nivel, max_tentativas, expira_em,categoria,prioridade)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15,$16)
      ON CONFLICT (chave_idempotencia) DO NOTHING
      RETURNING id`,
     [
       m.usuarioId, m.alertaId || null, m.canal, m.tipo, m.chaveIdempotencia, m.destino || null,
       m.assunto || null, m.conteudo, m.conteudoHtml || null, m.resumo, m.regiao || null,
-      m.nivel || null, m.maxTentativas, m.expiraEm || null,
+      m.nivel || null, m.maxTentativas, m.expiraEm || null,m.categoria||null,m.prioridade??(m.tipo==="alerta_climatico"?100:0),
     ]
   );
   if (!rows[0]) return null;
@@ -155,13 +155,13 @@ async function reservarLote(canal, tipos, tamanho) {
        SELECT id FROM notificacao_envios
        WHERE canal = $1 AND tipo = ANY($2) AND status = 'pendente' AND retido_em IS NULL AND proxima_tentativa_em <= NOW()
          AND (expira_em IS NULL OR expira_em > NOW())
-       ORDER BY proxima_tentativa_em, id
+       ORDER BY prioridade DESC, proxima_tentativa_em, id
        LIMIT $3
        FOR UPDATE SKIP LOCKED)
      RETURNING *`,
     [canal, tipos, tamanho, PRAZO_PROCESSAMENTO_MIN]
   );
-  return rows.sort((a, b) => Number(a.id) - Number(b.id));
+  return rows.sort((a, b) => b.prioridade-a.prioridade || Number(a.id)-Number(b.id));
 }
 
 async function contatoAtual(usuarioId, canal) {
@@ -338,6 +338,20 @@ async function processarEnvio(envio, { provedor, liberacao, log }) {
     if (!vez.ok) {
       await adiar(envio, vez);
       return vez.global ? "interromper" : null;
+    }
+  }
+
+  // Nova conferência após espera de ritmo/conexão: não despachar revogações,
+  // categorias canceladas ou boletins cuja janela terminou durante a espera.
+  if(envio.canal==="whatsapp"&&envio.usuario_id!==null){
+    const contato=await contatoAtual(envio.usuario_id,"whatsapp");
+    const categoria=envio.categoria||(envio.tipo==="alerta_climatico"?"geada":null);
+    if(normalizarTelefone(contato?.telefone)!==normalizarTelefone(destino)||!autorizacaoVigente("whatsapp",contato,contato?.telefone)||
+      (categoria&&!(await require("./categorias").permite(envio.usuario_id,categoria)))){
+      await bloquear(envio,provedor,"categoria_revogada","Consentimento ou categoria revogados antes do despacho.");return null;
+    }
+    if(envio.expira_em&&new Date(envio.expira_em)<=new Date()){
+      await finalizar(envio,{status:"expirado",erro_codigo:"validade_vencida"},{tipo:"expirado",detalhe:"A janela terminou antes da transmissão."});return null;
     }
   }
 

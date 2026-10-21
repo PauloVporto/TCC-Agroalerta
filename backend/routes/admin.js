@@ -117,4 +117,9 @@ router.get("/agricultores", acao("agricultores", async (req) => ({
 // GET /api/admin/logs?limite=100 - conexão do WhatsApp, mudanças de controle e ações na fila
 router.get("/logs", acao("logs", async (req) => ({ eventos: await listarEventosAdmin(limiteDaConsulta(req.query.limite, 100, 500)) })));
 
+router.get('/clima',acao('painel climático',()=>require('../services/notificacoes/climaPainel').resumo(lerConfiguracao())));
+router.put('/clima/controles',async(req,res)=>{
+  try{res.json(await require('../services/notificacoes/climaControle').salvar(req.body,req.usuario.id));}
+  catch(e){res.status(e.status||500).json({erro:e.status?e.message:'Não foi possível salvar controles.'});}
+});
 module.exports = router;

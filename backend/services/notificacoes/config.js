@@ -80,6 +80,16 @@ function lerConfiguracao(env = process.env) {
       ativo: verdadeiro(env.WEATHER_MONITOR_ENABLED),
       intervaloMin: numero(env.WEATHER_MONITOR_INTERVAL_MINUTES, 60),
     },
+    boletim: {
+      ativo: verdadeiro(env.WEATHER_BULLETIN_ENABLED),
+      janelaMin: Math.min(180,Math.max(1,numero(env.WEATHER_BULLETIN_WINDOW_MINUTES,30))),
+    },
+    novosAlertas: {
+      ativo: verdadeiro(env.WEATHER_EXTENDED_ALERTS_ENABLED),
+      chuva_intensa: { medio:numero(env.WEATHER_RAIN_MEDIUM_MM_DAY,50),alto:numero(env.WEATHER_RAIN_HIGH_MM_DAY,100),delta:numero(env.WEATHER_RAIN_ESCALATION_MM,20) },
+      vento_forte: { medio:numero(env.WEATHER_WIND_MEDIUM_KMH,40),alto:numero(env.WEATHER_WIND_HIGH_KMH,60),delta:numero(env.WEATHER_WIND_ESCALATION_KMH,20) },
+      calor_extremo: { medio:numero(env.WEATHER_HEAT_MEDIUM_C,35),alto:numero(env.WEATHER_HEAT_HIGH_C,40),delta:numero(env.WEATHER_HEAT_ESCALATION_C,3) },
+    },
   };
 }
 

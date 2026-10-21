@@ -76,7 +76,7 @@ function provedorDeWhatsapp(config) {
     // Conferido a cada mensagem: o administrador pode ter bloqueado durante a rodada.
     async reservarVez(envio) {
       const controle = await lerControle();
-      const tipoLiberado = envio.tipo === "boas_vindas" ? controle.boasVindasAtivas : controle.alertasAtivos;
+      const tipoLiberado = envio.tipo === "boas_vindas" ? controle.boasVindasAtivas : envio.tipo==="boletim_diario" ? true : controle.alertasAtivos;
       if (controle.enviosBloqueados || !tipoLiberado) {
         return { ok: false, global: true, codigo: "envios_bloqueados", mensagem: "Envio retido: bloqueado pelo administrador." };
       }

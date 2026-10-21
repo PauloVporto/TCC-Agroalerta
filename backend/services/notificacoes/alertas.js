@@ -134,6 +134,7 @@ async function notificarGeadaPorWhatsapp(episodios, config, log) {
     const { talhao, alerta } = episodio;
     const { contato, consentimentos, preferencias } = await situacaoDoProdutor(talhao.usuarioId);
     if (!autorizacaoVigente("whatsapp", consentimentos.whatsapp, contato.telefone)) continue;
+    if (!(await require("./categorias").permite(talhao.usuarioId,"geada"))) continue;
     if (ORDEM_NIVEL[alerta.nivel] < ORDEM_NIVEL[preferencias.whatsappNivelMinimo]) continue;
 
     const geada = dadosDaGeada(episodio);
@@ -146,6 +147,8 @@ async function notificarGeadaPorWhatsapp(episodios, config, log) {
       alertaId: episodio.alertaId,
       canal: "whatsapp",
       tipo: "alerta_climatico",
+      categoria: "geada",
+      prioridade: 100,
       chaveIdempotencia: `alerta:${episodio.alertaId}:whatsapp`,
       destino: normalizarTelefone(contato.telefone),
       conteudo: whatsappAlertaGeada(geada),

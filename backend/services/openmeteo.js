@@ -39,9 +39,9 @@ async function _previsao(lat, lon) {
   const url =
     'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
     '&daily=temperature_2m_min,temperature_2m_max,precipitation_sum,precipitation_probability_max' +
-    ',wind_speed_10m_max,et0_fao_evapotranspiration' +
+    ',wind_speed_10m_max,et0_fao_evapotranspiration,weather_code' +
     '&hourly=temperature_2m' +
-    '&timezone=America%2FSao_Paulo&forecast_days=7';
+    '&timezone=America%2FSao_Paulo&forecast_days=7&wind_speed_unit=kmh&temperature_unit=celsius&precipitation_unit=mm';
 
   const dados = await _fetch(url);
   _cache[chave] = { ts: agora, dados };
@@ -190,4 +190,4 @@ async function buscarSerieDiaria(lat, lon, inicio, fim) {
   return dados;
 }
 
-module.exports = { buscarClimaOpenMeteo, buscarSerieDiaria };
+module.exports = { buscarClimaOpenMeteo, buscarSerieDiaria, buscarPrevisaoBruta: _previsao };

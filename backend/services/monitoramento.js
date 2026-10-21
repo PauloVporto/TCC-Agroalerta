@@ -109,9 +109,14 @@ async function executarCiclo(opcoes) {
 async function executarCicloExclusivo({ config, buscarClima = buscarClimaOpenMeteo, log = console.log }) {
   const talhoes = await talhoesMonitorados();
   const episodios = [];
+  let novosEnfileirados = 0;
   let semDados = 0;
 
   for (const talhao of talhoes) {
+    if(config.novosAlertas?.ativo){
+      try { novosEnfileirados += await require("./notificacoes/novosAlertas").processarTalhao(talhao,config,{log}); }
+      catch(erro){ log(`[clima] talhão ${talhao.id} sem avaliação nova: ${erro.message}`); }
+    }
     let clima;
     try {
       clima = await buscarClima(talhao.latitude, talhao.longitude);
@@ -128,7 +133,7 @@ async function executarCicloExclusivo({ config, buscarClima = buscarClimaOpenMet
     }
   }
 
-  const enfileirados = await notificarAlertas(episodios, config, log);
+  const enfileirados = await notificarAlertas(episodios, config, log) + novosEnfileirados;
   const resumo = { talhoes: talhoes.length, semDados, alertasNovos: episodios.length, enfileirados };
   log(
     `[monitoramento] ciclo concluído: ${resumo.talhoes} talhão(ões), ${resumo.alertasNovos} risco(s) novo(s), ` +

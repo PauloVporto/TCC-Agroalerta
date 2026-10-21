@@ -58,4 +58,16 @@ router.get("/historico", async (req, res) => {
   }
 });
 
+router.get('/categorias', async(req,res)=>{
+  try{res.json(await require('../services/notificacoes/categorias').consultar(req.usuario.id));}
+  catch(e){res.status(500).json({erro:'Não foi possível consultar categorias.'});}
+});
+router.put('/categorias', async(req,res)=>{
+  try{res.json(await require('../services/notificacoes/categorias').salvar(req.usuario.id,req.body));}
+  catch(e){res.status(e.status||500).json({erro:e.status?e.message:'Não foi possível salvar categorias.'});}
+});
+router.get('/previsoes', async(req,res)=>{
+  try{res.json({talhoes:await require('../services/notificacoes/climaPainel').previsoes(req.usuario.id)});}
+  catch(e){res.status(500).json({erro:'Não foi possível consultar previsões.'});}
+});
 module.exports = router;

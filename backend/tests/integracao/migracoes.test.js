@@ -22,7 +22,7 @@ after(async () => {
 test("migrations já aplicadas não rodam de novo; o rollback fica fora da pasta lida na subida", async () => {
   assert.deepEqual(await aplicarMigracoes({ log: () => {} }), []);
   const { rows } = await banco.pool.query("SELECT versao FROM schema_migrations ORDER BY versao");
-  assert.deepEqual(rows.map((r) => r.versao), ["001_notificacoes.sql", "002_whatsapp_evolution.sql", "003_whatsapp_implantacao_controlada.sql", "004_whatsapp_retencao.sql"]);
+  assert.deepEqual(rows.map((r) => r.versao), ["001_notificacoes.sql", "002_whatsapp_evolution.sql", "003_whatsapp_implantacao_controlada.sql", "004_whatsapp_retencao.sql", "005_boletim_alertas_climaticos.sql"]);
 });
 
 test("implantação começa bloqueada e preserva decisões administrativas auditadas", async () => {

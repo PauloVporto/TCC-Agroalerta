@@ -7,7 +7,7 @@ const { pool } = require("../db");
 const { formatarTelefone } = require("../contato");
 
 // Colunas comuns ao histórico do produtor e ao do administrador.
-const COLUNAS_ENVIO = `e.id, e.tipo, e.canal, e.destino, e.status, e.modo, e.regiao, e.nivel, e.resumo,
+const COLUNAS_ENVIO = `e.id, e.tipo, e.categoria,e.prioridade,e.canal, e.destino, e.status, e.modo, e.regiao, e.nivel, e.resumo,
   e.tentativas, e.remetente, e.retido_em AS "retidoEm", e.retencao_motivo AS "retencaoMotivo",
   e.erro_codigo AS "erroCodigo", e.erro_mensagem AS "erroMensagem",
   e.criado_em AS "criadoEm", e.enviado_em AS "enviadoEm",

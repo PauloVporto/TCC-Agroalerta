@@ -204,8 +204,8 @@ test("ritmo: limite por produtor adia para amanhã; limite por hora interrompe a
   });
   await banco.definirControle();
   await processarComEvolution(config({ WHATSAPP_PER_USER_DAILY_LIMIT: "1" }));
-  assert.equal((await envio(id)).status, "enviado");
-  const adiado = await envio(segundoDoMesmo);
+  assert.equal((await envio(segundoDoMesmo)).status, "enviado", "alerta urgente precede boas-vindas");
+  const adiado = await envio(id);
   assert.deepEqual([adiado.status, adiado.tentativas, adiado.erro_codigo], ["pendente", 0, "limite_produtor_diario"]);
   assert.ok(new Date(adiado.proxima_tentativa_em) > new Date(), "adiado para o próximo dia");
 
