@@ -28,7 +28,12 @@ http
         return;
       }
       const ext = path.extname(caminho);
-      res.writeHead(200, { "Content-Type": TIPOS[ext] || "application/octet-stream" });
+      res.writeHead(200, {
+        "Content-Type": TIPOS[ext] || "application/octet-stream",
+        // Sem isso o navegador reaproveita a versão anterior da página mesmo
+        // depois de um novo build, o que atrapalha o desenvolvimento.
+        "Cache-Control": "no-store",
+      });
       res.end(conteudo);
     });
   })

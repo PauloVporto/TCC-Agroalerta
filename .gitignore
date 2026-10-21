@@ -1,3 +1,4 @@
+
 # Dependencies
 node_modules/
 jspm_packages/
@@ -59,3 +60,4 @@ desktop.ini
 
 # Frontend runtime config (generated, not committed)
 frontend/config.js
+

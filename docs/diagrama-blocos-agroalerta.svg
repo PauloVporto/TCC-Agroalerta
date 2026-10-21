@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1780" height="880" viewBox="0 0 1780 880" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="sombra" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.07"/>
+    </filter>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#222"/>
+    </marker>
+    <marker id="ponto" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9">
+      <circle cx="5" cy="5" r="4" fill="#222"/>
+    </marker>
+  </defs>
+
+  <rect width="1780" height="880" fill="#FFFFFF"/>
+
+  <!-- Fronteira da aplicação -->
+  <rect x="230" y="50" width="1070" height="780" rx="34" fill="none" stroke="#2BB3C0" stroke-width="4" stroke-dasharray="1 10" stroke-linecap="round"/>
+
+  <!-- USUÁRIOS -->
+  <circle cx="100" cy="410" r="28" fill="#D6F1F4" stroke="#2BB3C0" stroke-width="3"/>
+  <path d="M 48 505 C 48 470 72 452 100 452 C 128 452 152 470 152 505 Z" fill="#D6F1F4" stroke="#2BB3C0" stroke-width="3"/>
+  <text x="100" y="540" text-anchor="middle" font-size="18" font-weight="700" fill="#2B2B2B">Usuários</text>
+  <text x="100" y="562" text-anchor="middle" font-size="13" fill="#7A7A7A">Produtor rural</text>
+  <text x="100" y="580" text-anchor="middle" font-size="13" fill="#7A7A7A">Fornecedor de insumos</text>
+
+  <!-- Usuários <-> Frontend -->
+  <line x1="170" y1="445" x2="268" y2="445" stroke="#222" stroke-width="2" marker-start="url(#ponto)" marker-end="url(#seta)"/>
+  <line x1="268" y1="485" x2="170" y2="485" stroke="#222" stroke-width="2" marker-start="url(#ponto)" marker-end="url(#seta)"/>
+  <rect x="162" y="408" width="114" height="24" rx="12" fill="#FFFFFF" stroke="#E3E3E3"/>
+  <text x="219" y="424" text-anchor="middle" font-size="12.5" fill="#333">Coleta de dados</text>
+  <rect x="159" y="498" width="120" height="24" rx="12" fill="#FFFFFF" stroke="#E3E3E3"/>
+  <text x="219" y="514" text-anchor="middle" font-size="12.5" fill="#333">Exibe resultados</text>
+
+  <!-- FRONTEND -->
+  <rect x="275" y="210" width="300" height="510" rx="22" fill="#FFFFFF" stroke="#EFEFEF" filter="url(#sombra)"/>
+  <rect x="358" y="248" width="120" height="82" rx="8" fill="#D6F1F4" stroke="#2BB3C0" stroke-width="4"/>
+  <rect x="408" y="330" width="20" height="16" fill="#2BB3C0"/>
+  <rect x="390" y="344" width="56" height="6" rx="3" fill="#2BB3C0"/>
+  <rect x="452" y="286" width="54" height="74" rx="8" fill="#FFFFFF" stroke="#2BB3C0" stroke-width="4"/>
+  <rect x="460" y="296" width="38" height="48" rx="3" fill="#D6F1F4"/>
+  <circle cx="479" cy="352" r="2.5" fill="#2BB3C0"/>
+  <text x="425" y="398" text-anchor="middle" font-size="14" fill="#2B2B2B">O que o usuário vê e interage</text>
+  <text x="425" y="422" text-anchor="middle" font-size="13" fill="#7A7A7A">HTML5 · CSS3 · JavaScript</text>
+  <text x="425" y="442" text-anchor="middle" font-size="13" fill="#7A7A7A">Chart.js · Leaflet + OpenStreetMap</text>
+  <text x="425" y="482" text-anchor="middle" font-size="24" font-weight="700" fill="#2B2B2B">Frontend</text>
+  <text x="425" y="506" text-anchor="middle" font-size="12" font-family="Consolas, monospace" fill="#7A7A7A">container frontend · porta 5173</text>
+  <line x1="300" y1="528" x2="550" y2="528" stroke="#EFEFEF" stroke-width="2"/>
+  <text x="425" y="556" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1.5" fill="#1E8A95">TELAS</text>
+  <text x="425" y="582" text-anchor="middle" font-size="13" fill="#2B2B2B">Login e cadastro</text>
+  <text x="425" y="604" text-anchor="middle" font-size="13" fill="#2B2B2B">Talhões e alertas (mapa)</text>
+  <text x="425" y="626" text-anchor="middle" font-size="13" fill="#2B2B2B">Comparador de insumos</text>
+  <text x="425" y="648" text-anchor="middle" font-size="13" fill="#2B2B2B">Mercado e simulador de venda</text>
+  <text x="425" y="670" text-anchor="middle" font-size="13" fill="#2B2B2B">Configurações</text>
+
+  <!-- Frontend <-> Backend -->
+  <line x1="582" y1="445" x2="708" y2="445" stroke="#222" stroke-width="2" marker-start="url(#ponto)" marker-end="url(#seta)"/>
+  <line x1="708" y1="485" x2="582" y2="485" stroke="#222" stroke-width="2" marker-start="url(#ponto)" marker-end="url(#seta)"/>
+  <rect x="586" y="408" width="118" height="24" rx="12" fill="#FFFFFF" stroke="#E3E3E3"/>
+  <text x="645" y="424" text-anchor="middle" font-size="12.5" fill="#333">Requisição HTTP</text>
+  <rect x="591" y="498" width="108" height="24" rx="12" fill="#FFFFFF" stroke="#E3E3E3"/>
+  <text x="645" y="514" text-anchor="middle" font-size="12.5" fill="#333">Resposta JSON</text>
+
+  <!-- BACKEND -->
+  <rect x="715" y="90" width="540" height="695" rx="22" fill="#FFFFFF" stroke="#EFEFEF" filter="url(#sombra)"/>
+  <g fill="#D6F1F4" stroke="#2BB3C0" stroke-width="3">
+    <rect x="925" y="112" width="120" height="30" rx="6"/>
+    <rect x="925" y="148" width="120" height="30" rx="6"/>
+    <rect x="925" y="184" width="120" height="30" rx="6"/>
+  </g>
+  <g fill="#2BB3C0">
+    <rect x="937" y="121" width="12" height="12" rx="2"/><rect x="955" y="121" width="12" height="12" rx="2"/>
+    <rect x="937" y="157" width="12" height="12" rx="2"/><rect x="955" y="157" width="12" height="12" rx="2"/><rect x="973" y="157" width="12" height="12" rx="2"/>
+    <rect x="937" y="193" width="12" height="12" rx="2"/><rect x="955" y="193" width="12" height="12" rx="2"/>
+  </g>
+  <text x="985" y="250" text-anchor="middle" font-size="14" fill="#2B2B2B">Contém a lógica da aplicação</text>
+  <text x="985" y="272" text-anchor="middle" font-size="13" fill="#7A7A7A">Node.js · Express</text>
+  <text x="985" y="306" text-anchor="middle" font-size="19" font-weight="700" fill="#2B2B2B">Servidor Web (API REST)</text>
+  <text x="985" y="328" text-anchor="middle" font-size="12" font-family="Consolas, monospace" fill="#7A7A7A">container backend · porta 3001</text>
+  <text x="985" y="362" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1.5" fill="#1E8A95">MÓDULOS</text>
+  <g fill="#F2FAFB" stroke="#BFE6EA">
+    <rect x="735" y="376" width="160" height="36" rx="8"/><rect x="905" y="376" width="160" height="36" rx="8"/><rect x="1075" y="376" width="160" height="36" rx="8"/>
+    <rect x="735" y="420" width="160" height="36" rx="8"/><rect x="905" y="420" width="160" height="36" rx="8"/><rect x="1075" y="420" width="160" height="36" rx="8"/>
+    <rect x="735" y="464" width="160" height="36" rx="8"/><rect x="905" y="464" width="160" height="36" rx="8"/><rect x="1075" y="464" width="160" height="36" rx="8"/>
+  </g>
+  <g font-size="13" fill="#2B2B2B" text-anchor="middle">
+    <text x="815" y="399">Autenticação</text><text x="985" y="399">Talhões</text><text x="1155" y="399">Alertas (regras)</text>
+    <text x="815" y="443">Insumos</text><text x="985" y="443">Mercado</text><text x="1155" y="443">IA (LLM)</text>
+    <text x="815" y="487">Notificações</text><text x="985" y="487">Painel</text><text x="1155" y="487">Mensagens</text>
+  </g>
+
+  <!-- Servidor <-> armazenamento -->
+  <path d="M 945 506 V 530 H 850 V 552" fill="none" stroke="#222" stroke-width="2" marker-start="url(#seta)" marker-end="url(#seta)"/>
+  <path d="M 1025 506 V 530 H 1120 V 548" fill="none" stroke="#222" stroke-width="2" marker-start="url(#seta)" marker-end="url(#seta)"/>
+
+  <!-- Sistema de arquivos -->
+  <rect x="808" y="560" width="34" height="14" rx="3" fill="#2BB3C0"/>
+  <rect x="806" y="570" width="88" height="56" rx="6" fill="#D6F1F4" stroke="#2BB3C0" stroke-width="3"/>
+  <text x="850" y="660" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">Sistema de Arquivos</text>
+  <text x="850" y="682" text-anchor="middle" font-size="12.5" fill="#7A7A7A">Arquivos JSON locais</text>
+  <text x="850" y="700" text-anchor="middle" font-size="12.5" fill="#7A7A7A">histórico de preços</text>
+  <text x="850" y="718" text-anchor="middle" font-size="12.5" fill="#7A7A7A">catálogo de insumos</text>
+
+  <!-- Banco de dados -->
+  <path d="M 1084 566 V 616 A 36 11 0 0 0 1156 616 V 566" fill="#D6F1F4" stroke="#2BB3C0" stroke-width="3"/>
+  <path d="M 1084 591 A 36 11 0 0 0 1156 591" fill="none" stroke="#2BB3C0" stroke-width="3"/>
+  <ellipse cx="1120" cy="566" rx="36" ry="11" fill="#FFFFFF" stroke="#2BB3C0" stroke-width="3"/>
+  <text x="1120" y="660" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">Banco de Dados</text>
+  <text x="1120" y="682" text-anchor="middle" font-size="12.5" fill="#7A7A7A">PostgreSQL 16</text>
+  <text x="1120" y="700" text-anchor="middle" font-size="12.5" fill="#7A7A7A">volume persistente</text>
+  <text x="1120" y="718" text-anchor="middle" font-size="12.5" fill="#7A7A7A">(usuários, talhões, alertas…)</text>
+
+  <text x="985" y="762" text-anchor="middle" font-size="22" font-weight="700" fill="#2B2B2B">Backend</text>
+
+  <!-- Backend <-> Serviços externos -->
+  <line x1="1262" y1="410" x2="1373" y2="410" stroke="#222" stroke-width="2" marker-start="url(#ponto)" marker-end="url(#seta)"/>
+  <line x1="1373" y1="450" x2="1262" y2="450" stroke="#222" stroke-width="2" marker-start="url(#ponto)" marker-end="url(#seta)"/>
+  <rect x="1262" y="373" width="112" height="24" rx="12" fill="#FFFFFF" stroke="#E3E3E3"/>
+  <text x="1318" y="389" text-anchor="middle" font-size="12.5" fill="#333">Consulta HTTPS</text>
+  <rect x="1272" y="463" width="92" height="24" rx="12" fill="#FFFFFF" stroke="#E3E3E3"/>
+  <text x="1318" y="479" text-anchor="middle" font-size="12.5" fill="#333">Dados JSON</text>
+
+  <!-- SERVIÇOS EXTERNOS -->
+  <rect x="1380" y="150" width="360" height="565" rx="22" fill="#FFFFFF" stroke="#EFEFEF" filter="url(#sombra)"/>
+  <path d="M 1522 232 a 22 22 0 0 1 4 -43 a 30 30 0 0 1 56 -6 a 24 24 0 0 1 20 49 z" fill="#D6F1F4" stroke="#2BB3C0" stroke-width="3" stroke-linejoin="round"/>
+  <text x="1560" y="268" text-anchor="middle" font-size="14" fill="#2B2B2B">Consumidos pelo backend via HTTPS</text>
+  <text x="1560" y="304" text-anchor="middle" font-size="22" font-weight="700" fill="#2B2B2B">Serviços Externos</text>
+  <line x1="1405" y1="326" x2="1715" y2="326" stroke="#EFEFEF" stroke-width="2"/>
+  <g fill="#2BB3C0">
+    <circle cx="1400" cy="353" r="3.5"/><circle cx="1400" cy="405" r="3.5"/><circle cx="1400" cy="457" r="3.5"/>
+    <circle cx="1400" cy="509" r="3.5"/><circle cx="1400" cy="561" r="3.5"/><circle cx="1400" cy="613" r="3.5"/>
+  </g>
+  <g font-size="14" font-weight="700" fill="#2B2B2B">
+    <text x="1412" y="358">Open-Meteo / OpenWeatherMap</text>
+    <text x="1412" y="410">Banco Central (PTAX · SGS)</text>
+    <text x="1412" y="462">Yahoo Finance (ICE · CBOT)</text>
+    <text x="1412" y="514">Anthropic Claude</text>
+    <text x="1412" y="566">Google Geocoding / Nominatim</text>
+    <text x="1412" y="618">Twilio · SMTP</text>
+  </g>
+  <g font-size="12.5" fill="#7A7A7A">
+    <text x="1412" y="376">previsão do tempo</text>
+    <text x="1412" y="428">câmbio e índices agropecuários</text>
+    <text x="1412" y="480">cotações internacionais</text>
+    <text x="1412" y="532">análise de mercado com IA</text>
+    <text x="1412" y="584">endereço ⇄ coordenadas</text>
+    <text x="1412" y="636">alertas por SMS e e-mail</text>
+  </g>
+  <text x="1560" y="676" text-anchor="middle" font-size="11.5" font-style="italic" fill="#9A9A9A">Sem chave configurada, a integração</text>
+  <text x="1560" y="692" text-anchor="middle" font-size="11.5" font-style="italic" fill="#9A9A9A">correspondente usa dados simulados.</text>
+
+  <!-- Rótulo da fronteira -->
+  <rect x="490" y="810" width="550" height="40" rx="20" fill="#FFFFFF" stroke="#2BB3C0" stroke-width="3"/>
+  <text x="765" y="836" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2B2B">Arquitetura da Aplicação Web — AgroAlerta (Docker Compose)</text>
+</svg>

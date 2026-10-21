@@ -275,7 +275,8 @@ class Component extends DCLogic {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nome: s.rNome.trim(), email: s.rEmail.trim(), senha: s.rSenha,
-          cep: s.rCep.trim(), cultura: s.rCultura
+          cep: s.rCep.trim(), cultura: s.rCultura,
+          telefone: s.rTelefone.trim(), papel: s.rPapel
         })
       }).then(function(r) { return r.json().then(function(c) { return { ok: r.ok, corpo: c }; }); })
         .then((res) => {

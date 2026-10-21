@@ -24,13 +24,19 @@ const { culturasSuportadas } = require("../services/rules");
 // as coordenadas já disponíveis, cria o primeiro talhão na mesma localização
 // para que o produtor veja alertas e previsão do tempo reais ao entrar.
 router.post("/registrar", async (req, res) => {
-  const { nome, email, senha, cep, cultura } = req.body;
+  const { nome, email, senha, cep, cultura, telefone, papel } = req.body;
 
   if (!nome || !email || !senha || !cep) {
     return res.status(400).json({ erro: "Campos obrigatórios: nome, email, senha, cep" });
   }
   if (senha.length < 6) {
     return res.status(400).json({ erro: "A senha deve ter pelo menos 6 caracteres." });
+  }
+  const digitosTel = String(telefone || "").replace(/\D/g, "");
+  if (digitosTel.length < 10) {
+    return res.status(400).json({
+      erro: "Informe o celular com DDD. Os alertas climáticos serão enviados por SMS e e-mail.",
+    });
   }
 
   const local = await resolverLocalizacaoPorCep(cep);
@@ -42,7 +48,7 @@ router.post("/registrar", async (req, res) => {
 
   try {
     const usuario = await criarUsuario({
-      nome, email, senha,
+      nome, email, senha, telefone, papel,
       cidade: local.cidade + " - " + local.uf,
       cidadeFormatada: local.enderecoFormatado,
       latitude: local.latitude,
@@ -52,7 +58,7 @@ router.post("/registrar", async (req, res) => {
     await criarTalhao(usuario.id, {
       nome: "Talhão principal - " + local.cidade,
       cultura: culturaEscolhida,
-      fase: "vegetativo",
+      fase: "plantio",
       endereco: local.enderecoFormatado,
       coordenadas: local,
     });
@@ -99,10 +105,13 @@ router.get("/configuracoes", exigirAutenticacao, async (req, res) => {
 });
 
 router.patch("/perfil", exigirAutenticacao, async (req, res) => {
-  const { nome, email } = req.body;
+  const { nome, email, telefone, cidade } = req.body;
   if (!nome || !email) return res.status(400).json({ erro: "Nome e e-mail são obrigatórios." });
   try {
-    res.json(await atualizarPerfil(req.usuario.id, { nome, email }));
+    const payload = { nome, email };
+    if (Object.prototype.hasOwnProperty.call(req.body, "telefone")) payload.telefone = telefone;
+    if (Object.prototype.hasOwnProperty.call(req.body, "cidade")) payload.cidade = cidade;
+    res.json(await atualizarPerfil(req.usuario.id, payload));
   } catch (erro) {
     res.status(409).json({ erro: erro.message });
   }
