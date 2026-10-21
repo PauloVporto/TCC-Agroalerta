@@ -15,28 +15,31 @@ const {
 const { resolverLocalizacaoPorCep } = require("../services/localizacao");
 const { criarTalhao } = require("./talhoes");
 const { culturasSuportadas } = require("../services/rules");
+const { emailValido, normalizarTelefone, ehCelular } = require("../services/contato");
+const { contatoDoProdutor, obterConsentimentos } = require("../services/notificacoes/consentimentos");
+const { registrarEscolhasDoCadastro } = require("../services/notificacoes");
+
+const ERRO_TELEFONE = "Telefone inválido. Informe DDD e número, ex.: (35) 99999-0000.";
 
 // POST /api/auth/registrar
-// body: { nome, email, senha, cep, cultura? }
+// body: { nome, email, senha, cep, telefone?, cultura?, notificacoes?: { email, sms } }
 //
-// O CEP é validado via Nominatim (OpenStreetMap): se encontrado, retorna
-// cidade, UF e coordenadas em uma única chamada — sem chave de API. Com
-// as coordenadas já disponíveis, cria o primeiro talhão na mesma localização
-// para que o produtor veja alertas e previsão do tempo reais ao entrar.
+// O CEP é validado via ViaCEP e geocodificado pelo Nominatim (OpenStreetMap),
+// sem chave de API. Com as coordenadas, cria o primeiro talhão na mesma
+// localização para que o produtor veja alertas e previsão reais ao entrar.
+// Os canais de notificação só ficam autorizados se o produtor marcar cada um;
+// para cada canal autorizado, a mensagem de boas-vindas entra na fila.
 router.post("/registrar", async (req, res) => {
-  const { nome, email, senha, cep, cultura, telefone, papel } = req.body;
+  const { nome, email, senha, cep, cultura, telefone, notificacoes, telefone, papel } = req.body;
 
   if (!nome || !email || !senha || !cep) {
     return res.status(400).json({ erro: "Campos obrigatórios: nome, email, senha, cep" });
   }
+  if (!emailValido(email)) {
+    return res.status(400).json({ erro: "E-mail em formato inválido." });
+  }
   if (senha.length < 6) {
     return res.status(400).json({ erro: "A senha deve ter pelo menos 6 caracteres." });
-  }
-  const digitosTel = String(telefone || "").replace(/\D/g, "");
-  if (digitosTel.length < 10) {
-    return res.status(400).json({
-      erro: "Informe o celular com DDD. Os alertas climáticos serão enviados por SMS e e-mail.",
-    });
   }
 
   const local = await resolverLocalizacaoPorCep(cep);
@@ -48,7 +51,7 @@ router.post("/registrar", async (req, res) => {
 
   try {
     const usuario = await criarUsuario({
-      nome, email, senha, telefone, papel,
+      nome, email, senha,
       cidade: local.cidade + " - " + local.uf,
       cidadeFormatada: local.enderecoFormatado,
       latitude: local.latitude,
@@ -60,8 +63,17 @@ router.post("/registrar", async (req, res) => {
       cultura: culturaEscolhida,
       fase: "plantio",
       endereco: local.enderecoFormatado,
+      regiao: local.cidade + " - " + local.uf,
       coordenadas: local,
     });
+
+    // A conta já existe: um problema ao gravar as notificações não desfaz o cadastro
+    // (o produtor vê os canais desautorizados no painel e pode ativá-los lá).
+    try {
+      await registrarEscolhasDoCadastro(usuario, escolhas);
+    } catch (erro) {
+      console.error("[auth] não foi possível registrar as notificações do cadastro:", erro.message);
+    }
 
     // Já loga o usuário automaticamente após o cadastro
     const { token } = await autenticar({ email, senha });
@@ -104,14 +116,28 @@ router.get("/configuracoes", exigirAutenticacao, async (req, res) => {
   res.json(await obterConfiguracoes(req.usuario.id));
 });
 
+// PATCH /api/auth/perfil
+// body: { nome, email, telefone? } - sem o campo telefone, o número atual é mantido.
 router.patch("/perfil", exigirAutenticacao, async (req, res) => {
-  const { nome, email, telefone, cidade } = req.body;
+  const { nome, email } = req.body;
   if (!nome || !email) return res.status(400).json({ erro: "Nome e e-mail são obrigatórios." });
+  if (!emailValido(email)) return res.status(400).json({ erro: "E-mail em formato inválido." });
+
+  const contato = await contatoDoProdutor(req.usuario.id);
+  let telefoneFinal = contato.telefone;
+  if (telefone !== undefined) {
+    telefoneFinal = telefone ? normalizarTelefone(telefone) : null;
+    if (telefone && !telefoneFinal) return res.status(400).json({ erro: ERRO_TELEFONE });
+    const { sms } = await obterConsentimentos(req.usuario.id);
+    if (sms.concedido && !ehCelular(telefoneFinal)) {
+      return res.status(400).json({
+        erro: "As notificações por SMS estão autorizadas: informe um celular válido ou desative o SMS antes.",
+      });
+    }
+  }
+
   try {
-    const payload = { nome, email };
-    if (Object.prototype.hasOwnProperty.call(req.body, "telefone")) payload.telefone = telefone;
-    if (Object.prototype.hasOwnProperty.call(req.body, "cidade")) payload.cidade = cidade;
-    res.json(await atualizarPerfil(req.usuario.id, payload));
+    res.json(await atualizarPerfil(req.usuario.id, { nome, email }));
   } catch (erro) {
     res.status(409).json({ erro: erro.message });
   }
@@ -145,12 +171,12 @@ router.patch("/localizacao", exigirAutenticacao, async (req, res) => {
 });
 
 router.patch("/preferencias", exigirAutenticacao, async (req, res) => {
-  const { culturaFavorita, unidadeTemperatura, notificacoes } = req.body;
+  const { culturaFavorita, unidadeTemperatura } = req.body;
   const culturas = ["cafe", "soja", "milho", "cana", "feijao"];
-  if (!culturas.includes(culturaFavorita) || !["celsius", "fahrenheit"].includes(unidadeTemperatura) || typeof notificacoes !== "boolean") {
+  if (!culturas.includes(culturaFavorita) || !["celsius", "fahrenheit"].includes(unidadeTemperatura)) {
     return res.status(400).json({ erro: "Preferências inválidas." });
   }
-  res.json(await atualizarPreferencias(req.usuario.id, { culturaFavorita, unidadeTemperatura, notificacoes }));
+  res.json(await atualizarPreferencias(req.usuario.id, { culturaFavorita, unidadeTemperatura }));
 });
 
 router.patch("/senha", exigirAutenticacao, async (req, res) => {

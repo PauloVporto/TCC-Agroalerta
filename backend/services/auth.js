@@ -91,8 +91,7 @@ async function obterConfiguracoes(usuarioId) {
             u.papel, u.cidade, u.telefone,
             u.cidade_formatada AS "cidadeFormatada", u.latitude, u.longitude,
             COALESCE(p.cultura_favorita, 'cafe') AS "culturaFavorita",
-            COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura",
-            COALESCE(p.notificacoes, TRUE) AS notificacoes
+            COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura"
      FROM usuarios u
      LEFT JOIN preferencias_usuario p ON p.usuario_id = u.id
      WHERE u.id = $1`,
@@ -129,19 +128,19 @@ async function atualizarPerfil(usuarioId, dados) {
   }
 }
 
+// As notificações por canal ficam em /api/notificacoes/preferencias (consentimento por canal).
 async function atualizarPreferencias(usuarioId, preferencias) {
   const resultado = await pool.query(
     `INSERT INTO preferencias_usuario
-       (usuario_id, cultura_favorita, unidade_temperatura, notificacoes, atualizado_em)
-     VALUES ($1, $2, $3, $4, NOW())
+       (usuario_id, cultura_favorita, unidade_temperatura, atualizado_em)
+     VALUES ($1, $2, $3, NOW())
      ON CONFLICT (usuario_id) DO UPDATE SET
        cultura_favorita = EXCLUDED.cultura_favorita,
        unidade_temperatura = EXCLUDED.unidade_temperatura,
-       notificacoes = EXCLUDED.notificacoes,
        atualizado_em = NOW()
      RETURNING cultura_favorita AS "culturaFavorita",
-               unidade_temperatura AS "unidadeTemperatura", notificacoes`,
-    [usuarioId, preferencias.culturaFavorita, preferencias.unidadeTemperatura, preferencias.notificacoes]
+               unidade_temperatura AS "unidadeTemperatura"`,
+    [usuarioId, preferencias.culturaFavorita, preferencias.unidadeTemperatura]
   );
   return resultado.rows[0];
 }

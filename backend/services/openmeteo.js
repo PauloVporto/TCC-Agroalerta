@@ -121,12 +121,15 @@ async function buscarClimaOpenMeteo(lat, lon) {
     }
   }
 
+  // Temperaturas com uma casa decimal, como temperaturaMinima: o motor de regras
+  // usa estes valores para datar a janela de risco (ex.: dias com mínima <= 2 °C).
   const previsaoDiaria = times.slice(0, 7).map((data, i) => ({
     data,
-    tempMax: Math.round(tempsMax[i] == null ? 25 : tempsMax[i]),
-    tempMin: Math.round(tempsMin[i] == null ? 15 : tempsMin[i]),
+    tempMax: Number((tempsMax[i] == null ? 25 : tempsMax[i]).toFixed(1)),
+    tempMin: Number((tempsMin[i] == null ? 15 : tempsMin[i]).toFixed(1)),
     chuvaMm: Number(((precip[i] == null ? 0 : precip[i])).toFixed(1)),
     chuvaProbabilidade: precipProb[i] == null ? 0 : precipProb[i],
+    ventoMaxKmh: Math.round(vento[i] == null ? 0 : vento[i]),
     descricao: _descricao(precip[i], precipProb[i]),
     icone: _icone(precip[i], precipProb[i]),
   }));
