@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WhatsApp · Administração do Agro Alerta</title>
+  <link rel="stylesheet" href="/whatsapp.css">
+  <script src="/config.js"></script>
+  <script src="/whatsapp.js" defer></script>
+</head>
+<body>
+  <header><a href="/dashboard.dc.html">🌱 Agro Alerta</a><span>Administração · WhatsApp</span></header>
+  <main>
+    <h1>WhatsApp do Agro Alerta</h1>
+    <p class="intro">Conecte o número terminado em <strong>9503</strong> para enviar as notificações autorizadas dos produtores.</p>
+    <p id="feedback" role="status" aria-live="polite"></p>
+    <section id="login" hidden aria-labelledby="login-title">
+      <h2 id="login-title">Acesso de administrador</h2>
+      <form id="login-form">
+        <label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required>
+        <label for="senha">Senha</label><input id="senha" type="password" autocomplete="current-password" required>
+        <button type="submit">Entrar</button>
+      </form>
+      <p>Use uma conta com permissão de administrador. O cadastro público não concede essa permissão.</p>
+    </section>
+    <div id="painel" hidden>
+      <div class="grid">
+        <section aria-labelledby="connection-title">
+          <h2 id="connection-title">Conexão</h2>
+          <dl>
+            <dt>Evolution API</dt><dd id="api-status">Verificando…</dd>
+            <dt>Instância</dt><dd id="instance">agroalerta</dd>
+            <dt>Remetente padrão</dt><dd>WhatsApp terminado em 9503</dd>
+            <dt>Número conectado</dt><dd id="number">—</dd>
+            <dt>Estado</dt><dd id="connection">—</dd>
+            <dt>Validação do remetente</dt><dd id="sender">—</dd>
+            <dt>Webhooks</dt><dd id="webhook">—</dd>
+          </dl>
+          <div class="actions">
+            <button id="connect">Conectar e mostrar QR Code</button>
+            <button id="reconnect" class="secondary">Reconectar</button>
+            <button id="refresh" class="secondary">Atualizar</button>
+          </div>
+        </section>
+        <section aria-labelledby="qr-title">
+          <h2 id="qr-title">Parear o número 9503</h2>
+          <div id="qr-area"><p id="qr-hint">Clique em “Conectar e mostrar QR Code” para iniciar.</p><img id="qr" hidden alt="QR Code para conectar o WhatsApp do Agro Alerta" width="280" height="280"></div>
+          <ol><li>No celular 9503, abra o WhatsApp.</li><li>Acesse <strong>Aparelhos conectados → Conectar um aparelho</strong>.</li><li>Escaneie o QR Code e aguarde o estado “Conectado”.</li></ol>
+          <p>A sessão é armazenada em volumes persistentes. Reinícios normais preservam o pareamento; o WhatsApp pode encerrar a sessão e exigir um novo QR Code.</p>
+        </section>
+      </div>
+      <section aria-labelledby="sending-title">
+        <h2 id="sending-title">Envios automáticos</h2>
+        <p id="sending" class="notice">Verificando bloqueios…</p>
+        <dl><dt>Boas-vindas</dt><dd id="welcome">—</dd><dt>Alertas de geada</dt><dd id="frost">—</dd></dl>
+        <p>Conectar o WhatsApp não libera os envios. A implantação e os controles administrativos precisam estar autorizados.</p>
+        <button id="block" class="secondary">Bloquear todos os envios agora</button>
+      </section>
+      <section aria-labelledby="history-title">
+        <h2 id="history-title">Histórico de notificações</h2>
+        <p id="summary">Carregando…</p>
+        <div class="table-scroll"><table><thead><tr><th scope="col">Data</th><th scope="col">Destinatário</th><th scope="col">Mensagem</th><th scope="col">Status / recibo</th></tr></thead><tbody id="history"></tbody></table></div>
+      </section>
+      <button id="logout" class="secondary">Sair</button>
+    </div>
+  </main>
+</body>
+</html>

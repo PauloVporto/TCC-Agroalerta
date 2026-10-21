@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./config.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -745,6 +746,7 @@
       </sc-if>
 
       <sc-if value="{{ pgAdmin }}" hint-placeholder-val="{{ false }}">
+        <p><a href="./whatsapp.html" style="color:#1F3D2B;font-weight:600;">Abrir página de conexão do WhatsApp →</a></p>
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 20px; align-items: start;">
         <div style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px;">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
@@ -974,7 +976,7 @@
 
 </x-dc>
 <script type="text/x-dc" data-dc-script>
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = window.AGROALERTA_API_BASE || 'http://localhost:3001/api';
 
 function apiFetch(path, opts) {
   opts = opts || {};

@@ -43,6 +43,7 @@ const ALERTA_ANA =
   "Nível de risco: Alto\n" +
   "Previsão: 21/10/2026, por volta das 05:00\n\n" +
   "Atenção: existe possibilidade de geada na região.\n\n" +
+  "Orientação preventiva: Considere métodos de proteção contra geada (irrigação por aspersão, cobertura) nas próximas noites.\n\n" +
   "Consulte as informações detalhadas no Agro Alerta.";
 
 // Open-Meteo falso: responde conforme a latitude e anota quais locais foram consultados.
@@ -218,4 +219,28 @@ test("talhões com níveis diferentes no mesmo grupo mostram o nível de cada um
   const [email] = await banco.listarEnvios();
   assert.equal(email.nivel, "alto");
   assert.ok(email.conteudo.includes("Florada (alto), Plantio (médio)"));
+});
+
+test("dois processos de monitoramento não geram episódios duplicados", async () => {
+  await cenarioDeDoisProdutores();
+  let iniciou;
+  let continuar;
+  const iniciado = new Promise((resolve) => { iniciou = resolve; });
+  const espera = new Promise((resolve) => { continuar = resolve; });
+  const primeiro = ciclo(async () => {
+    iniciou();
+    await espera;
+    return GEADA_FORTE;
+  });
+  await iniciado;
+  try {
+    const segundo = await ciclo(async () => { throw new Error("Não deve consultar o clima durante outro ciclo"); });
+    assert.equal(segundo.ignorado, true);
+  } finally {
+    continuar();
+    await primeiro;
+  }
+  const { rows } = await banco.pool.query("SELECT talhao_id, regra_id, count(*)::int AS total FROM alertas_gerados GROUP BY talhao_id, regra_id");
+  assert.ok(rows.length > 0);
+  assert.ok(rows.every((r) => r.total === 1));
 });

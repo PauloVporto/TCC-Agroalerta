@@ -22,7 +22,27 @@ after(async () => {
 test("migrations já aplicadas não rodam de novo; o rollback fica fora da pasta lida na subida", async () => {
   assert.deepEqual(await aplicarMigracoes({ log: () => {} }), []);
   const { rows } = await banco.pool.query("SELECT versao FROM schema_migrations ORDER BY versao");
-  assert.deepEqual(rows.map((r) => r.versao), ["001_notificacoes.sql", "002_whatsapp_evolution.sql"]);
+  assert.deepEqual(rows.map((r) => r.versao), ["001_notificacoes.sql", "002_whatsapp_evolution.sql", "003_whatsapp_implantacao_controlada.sql", "004_whatsapp_retencao.sql"]);
+});
+
+test("implantação começa bloqueada e preserva decisões administrativas auditadas", async () => {
+  const sql = fs.readFileSync(path.join(PASTA, "003_whatsapp_implantacao_controlada.sql"), "utf8");
+  const client = await banco.pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM administracao_eventos");
+    await client.query("UPDATE whatsapp_controle SET envios_bloqueados = FALSE, boas_vindas_ativas = TRUE, alertas_ativos = TRUE, atualizado_por = NULL");
+    await client.query(sql);
+    const controls = async () => (await client.query("SELECT envios_bloqueados, boas_vindas_ativas, alertas_ativos FROM whatsapp_controle")).rows[0];
+    assert.deepEqual(await controls(), { envios_bloqueados: true, boas_vindas_ativas: false, alertas_ativos: false });
+    await client.query("INSERT INTO administracao_eventos (categoria, tipo) VALUES ('controle', 'autorizacao_explicita')");
+    await client.query("UPDATE whatsapp_controle SET envios_bloqueados = FALSE, boas_vindas_ativas = TRUE, alertas_ativos = TRUE");
+    await client.query(sql);
+    assert.deepEqual(await controls(), { envios_bloqueados: false, boas_vindas_ativas: true, alertas_ativos: true });
+  } finally {
+    await client.query("ROLLBACK");
+    client.release();
+  }
 });
 
 test("migration com erro é desfeita por inteiro e não fica registrada", async () => {

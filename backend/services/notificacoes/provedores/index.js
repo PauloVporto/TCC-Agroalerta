@@ -83,6 +83,13 @@ function provedorDeWhatsapp(config) {
       const ritmo = await verificarRitmo(envio, whatsapp);
       if (!ritmo.ok) return ritmo;
       if (ritmo.esperaMs > 0) await esperar(ritmo.esperaMs);
+      // A conexão ou o remetente podem mudar entre mensagens da mesma rodada.
+      // Conferir novamente após a espera evita continuar com uma liberação antiga.
+      const atual = await liberacaoDoDespacho(config);
+      if (!atual.tipos.includes(envio.tipo)) {
+        return { ok: false, global: true, codigo: "whatsapp_indisponivel",
+          mensagem: atual.motivo || "Tipo de mensagem não autorizado no momento do despacho." };
+      }
       return { ok: true };
     },
     enviar: (m) => evolution.enviarTexto(whatsapp.evolution, { numero: numeroParaWhatsapp(m.destino), texto: m.texto }),

@@ -229,9 +229,8 @@ function emailAlerta(alerta) {
 const WHATSAPP_BOAS_VINDAS = [
   "🌱 Bem-vindo ao Agro Alerta!",
   "Seu cadastro foi realizado com sucesso.",
-  "Você receberá notificações sobre possíveis riscos de geada na região da sua propriedade.",
-  "Acompanhe também as informações disponíveis no Agro Alerta.",
-  "Você pode cancelar as notificações nas preferências da sua conta.",
+  "Você receberá notificações sobre risco de geada na região da sua propriedade.",
+  "Para cancelar as notificações, acesse suas preferências no Agro Alerta.",
 ].join("\n\n");
 
 const WHATSAPP_TESTE =
@@ -273,6 +272,7 @@ function whatsappAlertaGeada(geada) {
       `Previsão: ${previsao}`,
     ].join("\n"),
     "Atenção: existe possibilidade de geada na região.",
+    "Orientação preventiva: " + (geada.recomendacao || "Monitore a previsão e consulte um agrônomo para definir a proteção adequada da lavoura antes da madrugada."),
     "Consulte as informações detalhadas no Agro Alerta.",
   ].join("\n\n");
 }

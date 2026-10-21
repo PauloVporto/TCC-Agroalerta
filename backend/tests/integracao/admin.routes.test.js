@@ -127,7 +127,7 @@ test("controles: validação, gravação com autor na auditoria e leitura", asyn
   const controle = await resposta.json();
   assert.deepEqual(
     [controle.enviosBloqueados, controle.boasVindasAtivas, controle.alertasAtivos, controle.atualizadoPor],
-    [false, true, false, tokens.adminId]
+    [false, false, false, tokens.adminId]
   );
   // Repetir o mesmo valor não gera auditoria.
   await chamar("PUT", "/whatsapp/controles", tokens.admin, { enviosBloqueados: false });
@@ -135,7 +135,6 @@ test("controles: validação, gravação com autor na auditoria e leitura", asyn
   const { eventos } = await (await chamar("GET", "/logs", tokens.admin)).json();
   assert.deepEqual(eventos.map((e) => [e.categoria, e.detalhe, e.autor]).reverse(), [
     ["controle", "Envios do WhatsApp liberados", "Luiz (admin)"],
-    ["controle", "Alertas automáticos bloqueados", "Luiz (admin)"],
     ["controle", "Envios do WhatsApp bloqueados", "Luiz (admin)"],
     ["controle", "Alertas automáticos habilitados", "Luiz (admin)"],
   ]);

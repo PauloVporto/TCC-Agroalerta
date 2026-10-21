@@ -128,7 +128,7 @@ async function expirarVencidos() {
     `UPDATE notificacao_envios
      SET status = 'expirado', erro_codigo = 'validade_vencida',
          erro_mensagem = 'A mensagem não saiu dentro da validade e não será mais enviada.', atualizado_em = NOW()
-     WHERE status = 'pendente' AND expira_em IS NOT NULL AND expira_em <= NOW()
+     WHERE status = 'pendente' AND retido_em IS NULL AND expira_em IS NOT NULL AND expira_em <= NOW()
      RETURNING id, erro_mensagem`
   );
   for (const envio of rows) await registrarEvento(pool, envio.id, "expirado", "expirado", envio.erro_mensagem);
@@ -140,7 +140,7 @@ async function expirarVencidos() {
 async function haPendentes(canal) {
   const { rows } = await pool.query(
     `SELECT EXISTS (SELECT 1 FROM notificacao_envios
-                    WHERE canal = $1 AND status = 'pendente' AND proxima_tentativa_em <= NOW()) AS existe`,
+                    WHERE canal = $1 AND status = 'pendente' AND retido_em IS NULL AND proxima_tentativa_em <= NOW()) AS existe`,
     [canal]
   );
   return rows[0].existe;
@@ -153,7 +153,7 @@ async function reservarLote(canal, tipos, tamanho) {
          processando_ate = NOW() + make_interval(mins => $4), atualizado_em = NOW()
      WHERE id IN (
        SELECT id FROM notificacao_envios
-       WHERE canal = $1 AND tipo = ANY($2) AND status = 'pendente' AND proxima_tentativa_em <= NOW()
+       WHERE canal = $1 AND tipo = ANY($2) AND status = 'pendente' AND retido_em IS NULL AND proxima_tentativa_em <= NOW()
          AND (expira_em IS NULL OR expira_em > NOW())
        ORDER BY proxima_tentativa_em, id
        LIMIT $3
@@ -464,16 +464,16 @@ async function processarFila(contexto) {
 // Fica no histórico como qualquer envio, mas fora da fila automática: reservada só
 // pelo script (sem processando_ate), a fila nunca a pega — e, portanto, nunca a reenvia.
 
-async function registrarTesteManual({ canal, destino, assunto = null, conteudo, conteudoHtml = null, provedor, modo, remetente = null }) {
+async function registrarTesteManual({ canal, destino, assunto = null, conteudo, conteudoHtml = null, provedor, modo, remetente = null, usuarioId = null }) {
   const { rows } = await pool.query(
     `INSERT INTO notificacao_envios
        (canal, tipo, chave_idempotencia, destino, assunto, conteudo, conteudo_html, resumo,
-        status, modo, provedor, remetente, tentativas, max_tentativas, tentativa_iniciada_em)
-     VALUES ($1, 'teste', $2, $3, $4, $5, $6, $7, 'processando', $8, $9, $10, 1, 1, NOW())
+        status, modo, provedor, remetente, tentativas, max_tentativas, tentativa_iniciada_em, usuario_id)
+     VALUES ($1, 'teste', $2, $3, $4, $5, $6, $7, 'processando', $8, $9, $10, 1, 1, NOW(), $11)
      RETURNING id`,
     [
       canal, `teste:${canal}:${crypto.randomUUID()}`, destino, assunto, conteudo, conteudoHtml,
-      canal === "email" ? "Teste manual de e-mail" : "Teste manual de WhatsApp", modo, provedor, remetente,
+      canal === "email" ? "Teste manual de e-mail" : "Teste manual de WhatsApp", modo, provedor, remetente, usuarioId,
     ]
   );
   const id = Number(rows[0].id);

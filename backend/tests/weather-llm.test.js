@@ -1,31 +1,29 @@
-const { test } = require("node:test");
+const { test, mock } = require("node:test");
 const assert = require("node:assert/strict");
-const { processarRespostaOpenMeteo } = require("../services/weather");
+const { buscarClimaOpenMeteo } = require("../services/openmeteo");
 const { montarContextoLlm } = require("../services/llm");
 
-test("Open-Meteo: agrega mínimo, chuva passada e dias secos consecutivos", () => {
-  const hoje = new Date();
-  const iso = (offset) => {
-    const d = new Date(hoje);
-    d.setDate(d.getDate() + offset);
-    return d.toISOString().slice(0, 10);
-  };
-
-  const clima = processarRespostaOpenMeteo({
-    daily: {
-      time: [iso(-3), iso(-2), iso(-1), iso(0), iso(1)],
-      temperature_2m_min: [12, 11, 10, 9, 8],
-      precipitation_sum: [4, 0, 0, 1, 2],
-      precipitation_probability_max: [10, 20, 30, 40, 50],
-      wind_speed_10m_max: [12, 18, 22, 15, 10],
-    },
-  });
-
-  assert.equal(clima.fonte, "open-meteo");
-  assert.equal(clima.diasSemChuva, 2);
-  assert.equal(clima.chuvaAcumulada7dias, 4);
-  assert.equal(clima.temperaturaMinima, 8);
-  assert.equal(clima.ventoMaximoKmh, 22);
+test("Open-Meteo: separa previsão de chuva e dias secos históricos", async () => {
+  const simulado = mock.method(globalThis, "fetch", async (url) => ({
+    ok: true,
+    json: async () => url.includes("historical-forecast")
+      ? { daily: { precipitation_sum: [4, 0, 0] } }
+      : { daily: {
+        time: ["2026-10-21", "2026-10-22"],
+        temperature_2m_min: [9, 8], precipitation_sum: [1, 2],
+        wind_speed_10m_max: [22, 10],
+      } },
+  }));
+  try {
+    const clima = await buscarClimaOpenMeteo(-20.123, -44.567);
+    assert.equal(clima.fonte, "open-meteo");
+    assert.equal(clima.diasSemChuva, 2);
+    assert.equal(clima.chuvaAcumulada7dias, 3);
+    assert.equal(clima.temperaturaMinima, 8);
+    assert.equal(clima.ventoMaximoKmh, 22);
+  } finally {
+    simulado.mock.restore();
+  }
 });
 
 test("LLM monta contexto com clima, dólar e cotação", () => {

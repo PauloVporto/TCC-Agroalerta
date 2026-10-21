@@ -116,6 +116,7 @@ function dadosDaGeada({ alerta, talhao, clima }) {
 
   const maisFrio = previstos.reduce((a, b) => (b.tempMin < a.tempMin ? b : a));
   return {
+    recomendacao: alerta.recomendacao || null,
     propriedade: talhao.nome,
     localizacao,
     temperatura: maisFrio.tempMin,

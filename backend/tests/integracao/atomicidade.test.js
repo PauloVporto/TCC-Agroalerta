@@ -46,7 +46,7 @@ test("controles do administrador são atômicos: falha no meio não muda nada ne
     CREATE TRIGGER falhar_boas_vindas BEFORE UPDATE ON whatsapp_controle FOR EACH ROW EXECUTE FUNCTION falhar_boas_vindas();
   `);
   try {
-    await assert.rejects(atualizarControle({ enviosBloqueados: false, boasVindasAtivas: false }, null), /conexão perdida/);
+    await assert.rejects(atualizarControle({ enviosBloqueados: false, boasVindasAtivas: true }, null), /conexão perdida/);
   } finally {
     await banco.pool.query("DROP TRIGGER falhar_boas_vindas ON whatsapp_controle; DROP FUNCTION falhar_boas_vindas();");
   }

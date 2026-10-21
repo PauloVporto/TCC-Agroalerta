@@ -94,9 +94,8 @@ test("boas-vindas do WhatsApp têm exatamente o texto definido", () => {
     whatsappBoasVindas(),
     "🌱 Bem-vindo ao Agro Alerta!\n\n" +
       "Seu cadastro foi realizado com sucesso.\n\n" +
-      "Você receberá notificações sobre possíveis riscos de geada na região da sua propriedade.\n\n" +
-      "Acompanhe também as informações disponíveis no Agro Alerta.\n\n" +
-      "Você pode cancelar as notificações nas preferências da sua conta."
+      "Você receberá notificações sobre risco de geada na região da sua propriedade.\n\n" +
+      "Para cancelar as notificações, acesse suas preferências no Agro Alerta."
   );
 });
 
@@ -120,6 +119,7 @@ test("alerta de geada do WhatsApp segue o modelo, com a hora prevista da mínima
       "Nível de risco: Alto\n" +
       "Previsão: 23/10/2026, por volta das 05:00\n\n" +
       "Atenção: existe possibilidade de geada na região.\n\n" +
+      "Orientação preventiva: Monitore a previsão e consulte um agrônomo para definir a proteção adequada da lavoura antes da madrugada.\n\n" +
       "Consulte as informações detalhadas no Agro Alerta."
   );
 });

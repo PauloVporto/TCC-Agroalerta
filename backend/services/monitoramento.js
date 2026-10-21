@@ -87,7 +87,26 @@ async function registrarEpisodio(talhao, alerta, leituraId) {
   return inseridos[0].id;
 }
 
-async function executarCiclo({ config, buscarClima = buscarClimaOpenMeteo, log = console.log }) {
+// A trava no PostgreSQL também protege quando há dois processos do backend.
+// Só a trava em memória do temporizador não impediria episódios duplicados.
+async function executarCiclo(opcoes) {
+  const cliente = await pool.connect();
+  let travado = false;
+  try {
+    const { rows } = await cliente.query("SELECT pg_try_advisory_lock(hashtext($1)) AS livre", ["agroalerta_monitoramento"]);
+    travado = rows[0].livre;
+    if (!travado) return { talhoes: 0, semDados: 0, alertasNovos: 0, enfileirados: 0, ignorado: true };
+    return await executarCicloExclusivo(opcoes);
+  } finally {
+    try {
+      if (travado) await cliente.query("SELECT pg_advisory_unlock(hashtext($1))", ["agroalerta_monitoramento"]);
+    } finally {
+      cliente.release();
+    }
+  }
+}
+
+async function executarCicloExclusivo({ config, buscarClima = buscarClimaOpenMeteo, log = console.log }) {
   const talhoes = await talhoesMonitorados();
   const episodios = [];
   let semDados = 0;

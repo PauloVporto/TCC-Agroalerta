@@ -21,6 +21,7 @@ test("só regras de geada vão ao WhatsApp", () => {
 
 test("o alerta usa o dia mais frio dentro do risco, a hora prevista e vale até o fim do último dia", () => {
   assert.deepEqual(dadosDaGeada(EPISODIO), {
+    recomendacao: null,
     propriedade: "Encosta",
     localizacao: "Lavras - MG",
     temperatura: 1.2,

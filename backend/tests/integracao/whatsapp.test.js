@@ -178,6 +178,24 @@ test("o administrador bloqueia no meio da rodada: o que ainda não saiu fica na 
   assert.equal(evolution.envios().length, 1);
 });
 
+for (const [nome, mudar] of [
+  ["desconexão", () => { evolution.estado.conexao = "close"; }],
+  ["remetente divergente", () => { evolution.estado.numero = "5535999991111@s.whatsapp.net"; }],
+]) {
+  test(`${nome} no meio da rodada impede o próximo envio`, async () => {
+    const primeiro = await boasVindasNaFila({ email: "a@teste.com" });
+    const segundo = await boasVindasNaFila({ email: "b@teste.com", telefone: "+5535988882222" });
+    await banco.definirControle();
+    evolution.estado.aoReceberEnvio = mudar;
+    await processarComEvolution();
+    assert.equal((await envio(primeiro.id)).status, "enviado");
+    assert.equal((await envio(segundo.id)).status, "pendente");
+    assert.equal((await envio(segundo.id)).tentativas, 0);
+    assert.equal((await envio(segundo.id)).erro_codigo, "whatsapp_indisponivel");
+    assert.equal(evolution.envios().length, 1);
+  });
+}
+
 test("ritmo: limite por produtor adia para amanhã; limite por hora interrompe a rodada; intervalo mínimo entre mensagens", async () => {
   const { produtor, id } = await boasVindasNaFila();
   const segundoDoMesmo = await enfileirar(banco.pool, {

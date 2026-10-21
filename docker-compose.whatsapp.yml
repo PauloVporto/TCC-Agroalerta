@@ -22,6 +22,10 @@ x-logs: &logs
 services:
   backend:
     environment:
+      # Primeira implantação: liberar somente após autorização explícita.
+      WHATSAPP_SENDING_ENABLED: ${AGROALERTA_WHATSAPP_SENDING_ENABLED:-false}
+      WEATHER_MONITOR_ENABLED: ${AGROALERTA_WEATHER_MONITOR_ENABLED:-false}
+      WHATSAPP_EXPECTED_SENDER: ${AGROALERTA_WHATSAPP_EXPECTED_SENDER:-9503}
       EVOLUTION_API_URL: http://evolution-api:8080
       EVOLUTION_INSTANCE: agroalerta
       EVOLUTION_API_KEY_FILE: /run/secrets/evolution_api_key

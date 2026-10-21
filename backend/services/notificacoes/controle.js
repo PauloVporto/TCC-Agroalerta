@@ -11,8 +11,8 @@ const { pool, emTransacao } = require("../db");
 
 const CONTROLE_PADRAO = {
   enviosBloqueados: true,
-  boasVindasAtivas: true,
-  alertasAtivos: true,
+  boasVindasAtivas: false,
+  alertasAtivos: false,
   atualizadoEm: null,
   atualizadoPor: null,
 };

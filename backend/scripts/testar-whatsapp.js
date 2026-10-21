@@ -5,7 +5,8 @@
  * Antes de enviar, confere que a instância está conectada e que o número conectado
  * é o remetente esperado (WHATSAPP_EXPECTED_SENDER) — senão, nada sai. Mostra
  * remetente, destinatário e conteúdo, exige confirmação (digitar ENVIAR) e registra
- * o resultado no histórico (tipo "teste"). Não usa a fila nem consulta produtores.
+ * o resultado no histórico (tipo "teste"). Exige consentimento atual do produtor,
+ * conferido novamente após a confirmação; não libera a fila automática.
  *
  * Os recibos (servidor, entrega, leitura) chegam pelo webhook, que é processado
  * pelo backend em execução: por isso o script acompanha o histórico no banco por
@@ -22,7 +23,10 @@ const { registrarTesteManual, concluirTesteManual } = require("../services/notif
 const { whatsappTeste } = require("../services/notificacoes/templates");
 const { normalizarTelefone, ehCelular, formatarTelefone, numeroParaWhatsapp, remetenteCorresponde, telefoneDoWhatsapp } = require("../services/contato");
 const { pool } = require("../services/db");
-const { argumento, confirmar, acompanharEntrega } = require("./comum");
+const { argumento, temOpcao, confirmar, acompanharEntrega } = require("./comum");
+const { destinatarioTesteAutorizado } = require("../services/notificacoes/testeAutorizado");
+const { verificarRitmo } = require("../services/notificacoes/limitesWhatsapp");
+const { registrarEventoAdmin } = require("../services/notificacoes/controle");
 
 const ROTULO = {
   enviado: "aceito pela Evolution API (sem recibo do WhatsApp ainda)",
@@ -38,6 +42,14 @@ async function situacaoNoBanco(envioId) {
 }
 
 async function main() {
+  // Modo reservado ao operador com acesso ao servidor e autorização explícita.
+  // Não existe endpoint público que aceite essa opção. A fila normal nunca pede ENVIAR.
+  let administrador = null;
+  if (temOpcao("autorizado")) {
+    const { rows } = await pool.query("SELECT id FROM usuarios WHERE email=LOWER($1) AND papel='admin'", [argumento("administrador") || ""]);
+    if (rows.length !== 1) throw new Error("O teste sem prompt exige --administrador com uma conta administrativa existente.");
+    administrador = rows[0].id;
+  }
   const destino = normalizarTelefone(argumento("para"));
   if (!ehCelular(destino)) {
     console.error('Informe um celular brasileiro com DDD: --para "(35) 99999-0000"');
@@ -70,21 +82,36 @@ async function main() {
     return;
   }
 
+  const produtor = await destinatarioTesteAutorizado(pool, destino);
   const texto = whatsappTeste();
   console.log("Teste de WhatsApp · Evolution API");
   console.log("  instância:    " + cfg.instancia);
   console.log("  remetente:    " + formatarTelefone(remetente));
   console.log("  destinatário: " + formatarTelefone(destino));
+  console.log("  consentimento: vigente para o produtor " + produtor.nome);
   console.log("  conteúdo:     " + texto);
   console.log("  custo: nenhum na Evolution; a mensagem sai do WhatsApp conectado como uma mensagem comum.");
-  if (!(await confirmar("\nDigite ENVIAR para mandar 1 mensagem (qualquer outra resposta cancela): "))) {
+  if (!temOpcao("autorizado") && !(await confirmar("\nDigite ENVIAR para mandar 1 mensagem (qualquer outra resposta cancela): "))) {
     console.log("Cancelado. Nada foi enviado.");
     return;
   }
 
+  const ritmo = await verificarRitmo({ id: 0, usuario_id: produtor.id }, config.whatsapp);
+  if (!ritmo.ok) throw new Error(ritmo.mensagem);
+  if (ritmo.esperaMs > 0) await new Promise((resolve) => setTimeout(resolve, ritmo.esperaMs));
+  // Uma revogação enquanto o operador confirma deve impedir a transmissão.
+  await destinatarioTesteAutorizado(pool, destino);
+  const atual = await evolution.estadoDaConexao(cfg);
+  const instanciaAtual = await evolution.dadosDaInstancia(cfg);
+  if (atual.estado !== "open" || !instanciaAtual ||
+      telefoneDoWhatsapp(instanciaAtual.numero) !== remetente) {
+    throw new Error("Conexão ou remetente mudou durante a confirmação. Nada foi enviado.");
+  }
   const envioId = await registrarTesteManual({
-    canal: "whatsapp", destino, conteudo: texto, provedor: "evolution", modo: "real", remetente,
+    canal: "whatsapp", destino, conteudo: texto, provedor: "evolution", modo: "real", remetente, usuarioId: produtor.id,
   });
+  if (administrador) await registrarEventoAdmin(pool, { categoria: "controle", tipo: "teste_real_autorizado",
+    detalhe: `Teste único autorizado sem prompt, envio ${envioId}. Não libera mensagens automáticas.`, usuarioId: administrador });
   try {
     const { provedorId } = await evolution.enviarTexto(cfg, { numero: numeroParaWhatsapp(destino), texto });
     await concluirTesteManual(envioId, { provedorId });

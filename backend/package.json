@@ -13,7 +13,8 @@
     "notificacoes:diagnostico": "node scripts/diagnosticar-notificacoes.js",
     "notificacoes:testar-email": "node scripts/testar-email.js",
     "notificacoes:testar-whatsapp": "node scripts/testar-whatsapp.js",
-    "admin": "node scripts/administradores.js"
+    "admin": "node scripts/administradores.js",
+    "whatsapp:preparar": "node scripts/preparar-evolution.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

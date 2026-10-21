@@ -46,8 +46,8 @@ Endpoints da Evolution usados: `POST /instance/create`, `GET /instance/connectio
 
 Uma mensagem de WhatsApp só sai com **todas** as travas abertas:
 
-1. `WHATSAPP_SENDING_ENABLED=true` no `backend/.env` (trava da implantação; padrão `false`);
-2. **Envios liberados** no painel (o padrão da migration é *bloqueado*);
+1. `AGROALERTA_WHATSAPP_SENDING_ENABLED=true` no `.env` da raiz quando usar Docker Compose (entregue como `WHATSAPP_SENDING_ENABLED` ao backend; padrão `false`);
+2. **Envios liberados** no painel (o padrão da implantação é *bloqueado*, com boas-vindas e alertas desativados);
 3. tipo liberado no painel (**boas-vindas** e/ou **alertas automáticos**);
 4. instância `agroalerta` conectada (`open`);
 5. número conectado igual a `WHATSAPP_EXPECTED_SENDER` (padrão `9503`).
@@ -57,7 +57,7 @@ validade: boas-vindas valem 7 dias; um alerta de geada vale até o fim do últim
 Vencida a validade, vira `expirado`. Bloquear no painel vale na hora, inclusive no meio de
 uma rodada, sem reiniciar nada.
 
-Ritmo (protege o número de bloqueio): 4 s entre mensagens, 30/hora, 100/dia e 5 por
+Ritmo (reduz rajadas, sem garantia contra bloqueio): 4 s entre mensagens, 30/hora, 100/dia e 5 por
 agricultor/dia (`WHATSAPP_*` no `backend/.env`). Limite atingido adia, não descarta.
 
 ## 3. Estados de um envio no WhatsApp
@@ -149,9 +149,9 @@ docker compose -f docker-compose.yml -f docker-compose.whatsapp.yml exec backend
 Opção B — o fluxo completo de boas-vindas:
 
 1. Em Administração, cancele pendências antigas se houver (**Cancelar pendentes do WhatsApp**).
-2. `WHATSAPP_SENDING_ENABLED=true` no `backend/.env` e recrie o backend:
+2. Somente após autorização: `AGROALERTA_WHATSAPP_SENDING_ENABLED=true` no `.env` da raiz e recrie o backend:
    `docker compose -f docker-compose.yml -f docker-compose.whatsapp.yml up -d backend`.
-3. Em Administração, deixe **Alertas automáticos** desmarcado e marque **Envios liberados**.
+3. Em Administração, habilite **Boas-vindas**, deixe **Alertas automáticos** desmarcado e marque **Envios liberados**.
 4. Em até 15 s a boas-vindas sai: `Aceito pela API` → `Recebido pelo servidor` → `Entregue`
    (e `Lido`, se o 3362 tiver confirmação de leitura). Confira no celular do 3362 que o
    remetente é o 9503 e veja a linha do tempo do envio em `GET /api/admin/notificacoes/{id}/eventos`.
@@ -160,7 +160,7 @@ Para parar na hora: desmarque **Envios liberados**.
 
 ## 8. Ativar os alertas automáticos de geada (depois da validação)
 
-1. `WEATHER_MONITOR_ENABLED=true` no `backend/.env` (padrão `false`) e recrie o backend.
+1. Somente após autorização: `AGROALERTA_WEATHER_MONITOR_ENABLED=true` no `.env` da raiz (padrão `false`) e recrie o backend.
    O primeiro ciclo roda 1 min depois e então a cada `WEATHER_MONITOR_INTERVAL_MINUTES`.
 2. Em Administração, marque **Alertas automáticos de geada**.
 
@@ -187,8 +187,7 @@ Rollback, do mais leve ao mais completo:
    `docker compose -f docker-compose.yml -f docker-compose.whatsapp.yml stop evolution-api evolution-db evolution-redis`
    e voltar a usar só `docker compose up -d` (sem o arquivo do WhatsApp). Não use `down -v`:
    isso apagaria os volumes da sessão.
-3. **Voltar o código** para a branch anterior (`LuizHenrique`). A migration 002 é aditiva:
-   o código antigo roda sobre o banco migrado (verificado com a suíte de integração antiga).
+3. **Voltar o código/imagens** para a versão anterior preservada antes da implantação. As migrations 002/003 preservam as tabelas e históricos legados; valide a versão antiga em cópia restaurada antes de reativar qualquer despachante legado.
    Antes, cancele os envios de WhatsApp pendentes (o código antigo não os conhece).
 4. **Desfazer o esquema** (só se o WhatsApp ainda não gerou dados — o script recusa e não muda
    nada se houver qualquer dado dele):
@@ -212,3 +211,64 @@ Rollback, do mais leve ao mais completo:
 - Administrador só é criado pelo servidor (`npm run admin`); o cadastro do site não aceita esse papel.
 - Logs da Evolution sem `VERBOSE`/`WEBHOOKS` (que copiariam o conteúdo das mensagens), em
   JSON do Docker com rotação (10 MB × 5).
+
+
+## 11. Página administrativa dedicada
+
+Abra **http://localhost:5173/whatsapp.html** no ambiente principal, usando uma conta
+administradora. A página compartilha a sessão do Agro Alerta e também permite login
+direto com e-mail e senha existentes. As APIs recusam usuários sem permissão com
+401/403. A página só busca status ao abrir: o QR é solicitado exclusivamente quando
+o administrador clica em **Conectar e mostrar QR Code**.
+
+O processo de preparação, sem iniciar pareamento, é:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.whatsapp.yml exec backend npm run whatsapp:preparar
+```
+
+Isso cria `agroalerta` e configura o webhook, sem chamar `/instance/connect` ou
+`/message/sendText`. A página mostra o final 9503 esperado, o número conectado,
+status, QR quando solicitado, bloqueios e histórico/recibos. Um número divergente
+bloqueia o despacho. Prefira preencher o número completo em configuração
+administrativa quando ele estiver disponível; a comparação inicial usa o final informado.
+
+## 12. Validação isolada reproduzível
+
+Docker Compose >= 2.24.4. Use segredos exclusivos num arquivo local protegido,
+sem copiar credenciais de produção. Não use este projeto como ambiente principal.
+
+```bash
+docker compose --env-file /tmp/agroalerta-evolution-validation.env   -p agroalerta-evolution-validation   -f docker-compose.yml -f docker-compose.whatsapp.yml   -f docker-compose.evolution-validation.yml up -d --build
+```
+
+A aplicação isolada fica em **http://localhost:55173/whatsapp.html** e o backend
+em **http://localhost:3301/api/health**. O override remove `backend/.env`, usa outro
+banco e outro volume, e força WhatsApp, e-mail real e monitoramento desativados.
+Apenas dados fictícios devem ser usados nos testes automatizados. A restauração do
+backup principal fica em outra base, sem workers, exclusivamente para verificar
+restauração e compatibilidade de migrations.
+
+O smoke test da API real não solicita QR e não envia mensagens:
+
+```bash
+docker compose --env-file /tmp/agroalerta-evolution-validation.env   -p agroalerta-evolution-validation -f docker-compose.yml -f docker-compose.whatsapp.yml   exec -T -e EVOLUTION_VALIDATION_ONLY=true evolution-api node < backend/scripts/validar-evolution.js
+# Reinicie evolution-api, evolution-db e evolution-redis, aguarde os health checks,
+# e repita com -e EVOLUTION_REQUIRE_EXISTING=true para verificar a instância e webhook persistidos.
+```
+
+`backend/tests/e2e/whatsapp.browser.cjs` usa Chrome/Playwright e contas fictícias
+do banco isolado. Confere autenticação, bloqueios, comunicação real, layout móvel e
+QR **simulado no navegador**. O clique de conectar é interceptado e nunca chega à
+Evolution real. A persistência de uma **sessão já pareada** só pode ser comprovada
+depois que o proprietário fizer o pareamento inicial; não confundir isso com a
+persistência da instância/webhook não pareados.
+
+## 13. Limitações da conexão
+
+A integração usa WhatsApp Web via Baileys dentro da Evolution; ela não é a API
+oficial da Meta. Mudanças de protocolo, expiração de sessão e restrições ou bloqueio
+do número podem ocorrer mesmo com consentimento e limites de envio. Pareamento
+persistente não garante conexão permanente. Entrega e leitura dependem dos recibos
+disponíveis; resultado incerto permanece sem reenvio automático. O motor de geada
+atual atende café; nenhuma nova regra agronômica para outras culturas foi inventada.
