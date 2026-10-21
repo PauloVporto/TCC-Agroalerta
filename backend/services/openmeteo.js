@@ -35,10 +35,12 @@ async function _previsao(lat, lon) {
   const agora = Date.now();
   if (_cache[chave] && agora - _cache[chave].ts < CACHE_TTL_MS) return _cache[chave].dados;
 
+  // A temperatura horária dá a hora prevista da mínima de cada dia (alerta de geada).
   const url =
     'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
     '&daily=temperature_2m_min,temperature_2m_max,precipitation_sum,precipitation_probability_max' +
     ',wind_speed_10m_max,et0_fao_evapotranspiration' +
+    '&hourly=temperature_2m' +
     '&timezone=America%2FSao_Paulo&forecast_days=7';
 
   const dados = await _fetch(url);
@@ -77,6 +79,18 @@ function _icone(precip, prob) {
   if ((precip || 0) >= 2 || (prob || 0) >= 60) return '🌦';
   if ((prob || 0) >= 30) return '⛅';
   return '☀️';
+}
+
+// Hora local ("05:00") da menor temperatura horária prevista no dia; null sem dados horários.
+function _horaDaMinima(hourly, dia) {
+  const horas = (hourly && hourly.time) || [];
+  const temps = (hourly && hourly.temperature_2m) || [];
+  let menor = null;
+  for (let i = 0; i < horas.length; i++) {
+    if (!String(horas[i]).startsWith(dia) || temps[i] == null) continue;
+    if (menor === null || temps[i] < temps[menor]) menor = i;
+  }
+  return menor === null ? null : String(horas[menor]).slice(11, 16);
 }
 
 /**
@@ -121,12 +135,16 @@ async function buscarClimaOpenMeteo(lat, lon) {
     }
   }
 
+  // Temperaturas com uma casa decimal, como temperaturaMinima: o motor de regras
+  // usa estes valores para datar a janela de risco (ex.: dias com mínima <= 2 °C).
   const previsaoDiaria = times.slice(0, 7).map((data, i) => ({
     data,
-    tempMax: Math.round(tempsMax[i] == null ? 25 : tempsMax[i]),
-    tempMin: Math.round(tempsMin[i] == null ? 15 : tempsMin[i]),
+    tempMax: Number((tempsMax[i] == null ? 25 : tempsMax[i]).toFixed(1)),
+    tempMin: Number((tempsMin[i] == null ? 15 : tempsMin[i]).toFixed(1)),
+    horaMinima: tempsMin[i] == null ? null : _horaDaMinima(prevResult.value.hourly, data),
     chuvaMm: Number(((precip[i] == null ? 0 : precip[i])).toFixed(1)),
     chuvaProbabilidade: precipProb[i] == null ? 0 : precipProb[i],
+    ventoMaxKmh: Math.round(vento[i] == null ? 0 : vento[i]),
     descricao: _descricao(precip[i], precipProb[i]),
     icone: _icone(precip[i], precipProb[i]),
   }));

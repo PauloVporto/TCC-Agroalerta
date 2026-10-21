@@ -16,7 +16,11 @@ function hashSenha(senha, salt) {
   return crypto.scryptSync(senha, salt, 64).toString("hex");
 }
 
+// Papéis que o próprio usuário escolhe no cadastro. O administrador não está aqui:
+// só vira administrador quem tem acesso ao servidor (scripts/administradores.js).
 const PAPEIS = ["produtor", "fornecedor"];
+const PAPEL_ADMIN = "admin";
+const ROTULO_PAPEL = { produtor: "produtor", fornecedor: "fornecedor", admin: "administrador" };
 
 async function criarUsuario({
   nome, email, senha, papel, telefone,
@@ -91,8 +95,7 @@ async function obterConfiguracoes(usuarioId) {
             u.papel, u.cidade, u.telefone,
             u.cidade_formatada AS "cidadeFormatada", u.latitude, u.longitude,
             COALESCE(p.cultura_favorita, 'cafe') AS "culturaFavorita",
-            COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura",
-            COALESCE(p.notificacoes, TRUE) AS notificacoes
+            COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura"
      FROM usuarios u
      LEFT JOIN preferencias_usuario p ON p.usuario_id = u.id
      WHERE u.id = $1`,
@@ -129,19 +132,19 @@ async function atualizarPerfil(usuarioId, dados) {
   }
 }
 
+// As notificações por canal ficam em /api/notificacoes/preferencias (consentimento por canal).
 async function atualizarPreferencias(usuarioId, preferencias) {
   const resultado = await pool.query(
     `INSERT INTO preferencias_usuario
-       (usuario_id, cultura_favorita, unidade_temperatura, notificacoes, atualizado_em)
-     VALUES ($1, $2, $3, $4, NOW())
+       (usuario_id, cultura_favorita, unidade_temperatura, atualizado_em)
+     VALUES ($1, $2, $3, NOW())
      ON CONFLICT (usuario_id) DO UPDATE SET
        cultura_favorita = EXCLUDED.cultura_favorita,
        unidade_temperatura = EXCLUDED.unidade_temperatura,
-       notificacoes = EXCLUDED.notificacoes,
        atualizado_em = NOW()
      RETURNING cultura_favorita AS "culturaFavorita",
-               unidade_temperatura AS "unidadeTemperatura", notificacoes`,
-    [usuarioId, preferencias.culturaFavorita, preferencias.unidadeTemperatura, preferencias.notificacoes]
+               unidade_temperatura AS "unidadeTemperatura"`,
+    [usuarioId, preferencias.culturaFavorita, preferencias.unidadeTemperatura]
   );
   return resultado.rows[0];
 }
@@ -175,6 +178,16 @@ async function excluirConta(usuarioId) {
   await pool.query("DELETE FROM usuarios WHERE id = $1", [usuarioId]);
 }
 
+/** Define o papel de uma conta existente pelo e-mail. Devolve a conta, ou null se não existir. */
+async function definirPapel(email, papel) {
+  const resultado = await pool.query(
+    `UPDATE usuarios SET papel = $2 WHERE email = LOWER($1)
+     RETURNING id, nome, email, papel`,
+    [email, papel]
+  );
+  return resultado.rows[0] || null;
+}
+
 function sanitizar(usuario) {
   const { senhaHash, salt, ...resto } = usuario;
   return resto;
@@ -204,7 +217,8 @@ async function exigirAutenticacao(req, res, next) {
 function exigirPapel(...papeis) {
   return (req, res, next) => {
     if (!req.usuario || !papeis.includes(req.usuario.papel || "produtor")) {
-      return res.status(403).json({ erro: "Esta ação é só para contas de " + papeis.join(" ou ") + "." });
+      const rotulos = papeis.map((p) => ROTULO_PAPEL[p] || p);
+      return res.status(403).json({ erro: "Esta ação é só para contas de " + rotulos.join(" ou ") + "." });
     }
     next();
   };
@@ -221,7 +235,9 @@ module.exports = {
   atualizarLocalizacao,
   alterarSenha,
   excluirConta,
+  definirPapel,
   exigirAutenticacao,
   exigirPapel,
   PAPEIS,
+  PAPEL_ADMIN,
 };
