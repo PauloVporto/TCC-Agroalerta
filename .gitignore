@@ -58,3 +58,10 @@ desktop.ini
 
 # Frontend runtime config (generated, not committed)
 frontend/config.js
+
+# QA
+qa/**/node_modules/
+qa/**/reports/
+qa/unit/coverage/
+qa/cypress/cypress/screenshots/
+qa/cypress/cypress/videos/

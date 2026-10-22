@@ -1,0 +1,21 @@
+{
+  "cidade": "Itajubá - MG",
+  "cidadeFormatada": "Itajubá, Minas Gerais, Brasil",
+  "clima": {
+    "temperaturaMinima": 8.5,
+    "chuvaAcumulada7dias": 32.4,
+    "diasSemChuva": 2,
+    "probabilidadeChuva7dias": 40,
+    "ventoMaximoKmh": 20,
+    "fonte": "simulado",
+    "previsaoDiaria": [
+      { "data": "2026-10-19", "tempMax": 27, "tempMin": 14, "chuvaMm": 0, "chuvaProbabilidade": 10 },
+      { "data": "2026-10-20", "tempMax": 28, "tempMin": 15, "chuvaMm": 2.1, "chuvaProbabilidade": 30 },
+      { "data": "2026-10-21", "tempMax": 25, "tempMin": 13, "chuvaMm": 8.4, "chuvaProbabilidade": 70 },
+      { "data": "2026-10-22", "tempMax": 22, "tempMin": 11, "chuvaMm": 12.0, "chuvaProbabilidade": 80 },
+      { "data": "2026-10-23", "tempMax": 21, "tempMin": 9, "chuvaMm": 5.5, "chuvaProbabilidade": 50 },
+      { "data": "2026-10-24", "tempMax": 24, "tempMin": 10, "chuvaMm": 0, "chuvaProbabilidade": 20 },
+      { "data": "2026-10-25", "tempMax": 26, "tempMin": 12, "chuvaMm": 0, "chuvaProbabilidade": 5 }
+    ]
+  }
+}

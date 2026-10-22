@@ -132,11 +132,16 @@ reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 | Insight de compra de insumos (IA + busca web) | Recomendação sobre comprar agora ou esperar, considerando preços coletados e cenário de custo de matéria-prima/mercado | `backend/services/insumosIA.js` |
 | Mapa de talhões | Visualização geográfica dos talhões cadastrados (Google Maps) | `frontend/app.js` (`inicializarMapa`) |
 
+## Testes (QA)
+
+A pasta [`qa/`](qa/README.md) reúne a suíte de qualidade: **Cypress + Cucumber + Mochawesome** (frontend),
+**Postman + Newman** (API) e **Jest** com cobertura (unitários do backend). Veja `qa/README.md` para executar cada uma.
+
 ## Próximos passos sugeridos (para o desenvolvimento do TCC)
 
 - [x] Persistir usuários, sessões e talhões em PostgreSQL
 - [ ] Revisar as faixas usadas no motor de regras (`rules.js`) com fontes agronômicas específicas (Embrapa/Epamig) por cultura e citá-las no referencial teórico
 - [ ] Ajustar a lista de notícias curadas em `services/market.js` para refletir o cenário real na data da defesa
 - [ ] Testar a geocodificação e o mapa com endereços reais da região quando as chaves do Google Maps estiverem configuradas
-- [ ] Escrever testes automatizados para o motor de regras e para o fluxo de autenticação (partes mais fáceis de testar e mais valorizadas na banca)
+- [x] Escrever testes automatizados para o motor de regras e para o fluxo de autenticação (ver [`qa/`](qa/README.md))
 - [ ] Considerar expirar/renovar tokens de sessão (hoje eles não expiram automaticamente)

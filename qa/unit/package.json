@@ -1,0 +1,19 @@
+{
+  "name": "agroalerta-qa-unit",
+  "version": "1.0.0",
+  "description": "Testes unitários do backend AgroAlerta (Jest) - substituto do Pytest, pois o backend é Node.js",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "test:cov": "jest --coverage",
+    "test:rules": "jest rules",
+    "test:auth": "jest auth",
+    "test:routes": "jest routes",
+    "test:services": "jest services"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-html-reporter": "^3.10.2",
+    "supertest": "^7.0.0"
+  }
+}

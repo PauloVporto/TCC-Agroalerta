@@ -1,0 +1,30 @@
+{
+  "name": "agroalerta-qa-cypress",
+  "version": "1.0.0",
+  "description": "Testes E2E do frontend AgroAlerta (Cypress + Cucumber/Gherkin + Mochawesome)",
+  "private": true,
+  "scripts": {
+    "cy:open": "cypress open",
+    "test": "node scripts/executar.js",
+    "test:landing": "node scripts/executar.js --spec \"cypress/e2e/landing/*.feature\"",
+    "test:login": "node scripts/executar.js --spec \"cypress/e2e/login/*.feature\"",
+    "test:registro": "node scripts/executar.js --spec \"cypress/e2e/registro/*.feature\"",
+    "test:dashboard": "node scripts/executar.js --spec \"cypress/e2e/dashboard/*.feature\"",
+    "clean": "node scripts/limpar-relatorios.js",
+    "report": "node scripts/gerar-relatorio.js",
+    "check:asserts": "node scripts/verificar-asserts.js"
+  },
+  "cypress-cucumber-preprocessor": {
+    "stepDefinitions": [
+      "cypress/step_definitions/**/*.steps.js"
+    ]
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "^22.0.1",
+    "@bahmutov/cypress-esbuild-preprocessor": "^2.2.5",
+    "cypress": "^13.17.0",
+    "mochawesome": "^7.1.3",
+    "mochawesome-merge": "^4.3.0",
+    "mochawesome-report-generator": "^6.2.0"
+  }
+}
