@@ -13,6 +13,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
 <style>
+  .notificacoes-config h2 { font-family: Fraunces, Georgia, serif; font-size: 21px; margin: 0; line-height: 1.3; }
+  .notificacoes-config h3 { font-size: 16px; margin: 12px 0; }
+  .notificacoes-config p { margin: 0; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+  .notificacoes-config label { font-size: 14px; line-height: 1.5; }
+  .notificacoes-config button { justify-self: start; max-width: 100%; padding: 11px 17px; border: 1px solid #1F3D2B; background: #1F3D2B; color: #FFF; font: 500 13px Archivo, sans-serif; cursor: pointer; }
+  .notificacoes-config button:disabled { opacity: .6; cursor: wait; }
+  .notificacoes-config select { justify-self: start; max-width: 100%; padding: 9px; font: inherit; border: 1px solid #C9C3B0; }
+  .notificacoes-config input[type=checkbox] { width: 17px; height: 17px; flex: none; accent-color: #1F3D2B; }
   * { box-sizing: border-box; }
   body { margin: 0; background: #F7F5EF; color: #1A1A18; font-family: Archivo, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   a { color: #1F3D2B; text-decoration: none; }
@@ -401,6 +409,62 @@
       </sc-if>
 
       <sc-if value="{{ pgNotificacoes }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ produtorNotificacoes }}" hint-placeholder-val="{{ true }}">
+      <section class="notificacoes-config" data-testid="preferencias-notificacoes" style="padding: 24px 32px; border-bottom: 1px solid #DDD8C9; display: grid; gap: 14px;">
+        <h2>Canais e autorizações</h2>
+                  <div style="border-top: 1px solid #CFE0E8; padding-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #2F6E8F;">Notificações</span>
+            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer;">
+              <input type="checkbox" checked="{{ cNotifEmail }}" onChange="{{ onCNotifEmail }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
+              Autorizo receber alertas climáticos por e-mail.
+            </label>
+            <select value="{{ cNivelEmail }}" onChange="{{ onCNivelEmail }}" disabled="{{ cNivelEmailDesativado }}" style="font-family: Archivo, sans-serif; font-size: 13px; color: #1A1A18; background: #FFFFFF; border: 1px solid #CFE0E8; padding: 9px 11px; margin-left: 25px;">
+              <option value="medio">Alertas de risco médio e alto</option>
+              <option value="alto">Somente alertas de risco alto</option>
+            </select>
+            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer;">
+              <input type="checkbox" checked="{{ cNotifWhatsapp }}" onChange="{{ onCNotifWhatsapp }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
+              Autorizo receber notificações pelo WhatsApp no celular cadastrado. Escolho as categorias abaixo.
+            </label>
+            <select value="{{ cNivelWhatsapp }}" onChange="{{ onCNivelWhatsapp }}" disabled="{{ cNivelWhatsappDesativado }}" style="font-family: Archivo, sans-serif; font-size: 13px; color: #1A1A18; background: #FFFFFF; border: 1px solid #CFE0E8; padding: 9px 11px; margin-left: 25px;">
+              <option value="medio">Geada de risco médio e alto</option>
+              <option value="alto">Somente geada de risco alto</option>
+            </select>
+            <span style="font-size: 12px; line-height: 1.5; color: #24505F;">{{ cNotifNota }}</span>
+
+          </div>
+
+        <button type="button" onClick="{{ salvarCanaisNotificacoes }}" disabled="{{ climaSalvando }}">Salvar autorização dos canais</button>
+        <h2>Boletim diário e alertas climáticos</h2>
+        <p>{{ climaConsentimento }}</p>
+        <p>Boletim às 06h30, horário de Brasília. Cancele cada categoria independentemente. Autorize primeiro o WhatsApp para seu celular atual.</p>
+        <sc-for list="{{ climaCategorias }}" as="c" hint-placeholder-count="5">
+          <label style="display:flex;align-items:center;gap:12px;padding:8px 0;">
+            <input type="checkbox" checked="{{ c.ativo }}" onChange="{{ c.mudar }}" disabled="{{ climaSalvando }}" data-categoria="{{ c.id }}" />{{ c.nome }}
+          </label>
+        </sc-for>
+        <button type="button" onClick="{{ salvarCategoriasNotificacoes }}" disabled="{{ climaSalvando }}">Salvar categorias</button>
+        <p role="status">{{ climaFeedback }}</p>
+      </section>
+      <section class="notificacoes-config" style="padding: 24px 32px; border-bottom: 1px solid #DDD8C9; display: grid; gap: 14px;"><h2>Previsão por talhão</h2><p>Fonte: Open-Meteo. Previsão sujeita a alterações.</p>
+        <sc-for list="{{ climaPrevisoes }}" as="t" hint-placeholder-count="1"><article><h3>{{ t.nome }}</h3><p>{{ t.erro }}</p>
+          <sc-for list="{{ t.dias }}" as="d" hint-placeholder-count="1"><p>{{ d.texto }}</p></sc-for>
+        </article></sc-for>
+      </section>
+      </sc-if>
+      <sc-if value="{{ ehAdmin }}" hint-placeholder-val="{{ false }}">
+      <section class="notificacoes-config" data-testid="controles-clima-notificacoes" style="padding: 24px 32px; border-bottom: 1px solid #DDD8C9; display: grid; gap: 14px;"><h2>Boletim e alertas climáticos — administração</h2>
+        <p>{{ climaResumo }}</p><p>{{ climaAgenda }}</p>
+        <label><input type="checkbox" checked="{{ climaBoletinsPausados }}" onChange="{{ mudarPausaBoletim }}" disabled="{{ climaSalvando }}" /> Pausar boletins</label>
+        <label><input type="checkbox" checked="{{ climaAlertasPausados }}" onChange="{{ mudarPausaAlertas }}" disabled="{{ climaSalvando }}" /> Pausar novos alertas de chuva, vento e calor</label>
+        <button type="button" onClick="{{ salvarControlesClima }}" disabled="{{ climaSalvando }}">Salvar controles climáticos</button>
+        <p role="status">{{ climaFeedback }}</p>
+        <h3>Histórico por categoria</h3>
+        <select aria-label="Categoria climática" value="{{ climaFiltro }}" onChange="{{ mudarFiltroClima }}"><option value="">Todas</option><option value="boletim_diario">Boletim</option><option value="geada">Geada</option><option value="chuva_intensa">Chuva</option><option value="vento_forte">Vento</option><option value="calor_extremo">Calor</option></select>
+        <sc-for list="{{ climaHistorico }}" as="e" hint-placeholder-count="1"><p>{{ e.texto }}</p></sc-for>
+      </section>
+      </sc-if>
+
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
         <sc-for list="{{ canaisNotificacao }}" as="c" hint-placeholder-count="2">
           <div style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 9px;">
@@ -414,10 +478,6 @@
             <div style="font-size: 12px; color: #6B4A34;">{{ c.atualizado }}</div>
           </div>
         </sc-for>
-        <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: #4A4A42;">
-          <span>Para autorizar, revogar ou mudar a gravidade de cada canal, use Configurar conta.</span>
-          <button type="button" onClick="{{ goConta }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #1F3D2B; background: transparent; border: 1px solid #C9C3B0; padding: 9px 16px; cursor: pointer;" style-hover="border-color: #1F3D2B;">Configurar notificações</button>
-        </div>
       </section>
 
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
@@ -716,27 +776,7 @@
             </sc-for>
           </div>
 
-          <div style="border-top: 1px solid #CFE0E8; padding-top: 16px; display: flex; flex-direction: column; gap: 12px;">
-            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #2F6E8F;">Notificações</span>
-            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer;">
-              <input type="checkbox" checked="{{ cNotifEmail }}" onChange="{{ onCNotifEmail }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
-              Autorizo receber alertas climáticos por e-mail.
-            </label>
-            <select value="{{ cNivelEmail }}" onChange="{{ onCNivelEmail }}" disabled="{{ cNivelEmailDesativado }}" style="font-family: Archivo, sans-serif; font-size: 13px; color: #1A1A18; background: #FFFFFF; border: 1px solid #CFE0E8; padding: 9px 11px; margin-left: 25px;">
-              <option value="medio">Alertas de risco médio e alto</option>
-              <option value="alto">Somente alertas de risco alto</option>
-            </select>
-            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer;">
-              <input type="checkbox" checked="{{ cNotifWhatsapp }}" onChange="{{ onCNotifWhatsapp }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
-              Autorizo receber pelo WhatsApp, no celular cadastrado, os alertas de risco de geada.
-            </label>
-            <select value="{{ cNivelWhatsapp }}" onChange="{{ onCNivelWhatsapp }}" disabled="{{ cNivelWhatsappDesativado }}" style="font-family: Archivo, sans-serif; font-size: 13px; color: #1A1A18; background: #FFFFFF; border: 1px solid #CFE0E8; padding: 9px 11px; margin-left: 25px;">
-              <option value="medio">Geada de risco médio e alto</option>
-              <option value="alto">Somente geada de risco alto</option>
-            </select>
-            <span style="font-size: 12px; line-height: 1.5; color: #24505F;">{{ cNotifNota }}</span>
-            <a href="/clima-produtor.html">Previsão dos talhões e preferências de boletim e alertas</a>
-          </div>
+          <button type="button" onClick="{{ goNotificacoes }}">Gerenciar notificações</button>
 
           <sc-if value="{{ contaErro }}" hint-placeholder-val="{{ false }}">
             <p style="margin: 16px 0 0; font-size: 13px; line-height: 1.5; color: #A33A22;">{{ contaErro }}</p>
@@ -747,7 +787,7 @@
       </sc-if>
 
       <sc-if value="{{ pgAdmin }}" hint-placeholder-val="{{ false }}">
-        <p><a href="./whatsapp.html" style="color:#1F3D2B;font-weight:600;">Abrir página de conexão do WhatsApp →</a></p>
+
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 20px; align-items: start;">
         <div style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px;">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
@@ -1152,7 +1192,7 @@ class Component extends DCLogic {
     sessionStorage.removeItem('agroalerta_aviso_cadastro');
     this.state = {
       // Em telas de celular a barra lateral começa recolhida, para o conteúdo caber.
-      page: 'visao', sidebarOpen: window.innerWidth >= 768,
+      page: window.location.hash === '#notificacoes' ? 'notificacoes' : 'visao', sidebarOpen: window.innerWidth >= 768,
       papel: usuarioSalvo && usuarioSalvo.papel ? usuarioSalvo.papel : 'produtor',
       _avisoCadastro: avisoCadastro,
       cNome: usuarioSalvo ? usuarioSalvo.nome : '',
@@ -1160,6 +1200,7 @@ class Component extends DCLogic {
       cTelefone: '', cCidade: '',
       cCultura: 'cafe', cUnidade: 'C', contaSalva: false, contaSalvando: false, contaErro: '',
       cNotifEmail: false, cNotifWhatsapp: false, cNivelEmail: 'medio', cNivelWhatsapp: 'medio',
+      _climaPrefs: null, _climaEscolhas: {}, _climaAlteracoes: {}, _climaDados: null, _climaPrevisoes: [], _climaBoletinsPausados: true, _climaAlertasPausados: true, _climaFiltro: '', _climaFeedback: '', _climaSalvando: false,
       _notif: null, _historico: [], _historicoCarregado: false, _historicoCarregando: false,
       _admin: null, _adminResumo: null, _adminEnvios: [], _adminAgricultores: [], _adminLogs: [],
       _adminFiltroStatus: '', _adminCarregando: false, _adminOcupado: false, _adminErro: '',
@@ -1298,6 +1339,8 @@ class Component extends DCLogic {
     this._carregarHistoricoRelatorios();
     this._carregarConfiguracoes();
     this._carregarNotificacoes();
+    this._carregarClimaNotificacoes();
+    if(this.state.papel==='admin' && this.state.page==='notificacoes')this._carregarAdmin();
     this._carregarHistoricoNotificacoes();
     this._carregarClimaCidade();
     this._carregarTalhoes();
@@ -1325,6 +1368,61 @@ class Component extends DCLogic {
   }
 
   // Autorização, gravidade mínima, destino e modo de cada canal (e-mail e WhatsApp).
+
+  async _climaApi(path, body) {
+    const r=await apiFetch(path,body?{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{});
+    const d=await r.json();if(!r.ok)throw new Error(d.erro||'Não foi possível carregar notificações.');return d;
+  }
+  async _carregarClimaNotificacoes() {
+    try {
+      if(this.state.papel === 'admin') {
+        const d=await this._climaApi('/admin/clima');
+        this.setState({_climaDados:d,_climaBoletinsPausados:d.controles.boletins_pausados,_climaAlertasPausados:d.controles.novos_alertas_pausados});
+      } else if(this.state.papel === 'produtor') {
+        const d=await this._climaApi('/notificacoes/categorias');
+        this.setState({_climaPrefs:d,_climaEscolhas:d.preferencias,_climaAlteracoes:{}});
+        const p=await this._climaApi('/notificacoes/previsoes');this.setState({_climaPrevisoes:p.talhoes});
+      }
+    } catch(e){this.setState({_climaFeedback:e.message});}
+  }
+  async _salvarClimaNotificacoes(tipo) {
+    this.setState({_climaSalvando:true,_climaFeedback:''});
+    try {
+      const s=this.state;
+      if(tipo==='categorias') {
+        if(!Object.keys(s._climaAlteracoes).length){this.setState({_climaFeedback:'Nenhuma alteração nas categorias.'});return;}
+        const d=await this._climaApi('/notificacoes/categorias',s._climaAlteracoes);
+        this.setState({_climaPrefs:d,_climaEscolhas:d.preferencias,_climaAlteracoes:{}});
+      } else if(tipo==='canais') {
+        await this._climaApi('/notificacoes/preferencias',{email:{consentido:s.cNotifEmail,nivelMinimo:s.cNivelEmail},whatsapp:{consentido:s.cNotifWhatsapp,nivelMinimo:s.cNivelWhatsapp}});
+        this._carregarNotificacoes();await this._carregarClimaNotificacoes();
+      } else {
+        await this._climaApi('/admin/clima/controles',{boletins_pausados:s._climaBoletinsPausados,novos_alertas_pausados:s._climaAlertasPausados});
+        await this._carregarClimaNotificacoes();
+      }
+      this.setState({_climaFeedback:'Preferências salvas.'});
+    }catch(e){this.setState({_climaFeedback:e.message});}
+    finally{this.setState({_climaSalvando:false});}
+  }
+  _propsClimaNotificacoes() {
+    const s=this.state,d=s._climaDados,p=s._climaPrefs;
+    const nomes={boletim_diario:'Receber boletim diário',geada:'Receber alertas de geada',chuva_intensa:'Receber alertas de chuva intensa',vento_forte:'Receber alertas de vento forte',calor_extremo:'Receber alertas de calor extremo'};
+    const valor=n=>Number.isFinite(n)?n.toLocaleString('pt-BR'):'Indisponível';
+    return {
+      produtorNotificacoes:s.papel==='produtor',climaSalvando:s._climaSalvando,climaFeedback:s._climaFeedback,
+      climaConsentimento:!p?'Carregando autorizações…':p.whatsappValido?'WhatsApp autorizado para o celular atual.' :'WhatsApp ainda não autorizado para o celular atual.',
+      climaCategorias:Object.keys(nomes).map(id=>({id,nome:nomes[id],ativo:!!s._climaEscolhas[id],mudar:e=>this.setState({_climaEscolhas:Object.assign({},this.state._climaEscolhas,{[id]:e.target.checked}),_climaAlteracoes:Object.assign({},this.state._climaAlteracoes,{[id]:e.target.checked}),_climaFeedback:''})})),
+      salvarCategoriasNotificacoes:()=>this._salvarClimaNotificacoes('categorias'),salvarCanaisNotificacoes:()=>this._salvarClimaNotificacoes('canais'),salvarControlesClima:()=>this._salvarClimaNotificacoes('controles'),
+      climaBoletinsPausados:s._climaBoletinsPausados,climaAlertasPausados:s._climaAlertasPausados,
+      mudarPausaBoletim:e=>this.setState({_climaBoletinsPausados:e.target.checked}),mudarPausaAlertas:e=>this.setState({_climaAlertasPausados:e.target.checked}),
+      climaResumo:!d?'Carregando…':`Boletim: ${d.implantacao.boletim&&!d.controles.boletins_pausados?'ativo':'pausado ou desativado'} · Novos alertas: ${d.implantacao.novosAlertas&&!d.controles.novos_alertas_pausados?'ativos':'pausados ou desativados'} · ${d.elegiveis} produtores elegíveis · ${d.contadores.enviados} boletins enviados · ${d.contadores.entregues} entregues`,
+      climaAgenda:!d?'':`Horário: 06h30 (${d.fuso}) · Próxima janela: ${new Date(d.proxima).toLocaleString('pt-BR',{timeZone:d.fuso})} · Última execução: ${d.ultima?d.ultima.status:'Não executado'}`,
+      climaFiltro:s._climaFiltro,mudarFiltroClima:e=>this.setState({_climaFiltro:e.target.value}),
+      climaHistorico:!d?[]:d.historico.filter(e=>!s._climaFiltro||e.categoria===s._climaFiltro).map(e=>({texto:`${e.categoria||e.tipo} · ${e.resumo} · ${e.status}`})),
+      climaPrevisoes:s._climaPrevisoes.map(t=>({nome:t.nome,erro:t.erro||'',dias:(t.dias||[]).map(d=>({texto:`${d.data.split('-').reverse().join('/')} · Mínima ${valor(d.tempMin)} °C · Máxima ${valor(d.tempMax)} °C · Chuva ${valor(d.chuvaProbabilidade)}% / ${valor(d.chuvaMm)} mm · Vento ${valor(d.ventoMaxKmh)} km/h · ${d.condicoes} · Geada: ${d.geada}`}))}))
+    };
+  }
+
   _carregarNotificacoes() {
     apiFetch('/notificacoes/preferencias').then(function(r) { return r.json(); }).then((p) => {
       if (!p || !p.email) return;
@@ -1371,7 +1469,7 @@ class Component extends DCLogic {
     clearTimeout(this._temporizadorQr);
     if (!estado || estado.conexao.estado !== 'connecting') return;
     this._temporizadorQr = setTimeout(() => {
-      if (this.state.page !== 'admin') return;
+      if (!['admin','notificacoes'].includes(this.state.page)) return;
       apiFetch('/admin/whatsapp').then(function(r) { return r.json(); }).then((atual) => {
         if (!atual || !atual.conexao) return;
         const conectou = atual.conexao.estado === 'open';
@@ -1651,7 +1749,7 @@ class Component extends DCLogic {
     };
 
     return {
-      pgAdmin: s.page === 'admin' && s.papel === 'admin',
+      pgAdmin: (s.page === 'admin' || s.page === 'notificacoes') && s.papel === 'admin',
       adminConexaoRotulo: estado.rotulo, adminConexaoCor: estado.cor, adminConexaoFundo: estado.fundo,
       adminConexaoDados: !a ? [] : [
         { rotulo: 'Instância', valor: a.instancia, cor: '#1A1A18' },
@@ -2021,7 +2119,7 @@ class Component extends DCLogic {
         '&layer=mapnik&marker=' + s.cLatitude + ',' + s.cLongitude
       : '';
 
-    return Object.assign(admin, {
+    return Object.assign(admin, this._propsClimaNotificacoes(), {
       sair: () => this.logout(),
 
       sidebarWidth: s.sidebarOpen ? '242px' : '66px',
@@ -2046,6 +2144,9 @@ class Component extends DCLogic {
       goTalhoes: () => this.setState({ page: 'talhoes' }),
       goNotificacoes: () => {
         this.setState({ page: 'notificacoes' });
+        this._carregarClimaNotificacoes();
+        this._carregarNotificacoes();
+        if(this.state.papel === 'admin')this._carregarAdmin();
         this._carregarHistoricoNotificacoes();
       },
       goInsumos: () => this.setState({ page: 'insumos' }),
@@ -2054,7 +2155,8 @@ class Component extends DCLogic {
       goOfertas: () => this.setState({ page: 'ofertas' }),
       goConta: () => this.setState({ page: 'conta', contaSalva: false }),
       goAdmin: () => {
-        this.setState({ page: 'admin' });
+        this.setState({ page: 'notificacoes' });
+        this._carregarClimaNotificacoes();
         this._carregarAdmin();
       },
       navAdminBg: this.navStyle('admin').bg, navAdminFg: this.navStyle('admin').fg, navAdminBar: this.navStyle('admin').bar,

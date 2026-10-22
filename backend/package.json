@@ -15,7 +15,7 @@
     "notificacoes:testar-whatsapp": "node scripts/testar-whatsapp.js",
     "admin": "node scripts/administradores.js",
     "whatsapp:preparar": "node scripts/preparar-evolution.js",
-    "test:e2e:clima": "node tests/e2e/clima.browser.cjs"
+    "test:e2e:clima": "node tests/e2e/notificacoes-dashboard.browser.cjs"
   },
   "dependencies": {
     "cors": "^2.8.5",
