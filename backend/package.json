@@ -6,7 +6,16 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "node --test tests/*.test.js",
+    "test:integracao": "node --test --test-concurrency=1 tests/integracao/*.test.js",
+    "test:cobertura": "node --test --test-concurrency=1 --experimental-test-coverage tests/*.test.js tests/integracao/*.test.js",
+    "notificacoes:diagnostico": "node scripts/diagnosticar-notificacoes.js",
+    "notificacoes:testar-email": "node scripts/testar-email.js",
+    "notificacoes:testar-whatsapp": "node scripts/testar-whatsapp.js",
+    "admin": "node scripts/administradores.js",
+    "whatsapp:preparar": "node scripts/preparar-evolution.js",
+    "test:e2e:clima": "node tests/e2e/notificacoes-dashboard.browser.cjs"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -15,5 +24,7 @@
     "pg": "^8.12.0",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
+    "pdfkit": "^0.20.2",
+    "pg": "^8.12.0"
   }
 }

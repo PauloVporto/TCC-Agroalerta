@@ -35,11 +35,13 @@ async function _previsao(lat, lon) {
   const agora = Date.now();
   if (_cache[chave] && agora - _cache[chave].ts < CACHE_TTL_MS) return _cache[chave].dados;
 
+  // A temperatura horária dá a hora prevista da mínima de cada dia (alerta de geada).
   const url =
     'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
     '&daily=temperature_2m_min,temperature_2m_max,precipitation_sum,precipitation_probability_max' +
-    ',wind_speed_10m_max,et0_fao_evapotranspiration' +
-    '&timezone=America%2FSao_Paulo&forecast_days=7';
+    ',wind_speed_10m_max,et0_fao_evapotranspiration,weather_code' +
+    '&hourly=temperature_2m' +
+    '&timezone=America%2FSao_Paulo&forecast_days=7&wind_speed_unit=kmh&temperature_unit=celsius&precipitation_unit=mm';
 
   const dados = await _fetch(url);
   _cache[chave] = { ts: agora, dados };
@@ -79,6 +81,18 @@ function _icone(precip, prob) {
   return '☀️';
 }
 
+// Hora local ("05:00") da menor temperatura horária prevista no dia; null sem dados horários.
+function _horaDaMinima(hourly, dia) {
+  const horas = (hourly && hourly.time) || [];
+  const temps = (hourly && hourly.temperature_2m) || [];
+  let menor = null;
+  for (let i = 0; i < horas.length; i++) {
+    if (!String(horas[i]).startsWith(dia) || temps[i] == null) continue;
+    if (menor === null || temps[i] < temps[menor]) menor = i;
+  }
+  return menor === null ? null : String(horas[menor]).slice(11, 16);
+}
+
 /**
  * Retorna objeto de clima com variáveis agronômicas para o motor de alertas.
  * Combina previsão (7 dias) + histórico (30 dias) para calcular diasSemChuva real.
@@ -115,15 +129,22 @@ async function buscarClimaOpenMeteo(lat, lon) {
   let diasSemChuva = 0;
   if (histResult.status === 'fulfilled') {
     const precipHist = histResult.value.daily?.precipitation_sum || [];
-    diasSemChuva = precipHist.filter((v) => (v == null ? 0 : v) < 1.0).length;
+    // Dias secos consecutivos até ontem (chuva < 1 mm), não o total de dias secos do mês.
+    for (let i = precipHist.length - 1; i >= 0 && (precipHist[i] == null ? 0 : precipHist[i]) < 1.0; i--) {
+      diasSemChuva++;
+    }
   }
 
+  // Temperaturas com uma casa decimal, como temperaturaMinima: o motor de regras
+  // usa estes valores para datar a janela de risco (ex.: dias com mínima <= 2 °C).
   const previsaoDiaria = times.slice(0, 7).map((data, i) => ({
     data,
-    tempMax: Math.round(tempsMax[i] == null ? 25 : tempsMax[i]),
-    tempMin: Math.round(tempsMin[i] == null ? 15 : tempsMin[i]),
+    tempMax: Number((tempsMax[i] == null ? 25 : tempsMax[i]).toFixed(1)),
+    tempMin: Number((tempsMin[i] == null ? 15 : tempsMin[i]).toFixed(1)),
+    horaMinima: tempsMin[i] == null ? null : _horaDaMinima(prevResult.value.hourly, data),
     chuvaMm: Number(((precip[i] == null ? 0 : precip[i])).toFixed(1)),
     chuvaProbabilidade: precipProb[i] == null ? 0 : precipProb[i],
+    ventoMaxKmh: Math.round(vento[i] == null ? 0 : vento[i]),
     descricao: _descricao(precip[i], precipProb[i]),
     icone: _icone(precip[i], precipProb[i]),
   }));
@@ -140,4 +161,33 @@ async function buscarClimaOpenMeteo(lat, lon) {
   };
 }
 
-module.exports = { buscarClimaOpenMeteo };
+/**
+ * Série diária observada/reanalisada em um intervalo arbitrário (YYYY-MM-DD).
+ * Usada pelos relatórios para comparar períodos.
+ * Retorna [{ data, chuva, tmin, tmax, et0 }].
+ */
+async function buscarSerieDiaria(lat, lon, inicio, fim) {
+  const chave = _cacheKey('om_serie', lat, lon, inicio + '_' + fim);
+  const agora = Date.now();
+  if (_cache[chave] && agora - _cache[chave].ts < CACHE_TTL_MS) return _cache[chave].dados;
+
+  const url =
+    'https://historical-forecast-api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+    '&start_date=' + inicio + '&end_date=' + fim +
+    '&daily=precipitation_sum,temperature_2m_min,temperature_2m_max,et0_fao_evapotranspiration' +
+    '&timezone=America%2FSao_Paulo';
+
+  const resp = await _fetch(url);
+  const d = resp.daily || {};
+  const dados = (d.time || []).map((data, i) => ({
+    data,
+    chuva: d.precipitation_sum ? d.precipitation_sum[i] : null,
+    tmin: d.temperature_2m_min ? d.temperature_2m_min[i] : null,
+    tmax: d.temperature_2m_max ? d.temperature_2m_max[i] : null,
+    et0: d.et0_fao_evapotranspiration ? d.et0_fao_evapotranspiration[i] : null,
+  }));
+  _cache[chave] = { ts: agora, dados };
+  return dados;
+}
+
+module.exports = { buscarClimaOpenMeteo, buscarSerieDiaria, buscarPrevisaoBruta: _previsao };

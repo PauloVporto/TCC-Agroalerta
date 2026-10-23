@@ -3,7 +3,8 @@ const router = express.Router();
 const { obterHistorico, gerarAnaliseTendencia } = require("../services/market");
 const { buscarCotacaoAV } = require("../services/alphavantage");
 const { buscarCotacaoStooq, buscarHistoricoMensalStooq } = require("../services/stooq");
-const { buscarPtax, buscarIndiceCommoditiesAgro } = require("../services/bcb");
+const { buscarPtax, buscarIndiceCommoditiesAgro, SERIES_ICBR } = require("../services/bcb");
+const { montarSerieComProjecao } = require("../services/marketProjection");
 
 /**
  * @swagger
@@ -51,6 +52,7 @@ router.get("/cotacoes", async (req, res) => {
   res.json({
     ptax: ptaxResult.status === "fulfilled" ? ptaxResult.value : null,
     icbr: icbrResult.status === "fulfilled" ? icbrResult.value : null,
+    icbrSeries: SERIES_ICBR.map(Number),
     cotacaoInternacional: cotacaoIntl,
   });
 });
@@ -139,6 +141,19 @@ router.get("/:cultura/historico", async (req, res) => {
  *                 geradoEm: { type: string, format: date-time }
  *       400: { description: Cultura não suportada, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
  */
+// GET /api/mercado/:cultura/serie
+// Histórico em R$/saca + projeção mensal na mesma unidade, para o gráfico do painel.
+// Usa sempre a base local: o /historico pode vir do Stooq em centavos de dólar,
+// o que não combinaria com a projeção nem com o simulador de venda em R$.
+router.get("/:cultura/serie", (req, res) => {
+  const base = obterHistorico(req.params.cultura);
+  if (!base || !Array.isArray(base.historico)) {
+    return res.status(404).json({ erro: "Cultura não encontrada" });
+  }
+  res.json(montarSerieComProjecao(base, req.params.cultura));
+});
+
+// GET /api/mercado/:cultura/analise
 router.get("/:cultura/analise", async (req, res) => {
   try {
     const analise = await gerarAnaliseTendencia(req.params.cultura);

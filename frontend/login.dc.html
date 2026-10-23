@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./config.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -109,6 +110,8 @@
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
         Telefone
         <input data-cy="registro-telefone" type="tel" value="{{ rTelefone }}" onChange="{{ onRTelefone }}" placeholder="(34) 99999-0000" autoComplete="tel" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+        Celular com DDD
+        <input type="tel" inputMode="tel" value="{{ rTelefone }}" onChange="{{ onRTelefone }}" placeholder="(35) 99999-0000" autoComplete="tel" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 13px 14px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
         <sc-if value="{{ rTelefoneError }}" hint-placeholder-val="{{ false }}">
           <span data-cy="erro-registro-telefone" style="font-size: 12px; color: #A33A22; text-transform: none; letter-spacing: 0; font-weight: 400;">{{ rTelefoneError }}</span>
         </sc-if>
@@ -163,6 +166,18 @@
         <input data-cy="registro-notificacoes" type="checkbox" checked="{{ rNotificacoes }}" onChange="{{ onRNotificacoes }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #1F3D2B; flex: none;" />
         Receber alertas climáticos por e-mail e SMS.
       </label>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">Notificações</span>
+        <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #4A4A42; cursor: pointer;">
+          <input type="checkbox" checked="{{ rNotifEmail }}" onChange="{{ onRNotifEmail }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #1F3D2B; flex: none;" />
+          Quero receber por e-mail os alertas de risco climático da minha propriedade.
+        </label>
+        <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #4A4A42; cursor: pointer;">
+          <input type="checkbox" checked="{{ rNotifWhatsapp }}" onChange="{{ onRNotifWhatsapp }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #1F3D2B; flex: none;" />
+          Autorizo o Agro Alerta a me enviar mensagens pelo WhatsApp, no celular informado, sobre riscos de geada na região da minha propriedade.
+        </label>
+        <span style="font-size: 12px; line-height: 1.5; color: #6B4A34;">Com o WhatsApp autorizado, você recebe uma mensagem de boas-vindas e, quando houver previsão de geada, um alerta com a temperatura e o dia previstos. As mensagens saem do WhatsApp oficial do Agro Alerta; você não precisa instalar nem conectar nada. As duas opções são independentes e podem ser canceladas quando quiser em Configurar conta.</span>
+      </div>
     </div>
 
     <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #4A4A42; cursor: pointer;">
@@ -186,7 +201,7 @@
 
 </x-dc>
 <script type="text/x-dc" data-dc-script>
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = window.AGROALERTA_API_BASE || 'http://localhost:3001/api';
 
 function apiFetch(path, opts) {
   opts = opts || {};
@@ -194,6 +209,24 @@ function apiFetch(path, opts) {
   const headers = Object.assign({}, opts.headers || {});
   if (token) headers['Authorization'] = 'Bearer ' + token;
   return fetch(API_BASE + path, Object.assign({}, opts, { headers: headers }));
+}
+
+// Mesmos DDDs aceitos pelo backend (services/contato.js, plano de numeração da Anatel).
+const DDDS = [11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35, 37, 38,
+  41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64, 65, 66, 67, 68, 69,
+  71, 73, 74, 75, 77, 79, 81, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99];
+
+// '' quando o telefone serve; senão, a mensagem de erro do campo.
+function erroDoTelefone(texto, exigeCelular) {
+  const digitos = String(texto || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '').replace(/^0(?=\d{10,11}$)/, '');
+  if (digitos === '') return 'Informe o celular com DDD.';
+  if (digitos.length < 10) return 'Telefone incompleto: informe DDD e número.';
+  if (DDDS.indexOf(Number(digitos.slice(0, 2))) === -1) return 'DDD inválido. Confira os dois primeiros dígitos.';
+  const celular = digitos.length === 11 && digitos.charAt(2) === '9';
+  const fixo = digitos.length === 10 && /[2-5]/.test(digitos.charAt(2));
+  if (!celular && !fixo) return 'Telefone inválido. Ex.: (35) 99999-0000.';
+  if (exigeCelular && !celular) return 'Para receber pelo WhatsApp, informe um celular (9 dígitos após o DDD).';
+  return '';
 }
 
 class Component extends DCLogic {
@@ -209,7 +242,7 @@ class Component extends DCLogic {
       email: '', password: '', remember: true,
       emailError: '', passwordError: '', loading: false, loginGenericError: '',
       rNome: '', rCep: '', rTelefone: '', rEmail: '', rPapel: 'produtor',
-      rCultura: 'cafe', rUnidade: 'C', rNotificacoes: true,
+      rCultura: 'cafe', rUnidade: 'C', rNotifEmail: false, rNotifWhatsapp: false,
       rSenha: '', rSenha2: '', rTermos: false, rLoading: false,
       rNomeError: '', rCepError: '', rTelefoneError: '', rEmailError: '',
       rSenhaError: '', rSenha2Error: '', rTermosError: '', rGenericError: ''
@@ -258,42 +291,46 @@ class Component extends DCLogic {
       const iguais = s.rSenha === s.rSenha2 && s.rSenha2 !== '';
       const nomeOk = s.rNome.trim().split(/\s+/).length >= 2;
       const cepOk = s.rCep.replace(/\D/g, '').length === 8;
-      const telOk = s.rTelefone.replace(/\D/g, '').length >= 10;
+      const telefoneErro = erroDoTelefone(s.rTelefone, s.rNotifWhatsapp);
+      const telOk = telefoneErro === '';
       this.setState({
         rNomeError: nomeOk ? '' : 'Informe nome e sobrenome.',
         rCepError: s.rCep.trim() === '' ? 'Informe o CEP.' : (cepOk ? '' : 'CEP deve ter 8 dígitos.'),
-        rTelefoneError: s.rTelefone.trim() === '' ? 'Informe um telefone.' : (telOk ? '' : 'Telefone incompleto.'),
+        rTelefoneError: telefoneErro,
         rEmailError: s.rEmail.trim() === '' ? 'Informe um e-mail.' : (emailOk ? '' : 'E-mail em formato inválido.'),
         rSenhaError: senhaOk ? '' : 'A senha deve ter ao menos 6 caracteres.',
         rSenha2Error: iguais ? '' : 'As senhas não coincidem.',
         rTermosError: s.rTermos ? '' : 'É necessário aceitar os termos.'
       });
       if (!nomeOk || !cepOk || !telOk || !emailOk || !senhaOk || !iguais || !s.rTermos) return;
-      this.setState({ rLoading: true, rGenericError: '', rCepError: '' });
+      this.setState({ rLoading: true, rGenericError: '', rCepError: '', rTelefoneError: '' });
       fetch(API_BASE + '/auth/registrar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nome: s.rNome.trim(), email: s.rEmail.trim(), senha: s.rSenha,
-          cep: s.rCep.trim(), cultura: s.rCultura
+          cep: s.rCep.trim(), cultura: s.rCultura,
+          telefone: s.rTelefone.trim(), papel: s.rPapel,
+          notificacoes: { email: !!s.rNotifEmail, whatsapp: !!s.rNotifWhatsapp }
         })
       }).then(function(r) { return r.json().then(function(c) { return { ok: r.ok, corpo: c }; }); })
         .then((res) => {
           if (!res.ok) {
             const msg = res.corpo.erro || 'Erro ao criar conta.';
             const erro = new Error(msg);
-            erro.ehErroDeCep = /cep/i.test(msg);
+            erro.campo = /cep/i.test(msg) ? 'cep' : (/telefone|celular/i.test(msg) ? 'telefone' : '');
             throw erro;
           }
           sessionStorage.setItem('agroalerta_token', res.corpo.token);
           sessionStorage.setItem('agroalerta_usuario', JSON.stringify(res.corpo.usuario));
+          // O painel mostra, uma vez, o que foi autorizado no cadastro.
+          sessionStorage.setItem('agroalerta_aviso_cadastro', JSON.stringify({ email: !!s.rNotifEmail, whatsapp: !!s.rNotifWhatsapp }));
           return apiFetch('/auth/preferencias', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               culturaFavorita: s.rCultura || 'cafe',
-              unidadeTemperatura: s.rUnidade === 'F' ? 'fahrenheit' : 'celsius',
-              notificacoes: !!s.rNotificacoes
+              unidadeTemperatura: s.rUnidade === 'F' ? 'fahrenheit' : 'celsius'
             })
           });
         })
@@ -301,8 +338,9 @@ class Component extends DCLogic {
           window.location.href = './dashboard.dc.html';
         }).catch((err) => this.setState({
           rLoading: false,
-          rCepError: err.ehErroDeCep ? err.message : '',
-          rGenericError: err.ehErroDeCep ? '' : err.message
+          rCepError: err.campo === 'cep' ? err.message : '',
+          rTelefoneError: err.campo === 'telefone' ? err.message : '',
+          rGenericError: err.campo ? '' : err.message
         }));
     };
 
@@ -322,11 +360,13 @@ class Component extends DCLogic {
       submit,
 
       rNome: s.rNome, rCep: s.rCep, rTelefone: s.rTelefone, rEmail: s.rEmail,
-      rSenha: s.rSenha, rSenha2: s.rSenha2, rTermos: s.rTermos, rNotificacoes: s.rNotificacoes,
+      rSenha: s.rSenha, rSenha2: s.rSenha2, rTermos: s.rTermos,
+      rNotifEmail: s.rNotifEmail, rNotifWhatsapp: s.rNotifWhatsapp,
       onRNome: set('rNome'), onRCep: set('rCep'), onRTelefone: set('rTelefone'),
       onREmail: set('rEmail'), onRSenha: set('rSenha'), onRSenha2: set('rSenha2'),
       onRTermos: (e) => this.setState({ rTermos: e.target.checked, rTermosError: '' }),
-      onRNotificacoes: (e) => this.setState({ rNotificacoes: e.target.checked }),
+      onRNotifEmail: (e) => this.setState({ rNotifEmail: e.target.checked }),
+      onRNotifWhatsapp: (e) => this.setState({ rNotifWhatsapp: e.target.checked, rTelefoneError: '' }),
 
       pickProdutor: () => this.setState({ rPapel: 'produtor' }),
       pickFornecedor: () => this.setState({ rPapel: 'fornecedor' }),

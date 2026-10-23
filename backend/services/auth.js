@@ -16,15 +16,28 @@ function hashSenha(senha, salt) {
   return crypto.scryptSync(senha, salt, 64).toString("hex");
 }
 
-async function criarUsuario({ nome, email, senha, cidade, cidadeFormatada, latitude, longitude }) {
+// Papéis que o próprio usuário escolhe no cadastro. O administrador não está aqui:
+// só vira administrador quem tem acesso ao servidor (scripts/administradores.js).
+const PAPEIS = ["produtor", "fornecedor"];
+const PAPEL_ADMIN = "admin";
+const ROTULO_PAPEL = { produtor: "produtor", fornecedor: "fornecedor", admin: "administrador" };
+
+async function criarUsuario({
+  nome, email, senha, papel, telefone,
+  cidade, cidadeFormatada, latitude, longitude,
+}) {
+  const papelFinal = PAPEIS.includes(papel) ? papel : "produtor";
   const salt = crypto.randomBytes(16).toString("hex");
   try {
     const resultado = await pool.query(
-      `INSERT INTO usuarios (nome, email, senha_hash, salt, cidade, cidade_formatada, latitude, longitude)
-       VALUES ($1, LOWER($2), $3, $4, $5, $6, $7, $8)
-       RETURNING id, nome, email, salt, cidade, cidade_formatada AS "cidadeFormatada",
-                 latitude, longitude, criado_em AS "criadoEm"`,
-      [nome, email, hashSenha(senha, salt), salt, cidade || null, cidadeFormatada || null,
+      `INSERT INTO usuarios
+         (nome, email, senha_hash, salt, papel, telefone, cidade, cidade_formatada, latitude, longitude)
+       VALUES ($1, LOWER($2), $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING id, nome, email, papel, telefone, cidade,
+                 cidade_formatada AS "cidadeFormatada", latitude, longitude,
+                 salt, criado_em AS "criadoEm"`,
+      [nome, email, hashSenha(senha, salt), salt, papelFinal, telefone || null,
+        cidade || null, cidadeFormatada || null,
         latitude != null ? latitude : null, longitude != null ? longitude : null]
     );
     const usuario = sanitizar(resultado.rows[0]);
@@ -38,7 +51,8 @@ async function criarUsuario({ nome, email, senha, cidade, cidadeFormatada, latit
 
 async function autenticar({ email, senha }) {
   const resultado = await pool.query(
-    `SELECT id, nome, email, senha_hash AS "senhaHash", salt, criado_em AS "criadoEm"
+    `SELECT id, nome, email, papel, cidade, telefone,
+            senha_hash AS "senhaHash", salt, criado_em AS "criadoEm"
      FROM usuarios WHERE email = LOWER($1)`,
     [email]
   );
@@ -53,7 +67,10 @@ async function autenticar({ email, senha }) {
   }
 
   const token = crypto.randomBytes(32).toString("hex");
-  await pool.query("INSERT INTO sessoes (token, usuario_id) VALUES ($1, $2)", [token, usuario.id]);
+  await pool.query(
+    "INSERT INTO sessoes (token, usuario_id, expira_em) VALUES ($1, $2, NOW() + INTERVAL '7 days')",
+    [token, usuario.id]
+  );
 
   return { token, usuario: sanitizar(usuario) };
 }
@@ -64,9 +81,9 @@ async function encerrarSessao(token) {
 
 async function usuarioPorToken(token) {
   const resultado = await pool.query(
-    `SELECT u.id, u.nome, u.email, u.criado_em AS "criadoEm"
+    `SELECT u.id, u.nome, u.email, u.papel, u.cidade, u.telefone, u.criado_em AS "criadoEm"
      FROM sessoes s JOIN usuarios u ON u.id = s.usuario_id
-     WHERE s.token = $1`,
+     WHERE s.token = $1 AND s.expira_em > NOW()`,
     [token]
   );
   return resultado.rows[0] ? sanitizar(resultado.rows[0]) : null;
@@ -74,11 +91,11 @@ async function usuarioPorToken(token) {
 
 async function obterConfiguracoes(usuarioId) {
   const resultado = await pool.query(
-    `SELECT u.id, u.nome, u.email, u.cidade, u.cidade_formatada AS "cidadeFormatada",
-            u.latitude, u.longitude, u.criado_em AS "criadoEm",
+    `SELECT u.id, u.nome, u.email, u.criado_em AS "criadoEm",
+            u.papel, u.cidade, u.telefone,
+            u.cidade_formatada AS "cidadeFormatada", u.latitude, u.longitude,
             COALESCE(p.cultura_favorita, 'cafe') AS "culturaFavorita",
-            COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura",
-            COALESCE(p.notificacoes, TRUE) AS notificacoes
+            COALESCE(p.unidade_temperatura, 'celsius') AS "unidadeTemperatura"
      FROM usuarios u
      LEFT JOIN preferencias_usuario p ON p.usuario_id = u.id
      WHERE u.id = $1`,
@@ -87,12 +104,26 @@ async function obterConfiguracoes(usuarioId) {
   return resultado.rows[0] || null;
 }
 
-async function atualizarPerfil(usuarioId, { nome, email }) {
+async function atualizarPerfil(usuarioId, dados) {
+  const { nome, email } = dados;
   try {
+    const atual = await pool.query(
+      "SELECT telefone, cidade FROM usuarios WHERE id = $1",
+      [usuarioId]
+    );
+    const row = atual.rows[0] || {};
+    const telefone = Object.prototype.hasOwnProperty.call(dados, "telefone")
+      ? dados.telefone || null
+      : row.telefone;
+    const cidade = Object.prototype.hasOwnProperty.call(dados, "cidade")
+      ? dados.cidade || null
+      : row.cidade;
+
     const resultado = await pool.query(
-      `UPDATE usuarios SET nome = $1, email = LOWER($2) WHERE id = $3
-       RETURNING id, nome, email, criado_em AS "criadoEm"`,
-      [nome, email, usuarioId]
+      `UPDATE usuarios SET nome = $1, email = LOWER($2), telefone = $3, cidade = $4
+       WHERE id = $5
+       RETURNING id, nome, email, papel, cidade, telefone, criado_em AS "criadoEm"`,
+      [nome, email, telefone, cidade, usuarioId]
     );
     return resultado.rows[0] ? sanitizar(resultado.rows[0]) : null;
   } catch (erro) {
@@ -101,21 +132,31 @@ async function atualizarPerfil(usuarioId, { nome, email }) {
   }
 }
 
+// As notificações por canal ficam em /api/notificacoes/preferencias (consentimento por canal).
 async function atualizarPreferencias(usuarioId, preferencias) {
   const resultado = await pool.query(
     `INSERT INTO preferencias_usuario
-       (usuario_id, cultura_favorita, unidade_temperatura, notificacoes, atualizado_em)
-     VALUES ($1, $2, $3, $4, NOW())
+       (usuario_id, cultura_favorita, unidade_temperatura, atualizado_em)
+     VALUES ($1, $2, $3, NOW())
      ON CONFLICT (usuario_id) DO UPDATE SET
        cultura_favorita = EXCLUDED.cultura_favorita,
        unidade_temperatura = EXCLUDED.unidade_temperatura,
-       notificacoes = EXCLUDED.notificacoes,
        atualizado_em = NOW()
      RETURNING cultura_favorita AS "culturaFavorita",
-               unidade_temperatura AS "unidadeTemperatura", notificacoes`,
-    [usuarioId, preferencias.culturaFavorita, preferencias.unidadeTemperatura, preferencias.notificacoes]
+               unidade_temperatura AS "unidadeTemperatura"`,
+    [usuarioId, preferencias.culturaFavorita, preferencias.unidadeTemperatura]
   );
   return resultado.rows[0];
+}
+
+async function atualizarLocalizacao(usuarioId, { cidade, cidadeFormatada, latitude, longitude }) {
+  const resultado = await pool.query(
+    `UPDATE usuarios SET cidade = $1, cidade_formatada = $2, latitude = $3, longitude = $4
+     WHERE id = $5
+     RETURNING id, cidade, cidade_formatada AS "cidadeFormatada", latitude, longitude`,
+    [cidade, cidadeFormatada || null, latitude, longitude, usuarioId]
+  );
+  return resultado.rows[0] || null;
 }
 
 async function alterarSenha(usuarioId, senhaAtual, novaSenha) {
@@ -133,18 +174,18 @@ async function alterarSenha(usuarioId, senhaAtual, novaSenha) {
   );
 }
 
-async function atualizarLocalizacao(usuarioId, { cidade, cidadeFormatada, latitude, longitude }) {
-  const resultado = await pool.query(
-    `UPDATE usuarios SET cidade = $1, cidade_formatada = $2, latitude = $3, longitude = $4
-     WHERE id = $5
-     RETURNING id, cidade, cidade_formatada AS "cidadeFormatada", latitude, longitude`,
-    [cidade, cidadeFormatada || null, latitude, longitude, usuarioId]
-  );
-  return resultado.rows[0] || null;
-}
-
 async function excluirConta(usuarioId) {
   await pool.query("DELETE FROM usuarios WHERE id = $1", [usuarioId]);
+}
+
+/** Define o papel de uma conta existente pelo e-mail. Devolve a conta, ou null se não existir. */
+async function definirPapel(email, papel) {
+  const resultado = await pool.query(
+    `UPDATE usuarios SET papel = $2 WHERE email = LOWER($1)
+     RETURNING id, nome, email, papel`,
+    [email, papel]
+  );
+  return resultado.rows[0] || null;
 }
 
 function sanitizar(usuario) {
@@ -173,6 +214,16 @@ async function exigirAutenticacao(req, res, next) {
   next();
 }
 
+function exigirPapel(...papeis) {
+  return (req, res, next) => {
+    if (!req.usuario || !papeis.includes(req.usuario.papel || "produtor")) {
+      const rotulos = papeis.map((p) => ROTULO_PAPEL[p] || p);
+      return res.status(403).json({ erro: "Esta ação é só para contas de " + rotulos.join(" ou ") + "." });
+    }
+    next();
+  };
+}
+
 module.exports = {
   criarUsuario,
   autenticar,
@@ -184,5 +235,9 @@ module.exports = {
   atualizarLocalizacao,
   alterarSenha,
   excluirConta,
+  definirPapel,
   exigirAutenticacao,
+  exigirPapel,
+  PAPEIS,
+  PAPEL_ADMIN,
 };

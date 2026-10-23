@@ -1,3 +1,4 @@
+
 # Dependencies
 node_modules/
 jspm_packages/
@@ -9,6 +10,9 @@ jspm_packages/
 .env.development
 .env.production
 .env.test
+.env.*
+!.env.example
+!.env.*.example
 
 # Logs
 *.log
@@ -19,6 +23,7 @@ pnpm-debug.log*
 logs/
 
 # Runtime data
+backend/data/cache-icbr.json
 pids/
 *.pid
 *.seed
@@ -65,3 +70,17 @@ qa/**/reports/
 qa/unit/coverage/
 qa/cypress/cypress/screenshots/
 qa/cypress/cypress/videos/
+
+# Backups e artefatos locais de validação (podem conter dados pessoais).
+.local/
+.secrets/
+*.dump
+*.dump.*
+*.sql.gz
+*.sql.bz2
+*.rdb
+*.aof
+sessions/
+.sessions/
+evolution_instances/
+auth_info*/

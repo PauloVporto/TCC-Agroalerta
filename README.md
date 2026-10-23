@@ -41,6 +41,18 @@ docker compose down
 
 Use `docker compose down -v` apenas quando quiser apagar também os dados do banco.
 
+### Notificações por WhatsApp (opcional)
+
+As boas-vindas e os alertas de geada saem pelo WhatsApp do Agro Alerta, via Evolution API
+(arquivo separado; sem ele, nada muda):
+
+```bash
+cp .env.whatsapp.example .env      # preencha os segredos (openssl rand -hex 32)
+docker compose -f docker-compose.yml -f docker-compose.whatsapp.yml up -d --build
+```
+
+Pareamento do número, administrador, testes e rollback: [`docs/WHATSAPP_EVOLUTION.md`](docs/WHATSAPP_EVOLUTION.md).
+
 ### 1. Backend
 
 ```bash
@@ -90,8 +102,9 @@ Para ligar os dados reais:
 
 | Variável | Serviço | Onde conseguir |
 |---|---|---|
-| `OPENWEATHER_API_KEY` | Previsão do tempo | https://openweathermap.org/api |
-| `ANTHROPIC_API_KEY` | Análise de tendência de mercado (IA) | https://console.anthropic.com |
+| `WEATHER_PROVIDER` | `openmeteo` (padrão, sem chave) ou `openweather` | — |
+| `OPENWEATHER_API_KEY` | Só se `WEATHER_PROVIDER=openweather` | https://openweathermap.org/api |
+| `ANTHROPIC_API_KEY` | Análise de tendência (IA) com contexto das APIs | https://console.anthropic.com |
 | `GOOGLE_MAPS_API_KEY` | Geocodificação de endereço do talhão (servidor) | https://console.cloud.google.com/apis/credentials |
 
 **Frontend** (`frontend/config.js`):
@@ -109,9 +122,23 @@ as duas restrições no Console do Google para evitar uso indevido.
 O rodapé da sidebar no app mostra, em tempo real, se cada fonte está em
 modo **real** ou **simulado**.
 
+Decisões de API (Open-Meteo, mercado Brasil + internacional, PTAX e LLM) estão em
+[`docs/INTEGRACAO_APIS.md`](docs/INTEGRACAO_APIS.md).
+
 ⚠️ **Nunca** commite `backend/.env` nem `frontend/config.js` com chaves
 reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 `frontend/config.js` ao seu `.gitignore` também.
+
+## Notificações por e-mail e SMS
+
+O produtor escolhe no cadastro, de forma independente, se quer receber e-mail e/ou SMS
+(as duas opções começam desmarcadas). Os canais autorizados recebem boas-vindas, e o
+monitoramento climático automático (Open-Meteo) avisa sobre riscos reais nos talhões,
+pela fila persistente no PostgreSQL. E-mail pelo **Resend**, SMS pela **SMSGo**; sem
+`*_SENDING_ENABLED=true`, tudo roda em modo simulado, sem custo.
+
+Configuração, testes reais, ativação, limites de custo e diagnóstico:
+[`docs/NOTIFICACOES.md`](docs/NOTIFICACOES.md).
 
 ## Autenticação
 
@@ -128,9 +155,17 @@ reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 | 1. Monitoramento climático | Motor de regras que gera alertas por cultura/fase (café, soja, milho, cana, feijão) | `backend/services/rules.js` |
 | 2. Recomendação de insumos | Associa cada tipo de alerta a categorias de insumo | `backend/routes/insumos.js` |
 | 3. Comparação de preços | Ranking de fornecedores por menor preço | `backend/data/insumos.json` |
-| 4. Análise de mercado (IA + busca web) | Histórico de preço + leitura de tendência com busca em tempo real (clima, câmbio, exportação/importação, estoques, frete, política agrícola), para as 5 culturas | `backend/services/market.js` |
+| 4. Análise de mercado (Brasil + internacional) | Preço interno em R$/saca, bolsas ICE/CBOT, paridade cambial e leitura de tendência | `backend/services/market.js` |
 | Insight de compra de insumos (IA + busca web) | Recomendação sobre comprar agora ou esperar, considerando preços coletados e cenário de custo de matéria-prima/mercado | `backend/services/insumosIA.js` |
 | Mapa de talhões | Visualização geográfica dos talhões cadastrados (Google Maps) | `frontend/app.js` (`inicializarMapa`) |
+| Notificações | Consentimento por canal, boas-vindas, alertas automáticos, fila, limites de custo e histórico | `backend/services/notificacoes/`, `backend/services/monitoramento.js`, `docs/NOTIFICACOES.md` |
+
+## Testes
+
+```bash
+cd backend
+npm test
+```
 
 ## Testes (QA)
 
@@ -139,9 +174,14 @@ A pasta [`qa/`](qa/README.md) reúne a suíte de qualidade: **Cypress + Cucumber
 
 ## Próximos passos sugeridos (para o desenvolvimento do TCC)
 
-- [x] Persistir usuários, sessões e talhões em PostgreSQL
+- [x] Escolher e integrar API de clima (Open-Meteo; OpenWeather opcional)
+- [x] Integrar mercado agrícola com fontes públicas (Yahoo Finance + PTAX)
+- [x] Estruturar o LLM com contexto das APIs (`services/llm.js`)
+- [x] Painel (visão geral), configurações de conta e persistência ampliada no PostgreSQL
+- [x] Testes do motor de regras, parser de clima e contexto do LLM
+- [x] Expiração de sessão (7 dias)
 - [ ] Revisar as faixas usadas no motor de regras (`rules.js`) com fontes agronômicas específicas (Embrapa/Epamig) por cultura e citá-las no referencial teórico
-- [ ] Ajustar a lista de notícias curadas em `services/market.js` para refletir o cenário real na data da defesa
 - [ ] Testar a geocodificação e o mapa com endereços reais da região quando as chaves do Google Maps estiverem configuradas
 - [x] Escrever testes automatizados para o motor de regras e para o fluxo de autenticação (ver [`qa/`](qa/README.md))
 - [ ] Considerar expirar/renovar tokens de sessão (hoje eles não expiram automaticamente)
+- [ ] Configurar `ANTHROPIC_API_KEY` para a defesa, se a banca for avaliar o modo IA real

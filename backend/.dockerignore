@@ -1,3 +1,10 @@
 node_modules
 .env
+.env.*
+!.env.example
 *.log
+coverage
+.local
+.secrets
+*.dump
+*.bak

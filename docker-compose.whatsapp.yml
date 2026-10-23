@@ -1,0 +1,243 @@
+# Integração WhatsApp do Agro Alerta: Evolution API v2.3.7, com PostgreSQL e Redis próprios.
+#
+# Use junto com o compose principal (sem este arquivo, o ambiente atual não muda nada):
+#   docker compose -f docker-compose.yml -f docker-compose.whatsapp.yml up -d
+#
+# - Segredos: lidos do .env da raiz do projeto (modelo em .env.whatsapp.example) e
+#   entregues como Docker secrets em /run/secrets — não aparecem no "docker inspect".
+# - Nenhuma porta é publicada: a Evolution API (e o Manager, desligado) só é
+#   alcançada pelo backend, na rede "whatsapp"; banco e Redis ficam numa rede interna,
+#   sem saída para a internet.
+# - Imagens fixadas por versão e digest. Sessão do WhatsApp persistida nos volumes
+#   evolution_db_data (credenciais), evolution_redis_data (chaves, com AOF) e
+#   evolution_instances.
+# - O banco do Agro Alerta (serviço db) não é tocado: a Evolution tem o seu.
+
+x-logs: &logs
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  backend:
+    environment:
+      # Primeira implantação: liberar somente após autorização explícita.
+      WHATSAPP_SENDING_ENABLED: ${AGROALERTA_WHATSAPP_SENDING_ENABLED:-false}
+      WEATHER_BULLETIN_ENABLED: ${AGROALERTA_WEATHER_BULLETIN_ENABLED:-false}
+      WEATHER_EXTENDED_ALERTS_ENABLED: ${AGROALERTA_WEATHER_EXTENDED_ALERTS_ENABLED:-false}
+      WEATHER_BULLETIN_WINDOW_MINUTES: ${WEATHER_BULLETIN_WINDOW_MINUTES:-30}
+      WEATHER_RAIN_MEDIUM_MM_DAY: ${WEATHER_RAIN_MEDIUM_MM_DAY:-50}
+      WEATHER_RAIN_HIGH_MM_DAY: ${WEATHER_RAIN_HIGH_MM_DAY:-100}
+      WEATHER_RAIN_ESCALATION_MM: ${WEATHER_RAIN_ESCALATION_MM:-20}
+      WEATHER_WIND_MEDIUM_KMH: ${WEATHER_WIND_MEDIUM_KMH:-40}
+      WEATHER_WIND_HIGH_KMH: ${WEATHER_WIND_HIGH_KMH:-60}
+      WEATHER_WIND_ESCALATION_KMH: ${WEATHER_WIND_ESCALATION_KMH:-20}
+      WEATHER_HEAT_MEDIUM_C: ${WEATHER_HEAT_MEDIUM_C:-35}
+      WEATHER_HEAT_HIGH_C: ${WEATHER_HEAT_HIGH_C:-40}
+      WEATHER_HEAT_ESCALATION_C: ${WEATHER_HEAT_ESCALATION_C:-3}
+      WEATHER_MONITOR_ENABLED: ${AGROALERTA_WEATHER_MONITOR_ENABLED:-false}
+      WHATSAPP_EXPECTED_SENDER: ${AGROALERTA_WHATSAPP_EXPECTED_SENDER:-9503}
+      EVOLUTION_API_URL: http://evolution-api:8080
+      EVOLUTION_INSTANCE: agroalerta
+      EVOLUTION_API_KEY_FILE: /run/secrets/evolution_api_key
+      EVOLUTION_WEBHOOK_URL: http://backend:3001/api/notificacoes/webhooks/evolution
+      EVOLUTION_WEBHOOK_SECRET_FILE: /run/secrets/evolution_webhook_secret
+    secrets:
+      - evolution_api_key
+      - evolution_webhook_secret
+    networks:
+      - default
+      - whatsapp
+
+  evolution-api:
+    image: evoapicloud/evolution-api:v2.3.7@sha256:1bd8afc4a6cf48822e6cf02469aeae7bd35a12a6b616eacd1291926307f4d339
+    init: true
+    # O mesmo que o ENTRYPOINT da imagem (migrations do Prisma e o servidor), mas montando
+    # as URIs de conexão a partir de /run/secrets e terminando em "exec node", para o Node
+    # receber o SIGTERM do docker stop. DATABASE_URL fica vazia de propósito: o script da
+    # imagem a imprime no log, e o Prisma usa DATABASE_CONNECTION_URI.
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        set -eo pipefail
+        segredo() {
+          local arquivo="/run/secrets/$$1" valor
+          if [[ ! -s "$$arquivo" ]]; then
+            echo "[agroalerta] segredo ausente: $$arquivo (veja .env.whatsapp.example)" >&2
+            exit 1
+          fi
+          valor="$$(tr -d '\r\n' < "$$arquivo")"
+          if [[ ! "$$valor" =~ ^[A-Za-z0-9._-]{24,}$$ ]]; then
+            echo "[agroalerta] o segredo $$1 precisa de 24+ caracteres entre letras, números, '.', '_' e '-' (ex.: openssl rand -hex 32)" >&2
+            exit 1
+          fi
+          printf '%s' "$$valor"
+        }
+        AUTHENTICATION_API_KEY="$$(segredo evolution_api_key)"
+        senha_banco="$$(segredo evolution_db_password)"
+        senha_redis="$$(segredo evolution_redis_password)"
+        export AUTHENTICATION_API_KEY
+        export DATABASE_CONNECTION_URI="postgresql://evolution:$${senha_banco}@evolution-db:5432/evolution?schema=evolution_api"
+        export CACHE_REDIS_URI="redis://:$${senha_redis}@evolution-redis:6379/6"
+        unset senha_banco senha_redis DATABASE_URL
+        cd /evolution
+        . ./Docker/scripts/deploy_database.sh
+        exec node dist/main
+    environment:
+      TZ: America/Sao_Paulo
+      SERVER_TYPE: http
+      SERVER_PORT: "8080"
+      SERVER_URL: http://evolution-api:8080
+      # O painel do administrador do Agro Alerta substitui o Evolution Manager.
+      SERVER_DISABLE_MANAGER: "true"
+      SERVER_DISABLE_DOCS: "true"
+      # Na v2.3.7, qualquer valor diferente de "*" recusa (500 "Not allowed by CORS") as
+      # chamadas sem cabeçalho Origin — justamente as do backend, servidor a servidor.
+      # CORS só vale para navegadores; quem protege a API é a rede interna e a apikey.
+      CORS_ORIGIN: "*"
+      TELEMETRY_ENABLED: "false"
+      LANGUAGE: pt-BR
+      # Sem VERBOSE/WEBHOOKS: esses níveis copiam o conteúdo das mensagens para o log.
+      LOG_LEVEL: ERROR,WARN,INFO
+      LOG_COLOR: "false"
+      LOG_BAILEYS: error
+      DEL_INSTANCE: "false"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_CLIENT_NAME: agroalerta
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      # O Baileys relê a mensagem enviada quando o celular do destinatário pede reenvio
+      # (sem ela, chegaria vazia); por isso as mensagens enviadas ficam no banco da Evolution.
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
+      DATABASE_SAVE_MESSAGE_UPDATE: "true"
+      # O número é de uma pessoa: nada de importar contatos, conversas, etiquetas ou histórico.
+      DATABASE_SAVE_DATA_CONTACTS: "false"
+      DATABASE_SAVE_DATA_CHATS: "false"
+      DATABASE_SAVE_DATA_LABELS: "false"
+      DATABASE_SAVE_DATA_HISTORIC: "false"
+      DATABASE_SAVE_IS_ON_WHATSAPP: "true"
+      DATABASE_SAVE_IS_ON_WHATSAPP_DAYS: "7"
+      DATABASE_DELETE_MESSAGE: "false"
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_PREFIX_KEY: agroalerta
+      CACHE_REDIS_TTL: "604800"
+      CACHE_REDIS_SAVE_INSTANCES: "false"
+      CACHE_LOCAL_ENABLED: "false"
+      # A chave da instância não vai nos webhooks; o backend usa a chave global.
+      AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES: "false"
+      WEBHOOK_GLOBAL_ENABLED: "false"
+      WEBHOOK_REQUEST_TIMEOUT_MS: "15000"
+      WEBSOCKET_ENABLED: "false"
+      RABBITMQ_ENABLED: "false"
+      SQS_ENABLED: "false"
+      PUSHER_ENABLED: "false"
+      KAFKA_ENABLED: "false"
+      CHATWOOT_ENABLED: "false"
+      TYPEBOT_ENABLED: "false"
+      OPENAI_ENABLED: "false"
+      DIFY_ENABLED: "false"
+      N8N_ENABLED: "false"
+      EVOAI_ENABLED: "false"
+      FLOWISE_ENABLED: "false"
+      S3_ENABLED: "false"
+      PROMETHEUS_METRICS: "false"
+      # Nome do aparelho conectado que aparece no celular (Aparelhos conectados).
+      CONFIG_SESSION_PHONE_CLIENT: Agro Alerta
+      CONFIG_SESSION_PHONE_NAME: Chrome
+      QRCODE_LIMIT: "30"
+    secrets:
+      - evolution_api_key
+      - evolution_db_password
+      - evolution_redis_password
+    volumes:
+      - evolution_instances:/evolution/instances
+    depends_on:
+      evolution-db:
+        condition: service_healthy
+      evolution-redis:
+        condition: service_healthy
+    healthcheck:
+      # Rota autenticada e local (GET / consulta web.whatsapp.com a cada chamada).
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch("http://127.0.0.1:8080/instance/fetchInstances", { headers: { apikey: require("fs").readFileSync("/run/secrets/evolution_api_key", "utf8").trim() } })
+          .then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    logging: *logs
+    networks:
+      - whatsapp
+      - evolution-interna
+
+  evolution-db:
+    image: postgres:16.10-alpine@sha256:029660641a0cfc575b14f336ba448fb8a75fd595d42e1fa316b9fb4378742297
+    environment:
+      POSTGRES_DB: evolution
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD_FILE: /run/secrets/evolution_db_password
+    secrets:
+      - evolution_db_password
+    volumes:
+      - evolution_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evolution -d evolution"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    logging: *logs
+    networks:
+      - evolution-interna
+
+  evolution-redis:
+    image: redis:7.4.6-alpine@sha256:3b73847e72874be07e6657b129a94761662b79bc0f679273757d4218573b2a98
+    user: redis
+    # A senha vai pela entrada padrão ("redis-server -"), não pelos argumentos do processo.
+    # AOF a cada segundo: as chaves da sessão do WhatsApp sobrevivem a reinícios.
+    command:
+      - sh
+      - -c
+      - |
+        exec redis-server - --appendonly yes --appendfsync everysec --dir /data <<CONFIGURACAO
+        requirepass $$(cat /run/secrets/evolution_redis_password)
+        CONFIGURACAO
+    secrets:
+      - evolution_redis_password
+    volumes:
+      - evolution_redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$(cat /run/secrets/evolution_redis_password)\" redis-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    logging: *logs
+    networks:
+      - evolution-interna
+
+networks:
+  whatsapp: {}
+  evolution-interna:
+    internal: true
+
+volumes:
+  evolution_db_data:
+  evolution_redis_data:
+  evolution_instances:
+
+secrets:
+  evolution_api_key:
+    environment: EVOLUTION_API_KEY
+  evolution_webhook_secret:
+    environment: EVOLUTION_WEBHOOK_SECRET
+  evolution_db_password:
+    environment: EVOLUTION_DB_PASSWORD
+  evolution_redis_password:
+    environment: EVOLUTION_REDIS_PASSWORD
