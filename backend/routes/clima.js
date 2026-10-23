@@ -5,9 +5,30 @@ const { obterConfiguracoes, exigirAutenticacao } = require("../services/auth");
 
 router.use(exigirAutenticacao);
 
-// GET /api/clima - clima da cidade cadastrada pelo usuário (não de um talhão
-// específico). Usado no painel geral, para mostrar o clima de onde o
-// produtor reside independente de qual talhão está selecionado.
+/**
+ * @swagger
+ * /clima:
+ *   get:
+ *     summary: Clima da cidade cadastrada pelo usuário (não de um talhão específico)
+ *     description: >
+ *       Usado no painel geral, para mostrar o clima de onde o produtor reside,
+ *       independente de qual talhão está selecionado na tela de alertas.
+ *     tags: [Clima]
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: Clima da cidade do usuário
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 cidade: { type: string }
+ *                 cidadeFormatada: { type: string }
+ *                 clima: { $ref: '#/components/schemas/Clima' }
+ *       401: { description: Token ausente ou inválido, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ *       404: { description: Usuário ainda não tem cidade cadastrada, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.get("/", async (req, res) => {
   const config = await obterConfiguracoes(req.usuario.id);
 

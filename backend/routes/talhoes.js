@@ -9,7 +9,23 @@ const { pool } = require("../services/db");
 // só enxerga/mexe nos próprios talhões.
 router.use(exigirAutenticacao);
 
-// GET /api/talhoes - lista os talhões do usuário logado
+/**
+ * @swagger
+ * /talhoes:
+ *   get:
+ *     summary: Lista os talhões do usuário autenticado
+ *     tags: [Talhões]
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: Lista de talhões
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/Talhao' }
+ *       401: { description: Token ausente ou inválido, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.get("/", async (req, res) => {
   const resultado = await pool.query(
     `SELECT id, usuario_id AS "usuarioId", nome, cultura, fase, endereco,
@@ -21,8 +37,35 @@ router.get("/", async (req, res) => {
   res.json(resultado.rows);
 });
 
-// POST /api/talhoes - cadastra um novo talhão para o usuário logado
-// body: { nome, cultura, fase, cep }
+/**
+ * @swagger
+ * /talhoes:
+ *   post:
+ *     summary: Cadastra um novo talhão para o usuário autenticado
+ *     description: O CEP é validado via ViaCEP e geocodificado via Nominatim antes de salvar.
+ *     tags: [Talhões]
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nome, cultura, fase, cep]
+ *             properties:
+ *               nome: { type: string, example: "Talhão 02 - encosta" }
+ *               cultura: { type: string, enum: [cafe, soja, milho, cana, feijao] }
+ *               fase: { type: string, example: floracao }
+ *               cep: { type: string, example: "37540-000" }
+ *     responses:
+ *       201:
+ *         description: Talhão criado
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Talhao' }
+ *       400: { description: Campos obrigatórios ausentes, cultura inválida ou CEP não encontrado, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ *       401: { description: Token ausente ou inválido, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.post("/", async (req, res) => {
   const { nome, cultura, fase, cep } = req.body;
 
@@ -63,7 +106,23 @@ async function criarTalhao(usuarioId, { nome, cultura, fase, endereco, coordenad
   return resultado.rows[0];
 }
 
-// DELETE /api/talhoes/:id - remove um talhão (só o dono pode remover)
+/**
+ * @swagger
+ * /talhoes/{id}:
+ *   delete:
+ *     summary: Remove um talhão (só o dono pode remover)
+ *     tags: [Talhões]
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       204: { description: Talhão removido }
+ *       403: { description: Talhão pertence a outro usuário, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ *       404: { description: Talhão não encontrado, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.delete("/:id", async (req, res) => {
   const id = Number(req.params.id);
   const resultado = await pool.query(
@@ -82,7 +141,35 @@ router.delete("/:id", async (req, res) => {
   res.status(204).send();
 });
 
-// PATCH /api/talhoes/:id - atualiza fase/nome de um talhão (só o dono)
+/**
+ * @swagger
+ * /talhoes/{id}:
+ *   patch:
+ *     summary: Atualiza nome e/ou fase de um talhão (só o dono)
+ *     tags: [Talhões]
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nome: { type: string }
+ *               fase: { type: string }
+ *     responses:
+ *       200:
+ *         description: Talhão atualizado
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Talhao' }
+ *       403: { description: Talhão pertence a outro usuário, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ *       404: { description: Talhão não encontrado, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.patch("/:id", async (req, res) => {
   const id = Number(req.params.id);
   const resultado = await pool.query(
