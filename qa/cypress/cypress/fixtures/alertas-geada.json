@@ -1,0 +1,19 @@
+{
+  "talhao": { "id": 1, "nome": "Talhão principal - Itajubá", "cultura": "cafe", "fase": "vegetativo", "latitude": -22.42, "longitude": -45.45 },
+  "clima": { "temperaturaMinima": 1, "diasSemChuva": 0, "chuvaAcumulada7dias": 5, "probabilidadeChuva7dias": 10, "ventoMaximoKmh": 12, "fonte": "open-meteo" },
+  "alertas": [
+    {
+      "id": "cafe_geada",
+      "titulo": "Risco de geada",
+      "cultura": "cafe",
+      "fase": "vegetativo",
+      "nivel": "alto",
+      "mensagem": "Temperatura mínima prevista de 1°C. Risco alto de geada, que pode causar perda severa em lavouras de café.",
+      "recomendacao": "Considere métodos de proteção contra geada (irrigação por aspersão, cobertura) nas próximas noites.",
+      "janela": "próximas 48h"
+    }
+  ],
+  "alertasOficiais": [
+    { "nivel": "medio", "descricao": "Onda de frio com declínio de temperatura", "instrucao": "Proteja as culturas sensíveis ao frio.", "janela": "20 out – 22 out" }
+  ]
+}

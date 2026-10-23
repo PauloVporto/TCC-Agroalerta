@@ -1,6 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./swagger");
 
 const { router: talhoesRouter } = require("./routes/talhoes");
 const alertasRouter = require("./routes/alertas");
@@ -50,6 +52,11 @@ app.get("/api/culturas", (req, res) => {
   res.json(culturasSuportadas());
 });
 
+// Documentação interativa da API (Swagger UI), gerada a partir dos
+// comentários @swagger nas rotas (ver swagger.js).
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/api-docs.json", (req, res) => res.json(swaggerSpec));
+
 
 app.use("/api/auth", authRouter);
 app.use("/api/clima", climaRouter);
@@ -81,6 +88,7 @@ async function iniciar() {
     console.log("  Modo clima: " + (process.env.OPENWEATHER_API_KEY ? "REAL (OpenWeatherMap)" : "SIMULADO"));
     console.log("  Modo IA:    " + (process.env.ANTHROPIC_API_KEY ? "REAL (Anthropic)" : "SIMULADO"));
     console.log("  Modo mapas: OpenStreetMap (Nominatim, sem chave necessária)");
+    console.log("  Documentação (Swagger): http://localhost:" + PORT + "/api-docs");
     const modos = iniciarNotificacoes();
     console.log("  E-mail:     " + modos.email.toUpperCase() + " · WhatsApp: " + modos.whatsapp.toUpperCase());
     console.log("  Monitoramento climático automático: " + modos.monitoramento.toUpperCase());

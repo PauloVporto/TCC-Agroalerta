@@ -167,6 +167,11 @@ cd backend
 npm test
 ```
 
+## Testes (QA)
+
+A pasta [`qa/`](qa/README.md) reúne a suíte de qualidade: **Cypress + Cucumber + Mochawesome** (frontend),
+**Postman + Newman** (API) e **Jest** com cobertura (unitários do backend). Veja `qa/README.md` para executar cada uma.
+
 ## Próximos passos sugeridos (para o desenvolvimento do TCC)
 
 - [x] Escolher e integrar API de clima (Open-Meteo; OpenWeather opcional)
@@ -177,4 +182,6 @@ npm test
 - [x] Expiração de sessão (7 dias)
 - [ ] Revisar as faixas usadas no motor de regras (`rules.js`) com fontes agronômicas específicas (Embrapa/Epamig) por cultura e citá-las no referencial teórico
 - [ ] Testar a geocodificação e o mapa com endereços reais da região quando as chaves do Google Maps estiverem configuradas
+- [x] Escrever testes automatizados para o motor de regras e para o fluxo de autenticação (ver [`qa/`](qa/README.md))
+- [ ] Considerar expirar/renovar tokens de sessão (hoje eles não expiram automaticamente)
 - [ ] Configurar `ANTHROPIC_API_KEY` para a defesa, se a banca for avaliar o modo IA real

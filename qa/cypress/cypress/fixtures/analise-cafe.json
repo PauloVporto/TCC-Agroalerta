@@ -1,0 +1,15 @@
+{
+  "cultura": "cafe",
+  "variacaoPercentual": 2.3,
+  "precoAtual": 1692,
+  "unidade": "saca 60kg (arábica)",
+  "resumo": "Resumo de teste: o preço do café arábica apresentou tendência de alta nas últimas semanas.",
+  "fontes": [],
+  "fatoresConsiderados": [
+    { "titulo": "Estoques mundiais de café seguem em nível baixo", "fonte": "Fonte A", "dataTexto": "01 out. 2026" },
+    { "titulo": "Câmbio favorece exportadores brasileiros", "fonte": "Fonte B", "dataTexto": "02 out. 2026" },
+    { "titulo": "Clima seco preocupa produtores de Minas Gerais", "fonte": "Fonte C", "dataTexto": "03 out. 2026" }
+  ],
+  "gerarPor": "simulado",
+  "geradoEm": "2026-10-20T12:00:00.000Z"
+}

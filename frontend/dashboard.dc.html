@@ -35,20 +35,20 @@
   <aside style="background: #1F3D2B; color: #F7F5EF; padding: 20px 0; display: flex; flex-direction: column; gap: 24px; height: 100vh; overflow: hidden;">
     <div style="display: flex; flex-direction: {{ marcaDirecao }}; align-items: center; justify-content: {{ marcaJustify }}; gap: 12px; padding: 0 16px; min-height: 34px;">
       <img src="uploads/logo2-3261c888.png" alt="AgroAlerta" style="height: 32px; width: auto; display: block; object-fit: contain; filter: brightness(0) invert(1); flex: none;" />
-      <button type="button" onClick="{{ toggleSidebar }}" title="Abrir/fechar menu" style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1; color: rgba(247,245,239,0.72); background: transparent; border: 1px solid rgba(247,245,239,0.26); cursor: pointer; flex: none;" style-hover="border-color: #D4A537; color: #D4A537;">{{ toggleGlyph }}</button>
+      <button data-cy="toggle-sidebar" type="button" onClick="{{ toggleSidebar }}" title="Abrir/fechar menu" style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1; color: rgba(247,245,239,0.72); background: transparent; border: 1px solid rgba(247,245,239,0.26); cursor: pointer; flex: none;" style-hover="border-color: #D4A537; color: #D4A537;">{{ toggleGlyph }}</button>
     </div>
 
     <nav style="display: flex; flex-direction: column;">
       <sc-if value="{{ ehProdutor }}" hint-placeholder-val="{{ true }}">
-      <button type="button" onClick="{{ goVisao }}" title="Visão geral" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navVisaoBg }}; color: {{ navVisaoFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navVisaoBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+      <button data-cy="nav-visao" type="button" onClick="{{ goVisao }}" title="Visão geral" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navVisaoBg }}; color: {{ navVisaoFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navVisaoBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="1.5" y="1.5" width="5" height="5"></rect><rect x="9.5" y="1.5" width="5" height="5"></rect><rect x="1.5" y="9.5" width="5" height="5"></rect><rect x="9.5" y="9.5" width="5" height="5"></rect></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Visão geral</span>
       </button>
-      <button type="button" onClick="{{ goAlertas }}" title="Alertas climáticos" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navAlertasBg }}; color: {{ navAlertasFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navAlertasBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+      <button data-cy="nav-alertas" type="button" onClick="{{ goAlertas }}" title="Alertas climáticos" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navAlertasBg }}; color: {{ navAlertasFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navAlertasBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><path d="M8 1.8 15 14H1z"></path><line x1="8" y1="6" x2="8" y2="10"></line><line x1="8" y1="11.6" x2="8" y2="12"></line></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Alertas</span>
       </button>
-      <button type="button" onClick="{{ goTalhoes }}" title="Talhões" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navTalhoesBg }}; color: {{ navTalhoesFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navTalhoesBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+      <button data-cy="nav-talhoes" type="button" onClick="{{ goTalhoes }}" title="Talhões" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navTalhoesBg }}; color: {{ navTalhoesFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navTalhoesBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="1.5" y="3.5" width="13" height="9"></rect><line x1="5.8" y1="3.5" x2="5.8" y2="12.5"></line><line x1="10.2" y1="3.5" x2="10.2" y2="12.5"></line></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Talhões</span>
       </button>
@@ -57,21 +57,21 @@
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Notificações</span>
       </button>
       </sc-if>
-      <button type="button" onClick="{{ goInsumos }}" title="Insumos e preços" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navInsumosBg }}; color: {{ navInsumosFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navInsumosBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+      <button data-cy="nav-insumos" type="button" onClick="{{ goInsumos }}" title="Insumos e preços" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navInsumosBg }}; color: {{ navInsumosFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navInsumosBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="4.5" y="5.5" width="7" height="9"></rect><line x1="6.5" y1="1.5" x2="9.5" y2="1.5"></line><line x1="8" y1="1.5" x2="8" y2="5.5"></line></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Insumos e preços</span>
       </button>
-      <button type="button" onClick="{{ goMercado }}" title="Mercado" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navMercadoBg }}; color: {{ navMercadoFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navMercadoBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+      <button data-cy="nav-mercado" type="button" onClick="{{ goMercado }}" title="Mercado" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navMercadoBg }}; color: {{ navMercadoFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navMercadoBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><polyline points="1.5,12 5.5,7.5 9,10 14.5,3.5"></polyline><polyline points="10.5,3.5 14.5,3.5 14.5,7"></polyline></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Mercado</span>
       </button>
       <sc-if value="{{ ehFornecedor }}" hint-placeholder-val="{{ false }}">
-      <button type="button" onClick="{{ goOfertas }}" title="Minhas ofertas" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navOfertasBg }}; color: {{ navOfertasFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navOfertasBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+      <button data-cy="nav-ofertas" type="button" onClick="{{ goOfertas }}" title="Minhas ofertas" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navOfertasBg }}; color: {{ navOfertasFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navOfertasBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><path d="M2.5 5.5h11l-1 8h-9z"></path><path d="M5.5 5.5V3.5a2.5 2.5 0 0 1 5 0v2"></path></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Minhas ofertas</span>
       </button>
       </sc-if>
-      <button type="button" onClick="{{ goRelatorios }}" title="Relatórios" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navRelatoriosBg }}; color: {{ navRelatoriosFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navRelatoriosBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+      <button data-cy="nav-relatorios" type="button" onClick="{{ goRelatorios }}" title="Relatórios" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navRelatoriosBg }}; color: {{ navRelatoriosFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navRelatoriosBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="3" y="1.5" width="10" height="13"></rect><line x1="5.5" y1="5" x2="10.5" y2="5"></line><line x1="5.5" y1="8" x2="10.5" y2="8"></line><line x1="5.5" y1="11" x2="8.5" y2="11"></line></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Relatórios</span>
       </button>
@@ -89,15 +89,15 @@
           <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#D4A537" stroke-width="1.3"><circle cx="8" cy="5.4" r="2.7"></circle><path d="M2.9 14c0-2.8 2.3-4.4 5.1-4.4s5.1 1.6 5.1 4.4"></path></svg>
         </span>
         <div style="min-width: 0; display: {{ labelDisplay }};">
-          <div style="font-size: 13px; font-weight: 500; color: #F7F5EF; white-space: nowrap;">{{ usuarioNome }}</div>
-          <div style="margin-top: 2px; font-size: 12px; color: rgba(247,245,239,0.66); white-space: nowrap;">{{ usuarioCidade }}</div>
+          <div data-cy="usuario-nome" style="font-size: 13px; font-weight: 500; color: #F7F5EF; white-space: nowrap;">{{ usuarioNome }}</div>
+          <div data-cy="usuario-cidade-sidebar" style="margin-top: 2px; font-size: 12px; color: rgba(247,245,239,0.66); white-space: nowrap;">{{ usuarioCidade }}</div>
           <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <span style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: #1F3D2B; background: #D4A537; padding: 3px 9px; border-radius: 999px;">{{ usuarioPapel }}</span>
-            <button type="button" onClick="{{ goConta }}" style="font-family: Archivo, sans-serif; font-size: 11px; color: rgba(247,245,239,0.55); background: transparent; border: 0; padding: 0; cursor: pointer; white-space: nowrap;" style-hover="color: #D4A537;">Acessar perfil →</button>
+            <button data-cy="nav-conta" type="button" onClick="{{ goConta }}" style="font-family: Archivo, sans-serif; font-size: 11px; color: rgba(247,245,239,0.55); background: transparent; border: 0; padding: 0; cursor: pointer; white-space: nowrap;" style-hover="color: #D4A537;">Acessar perfil →</button>
           </div>
         </div>
       </div>
-      <button type="button" onClick="{{ sair }}" title="Sair" style="display: flex; align-items: center; gap: 10px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: rgba(247,245,239,0.8); background: transparent; border: 1px solid rgba(247,245,239,0.3); padding: 9px 12px; cursor: pointer;" style-hover="border-color: #D4A537; color: #D4A537;">
+      <button data-cy="nav-sair" type="button" onClick="{{ sair }}" title="Sair" style="display: flex; align-items: center; gap: 10px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: rgba(247,245,239,0.8); background: transparent; border: 1px solid rgba(247,245,239,0.3); padding: 9px 12px; cursor: pointer;" style-hover="border-color: #D4A537; color: #D4A537;">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><path d="M6.5 2.5H2.5v11h4"></path><line x1="6" y1="8" x2="13.5" y2="8"></line><path d="M10.5 5 13.5 8l-3 3"></path></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Sair</span>
       </button>
@@ -107,10 +107,10 @@
   <main style="min-width: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden;">
     <header style="flex: none; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 22px 32px; border-bottom: 1px solid #DDD8C9; flex-wrap: wrap; background: #F7F5EF;">
       <div>
-        <h1 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 28px; margin: 0; color: #1F3D2B; letter-spacing: -0.02em; line-height: 1.1;">{{ pageTitle }}</h1>
+        <h1 data-cy="page-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 28px; margin: 0; color: #1F3D2B; letter-spacing: -0.02em; line-height: 1.1;">{{ pageTitle }}</h1>
       </div>
       <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4A4A42;">
-        <span style="border: 1px solid #C9C3B0; padding: 9px 15px; background: #FFFFFF; font-weight: 500; border-radius: 999px;">{{ usuarioCidade }}</span>
+        <span data-cy="usuario-cidade-header" style="border: 1px solid #C9C3B0; padding: 9px 15px; background: #FFFFFF; font-weight: 500; border-radius: 999px;">{{ usuarioCidade }}</span>
         <sc-if value="{{ ehFornecedor }}" hint-placeholder-val="{{ false }}">
           <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: #6B4A34; color: #F7F5EF; padding: 10px 15px; border-radius: 999px;">{{ totalOfertas }}</span>
         </sc-if>
@@ -133,16 +133,16 @@
       <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); background: #F7F5EF; border-bottom: 1px solid #DDD8C9;">
         <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
           <div style="background: #F7F5EF; padding: 22px 26px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid #DDD8C9; border-top: 1px solid #DDD8C9; margin-top: -1px; align-items: center; text-align: center;">
-            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34;">{{ k.label }}</span>
-            <span style="font-family: Fraunces, Georgia, serif; font-size: 32px; font-weight: 600; color: {{ k.cor }}; line-height: 1;">{{ k.value }}</span>
-            <span style="font-size: 13px; color: #4A4A42;">{{ k.note }}</span>
+            <span data-cy="kpi-rotulo" style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34;">{{ k.label }}</span>
+            <span data-cy="kpi-valor" style="font-family: Fraunces, Georgia, serif; font-size: 32px; font-weight: 600; color: {{ k.cor }}; line-height: 1;">{{ k.value }}</span>
+            <span data-cy="kpi-nota" style="font-size: 13px; color: #4A4A42;">{{ k.note }}</span>
           </div>
         </sc-for>
       </section>
 
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 16px; flex-wrap: wrap;">
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Alertas em aberto</h2>
+          <h2 data-cy="visao-alertas-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Alertas em aberto</h2>
           <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #6B4A34;">Motor de regras · cultura e fase</span>
         </div>
         <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -151,9 +151,9 @@
               <div style="min-width: 0;">
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                   <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: {{ a.corTexto }}; background: {{ a.fundo }}; border: 1px solid {{ a.cor }}; padding: 4px 10px; border-radius: 999px;">{{ a.nivel }}</span>
-                  <span style="font-size: 15px; font-weight: 500; color: #1A1A18;">{{ a.titulo }}</span>
+                  <span data-cy="alerta-titulo" style="font-size: 15px; font-weight: 500; color: #1A1A18;">{{ a.titulo }}</span>
                 </div>
-                <div style="margin-top: 7px; font-size: 14px; line-height: 1.55; color: #4A4A42;">{{ a.detalhe }}</div>
+                <div data-cy="alerta-detalhe" style="margin-top: 7px; font-size: 14px; line-height: 1.55; color: #4A4A42;">{{ a.detalhe }}</div>
                 <div style="margin-top: 8px; display: flex; gap: 16px; flex-wrap: wrap; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #6B4A34;">
                   <span>{{ a.contexto }}</span>
                   <span style="color: #2F6E8F;">{{ a.envio }}</span>
@@ -161,7 +161,7 @@
               </div>
               <div style="border-left: 1px solid #EAE6DA; padding-left: 18px;">
                 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34;">Insumo indicado</div>
-                <div style="margin-top: 6px; font-size: 14px; font-weight: 500; color: #1F3D2B;">{{ a.insumo }}</div>
+                <div data-cy="alerta-insumo" style="margin-top: 6px; font-size: 14px; font-weight: 500; color: #1F3D2B;">{{ a.insumo }}</div>
                 <div style="margin-top: 4px; font-size: 13px; color: #4A4A42;">{{ a.janela }}</div>
               </div>
             </div>
@@ -171,13 +171,13 @@
 
       <section style="flex: 1; padding: 28px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 32px; align-content: start;"><div style="display: contents;">
         <div>
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em; text-align: center;">{{ previsaoTitulo }}</h2>
+          <h2 data-cy="previsao-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em; text-align: center;">{{ previsaoTitulo }}</h2>
           <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
             <sc-for list="{{ clima }}" as="d" hint-placeholder-count="7">
               <div style="flex: none; width: 82px; border: 1px solid #DDD8C9; background: #FFFFFF; padding: 18px 8px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
-                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B4A34;">{{ d.dia }}</span>
-                <span style="font-family: Fraunces, Georgia, serif; font-size: 19px; font-weight: 600; color: #1F3D2B;">{{ d.max }}</span>
-                <span style="font-size: 12px; color: #4A4A42;">{{ d.min }}</span>
+                <span data-cy="previsao-dia" style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B4A34;">{{ d.dia }}</span>
+                <span data-cy="previsao-max" style="font-family: Fraunces, Georgia, serif; font-size: 19px; font-weight: 600; color: #1F3D2B;">{{ d.max }}</span>
+                <span data-cy="previsao-min" style="font-size: 12px; color: #4A4A42;">{{ d.min }}</span>
                 <span style="width: 100%; height: 4px; background: #E6E1D2; display: block; border-radius: 999px;">
                   <span style="display: block; height: 4px; background: #2F6E8F; width: {{ d.chuvaBarra }}; border-radius: 999px;"></span>
                 </span>
@@ -186,14 +186,14 @@
             </sc-for>
           </div>
           <div style="margin-top: 16px; border-top: 1px solid #DDD8C9; padding-top: 14px; display: flex; justify-content: center; gap: 32px; font-size: 13px; color: #4A4A42; flex-wrap: wrap;">
-            <span>Chuva acumulada 7 dias: <strong style="color: #1A1A18;">{{ resumoChuva7dTexto }}</strong></span>
-            <span>Mínima prevista: <strong style="color: #2F6E8F;">{{ resumoMinimaTexto }}</strong></span>
+            <span>Chuva acumulada 7 dias: <strong data-cy="resumo-chuva" style="color: #1A1A18;">{{ resumoChuva7dTexto }}</strong></span>
+            <span>Mínima prevista: <strong data-cy="resumo-minima" style="color: #2F6E8F;">{{ resumoMinimaTexto }}</strong></span>
           </div>
         </div>
         <div>
           <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 14px; color: #1A1A18; letter-spacing: -0.01em; text-align: center;">Localização da propriedade</h2>
           <sc-if value="{{ mapaDisponivel }}" hint-placeholder-val="{{ true }}">
-            <iframe src="{{ mapaSrc }}" title="Mapa da localização cadastrada" style="width: 100%; height: 360px; border: 1px solid #DDD8C9; border-radius: 10px; display: block;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <iframe data-cy="mapa-iframe" src="{{ mapaSrc }}" title="Mapa da localização cadastrada" style="width: 100%; height: 360px; border: 1px solid #DDD8C9; border-radius: 10px; display: block;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
           </sc-if>
           <sc-if value="{{ mapaIndisponivel }}" hint-placeholder-val="{{ false }}">
             <div style="height: 360px; border: 1px dashed #C9C3B0; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; font-size: 13px; color: #6B4A34;">{{ mapaMensagem }}</div>
@@ -205,7 +205,7 @@
       <sc-if value="{{ pgAlertas }}" hint-placeholder-val="{{ true }}">
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 16px; flex-wrap: wrap;">
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Regras disparadas nesta semana</h2>
+          <h2 data-cy="alertas-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Regras disparadas nesta semana</h2>
           <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #6B4A34;">Chuva · seca · geada · Open-Meteo</span>
         </div>
 
@@ -248,10 +248,10 @@
               <sc-for list="{{ regras }}" as="g" hint-placeholder-count="5">
                 <tr>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA;"><span style="display: inline-block; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid {{ g.cor }}; color: {{ g.corTexto }}; background: {{ g.fundo }};">{{ g.nivel }}</span></td>
-                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-weight: 500; color: #1A1A18;">{{ g.risco }}</td>
-                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #1A1A18;">{{ g.talhao }}<div style="font-size: 12px; color: #6B4A34;">{{ g.cultura }}</div></td>
+                  <td data-cy="regra-risco" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-weight: 500; color: #1A1A18;">{{ g.risco }}</td>
+                  <td data-cy="regra-talhao" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #1A1A18;">{{ g.talhao }}<div style="font-size: 12px; color: #6B4A34;">{{ g.cultura }}</div></td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ g.fase }}</td>
-                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #4A4A42;">{{ g.regra }}</td>
+                  <td data-cy="regra-id" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #4A4A42;">{{ g.regra }}</td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ g.janela }}</td>
                 </tr>
               </sc-for>
@@ -265,19 +265,19 @@
       <sc-if value="{{ pgTalhoes }}" hint-placeholder-val="{{ false }}">
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 16px; flex-wrap: wrap;">
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Áreas cadastradas</h2>
-          <button type="button" onClick="{{ toggleNovoTalhao }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 10px 18px; cursor: pointer;" style-hover="background: #162C1F;">{{ novoTalhaoLabel }}</button>
+          <h2 data-cy="talhoes-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Áreas cadastradas</h2>
+          <button data-cy="talhao-novo-toggle" type="button" onClick="{{ toggleNovoTalhao }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 10px 18px; cursor: pointer;" style-hover="background: #162C1F;">{{ novoTalhaoLabel }}</button>
         </div>
 
         <sc-if value="{{ novoTalhaoAberto }}" hint-placeholder-val="{{ false }}">
-        <form onSubmit="{{ cadastrarTalhao }}" style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px; padding: 22px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: end;">
+        <form data-cy="talhao-form" onSubmit="{{ cadastrarTalhao }}" style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px; padding: 22px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: end;">
           <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
             Nome do talhão
-            <input type="text" value="{{ tNome }}" onChange="{{ onTNome }}" placeholder="Talhão 02 - encosta" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+            <input data-cy="talhao-nome" type="text" value="{{ tNome }}" onChange="{{ onTNome }}" placeholder="Talhão 02 - encosta" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
           </label>
           <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
             Cultura
-            <select value="{{ tCultura }}" onChange="{{ onTCultura }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px;">
+            <select data-cy="talhao-cultura" value="{{ tCultura }}" onChange="{{ onTCultura }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px;">
               <sc-for list="{{ culturasTalhao }}" as="c" hint-placeholder-count="5">
                 <option value="{{ c.valor }}">{{ c.label }}</option>
               </sc-for>
@@ -285,6 +285,7 @@
           </label>
           <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
             Fase atual
+            <input data-cy="talhao-fase" type="text" value="{{ tFase }}" onChange="{{ onTFase }}" placeholder="floracao" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
             <select value="{{ tFase }}" onChange="{{ onTFase }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px;">
               <option value="">Selecione a fase</option>
               <sc-for list="{{ fasesTalhao }}" as="f" hint-placeholder-count="3">
@@ -309,11 +310,11 @@
           </label>
           <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
             CEP da área
-            <input type="text" inputMode="numeric" value="{{ tCep }}" onChange="{{ onTCep }}" placeholder="37540-000" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+            <input data-cy="talhao-cep" type="text" inputMode="numeric" value="{{ tCep }}" onChange="{{ onTCep }}" placeholder="37540-000" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
           </label>
-          <button type="submit" disabled="{{ tSalvando }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #6B4A34; border: 1px solid #6B4A34; padding: 12px 20px; cursor: pointer;" style-hover="background: #563A28;">{{ tSalvarLabel }}</button>
+          <button data-cy="talhao-submit" type="submit" disabled="{{ tSalvando }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #6B4A34; border: 1px solid #6B4A34; padding: 12px 20px; cursor: pointer;" style-hover="background: #563A28;">{{ tSalvarLabel }}</button>
           <sc-if value="{{ tErro }}" hint-placeholder-val="{{ false }}">
-            <span style="grid-column: 1 / -1; font-size: 12px; color: #A33A22;">{{ tErro }}</span>
+            <span data-cy="talhao-erro" style="grid-column: 1 / -1; font-size: 12px; color: #A33A22;">{{ tErro }}</span>
           </sc-if>
         </form>
         </sc-if>
@@ -386,11 +387,14 @@
             </thead>
             <tbody>
               <sc-for list="{{ talhoes }}" as="t" hint-placeholder-count="6">
+                <tr>
+                  <td data-cy="talhao-nome-celula" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-weight: 500; color: #1A1A18;">{{ t.id }}<div style="font-size: 12px; color: #6B4A34; font-weight: 400;">{{ t.setor }}</div></td>
+                  <td data-cy="talhao-cultura-celula" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #1A1A18;">{{ t.cultura }}<div style="font-size: 12px; color: #6B4A34;">{{ t.variedade }}</div></td>
                 <tr onClick="{{ t.abrir }}" title="Abrir talhão para editar" style="cursor: pointer; background: {{ t.linhaBg }};" style-hover="background: #F7F5EF;">
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-weight: 500; color: #1A1A18;">{{ t.id }}<div style="font-size: 12px; color: #6B4A34; font-weight: 400;">{{ t.setor }}</div></td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #1A1A18;">{{ t.cultura }}<div style="font-size: 12px; color: #6B4A34;">{{ t.variedade }}</div></td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #1A1A18;">{{ t.area }}</td>
-                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ t.fase }}</td>
+                  <td data-cy="talhao-fase-celula" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ t.fase }}</td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                       <div style="flex: 1; height: 8px; background: #E6E1D2; min-width: 60px; border-radius: 999px; overflow: hidden;">
@@ -534,7 +538,7 @@
           <div style="margin-top: 8px; font-size: 15px; line-height: 1.55; color: #24505F;">Alerta de geada no T-01 (café, florada) â categoria <strong>protetor foliar antitranspirante</strong>. Comparação abaixo considera a dose para 92 ha.</div>
         </div>
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 16px; flex-wrap: wrap;">
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Ranking de custo-benefício</h2>
+          <h2 data-cy="insumos-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Ranking de custo-benefício</h2>
           <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #6B4A34;">Base simulada · 4 fornecedores</span>
         </div>
         <div style="overflow-x: auto; border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px;">
@@ -554,11 +558,11 @@
               <sc-for list="{{ precos }}" as="p" hint-placeholder-count="4">
                 <tr style="background: {{ p.linhaBg }};">
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: {{ p.destaque }}; font-weight: 500;">{{ p.pos }}</td>
-                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-weight: 500; color: #1A1A18;">{{ p.fornecedor }}<div style="font-size: 12px; color: #6B4A34; font-weight: 400;">{{ p.local }}</div></td>
-                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ p.produto }}</td>
-                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #1A1A18;">{{ p.unitario }}</td>
+                  <td data-cy="preco-fornecedor" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-weight: 500; color: #1A1A18;">{{ p.fornecedor }}<div style="font-size: 12px; color: #6B4A34; font-weight: 400;">{{ p.local }}</div></td>
+                  <td data-cy="preco-produto" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ p.produto }}</td>
+                  <td data-cy="preco-unitario" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #1A1A18;">{{ p.unitario }}</td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #4A4A42;">{{ p.frete }}</td>
-                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: {{ p.destaque }};">{{ p.total }}</td>
+                  <td data-cy="preco-total" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: {{ p.destaque }};">{{ p.total }}</td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ p.entrega }}</td>
                 </tr>
               </sc-for>
@@ -571,6 +575,22 @@
       <sc-if value="{{ pgMercado }}" hint-placeholder-val="{{ false }}">
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 18px; flex-wrap: wrap;">
+          <h2 data-cy="mercado-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">{{ mercadoTituloGrafico }}</h2>
+        </div>
+        <div style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px; padding: 24px;">
+          <div style="display: flex; align-items: flex-end; gap: 10px; height: 180px;">
+            <sc-for list="{{ serie }}" as="s" hint-placeholder-count="12">
+              <div style="flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0;">
+                <span data-cy="mercado-barra-valor" style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #4A4A42; white-space: nowrap; line-height: 1;">{{ s.valor }}</span>
+                <div style="width: 100%; background: {{ s.cor }}; height: {{ s.altura }}; border-radius: 6px 6px 0 0; min-height: 4px;"></div>
+                <span data-cy="mercado-barra-mes" style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6B4A34;">{{ s.mes }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top: 18px; border-top: 1px solid #DDD8C9; padding-top: 16px; display: flex; gap: 32px; flex-wrap: wrap; font-size: 13px; color: #4A4A42;">
+            <span>Última cotação: <strong data-cy="mercado-ultima-cotacao" style="color: #1A1A18;">{{ ultimaCotacaoTexto }}</strong></span>
+            <span>Variação no período: <strong data-cy="mercado-variacao" style="color: #1F3D2B;">{{ variacao12mTexto }}</strong></span>
+            <span>Máxima do período: <strong data-cy="mercado-maxima" style="color: #A97C12;">{{ maximaPeriodoTexto }}</strong></span>
           <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">{{ mercadoTituloGrafico }}</h2>
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <sc-for list="{{ periodosMercado }}" as="p" hint-placeholder-count="6">
@@ -614,17 +634,17 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
           <div style="background: #FFFFFF; border: 1px solid #DDD8C9; border-radius: 10px; padding: 16px 18px;">
             <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34; margin-bottom: 8px;">Câmbio PTAX (venda)</div>
-            <div style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ ptaxTexto }}</div>
+            <div data-cy="mercado-ptax" style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ ptaxTexto }}</div>
             <div style="margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #9A9587; line-height: 1.4;">{{ ptaxFonte }}</div>
           </div>
           <div style="background: #FFFFFF; border: 1px solid #DDD8C9; border-radius: 10px; padding: 16px 18px;">
             <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34; margin-bottom: 8px;">Cotação internacional</div>
-            <div style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ cotacaoIntlTexto }}</div>
+            <div data-cy="mercado-cotacao-intl" style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ cotacaoIntlTexto }}</div>
             <div style="margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #9A9587; line-height: 1.4;">{{ cotacaoIntlFonte }}</div>
           </div>
           <div style="background: #FFFFFF; border: 1px solid #DDD8C9; border-radius: 10px; padding: 16px 18px;">
             <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34; margin-bottom: 8px;">IC-Br Agropecuário · 12 meses</div>
-            <div style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ icbrTexto }}</div>
+            <div data-cy="mercado-icbr" style="font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ icbrTexto }}</div>
             <div style="margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #9A9587; line-height: 1.4;">{{ icbrFonte }}</div>
           </div>
         </div>
@@ -636,7 +656,7 @@
             <span style="width: 7px; height: 7px; background: #D4A537; display: block; border-radius: 50%;"></span>
             <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,245,239,0.8);">{{ resumoIAFonteTexto }}</span>
           </div>
-          <p style="margin: 16px 0 0; font-family: Newsreader, Georgia, serif; font-size: 19px; line-height: 1.6; color: #F7F5EF;">{{ resumoIATexto }}</p>
+          <p data-cy="mercado-resumo" style="margin: 16px 0 0; font-family: Newsreader, Georgia, serif; font-size: 19px; line-height: 1.6; color: #F7F5EF;">{{ resumoIATexto }}</p>
           <p style="margin: 16px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.7; letter-spacing: 0.04em; color: rgba(247,245,239,0.66);">Fontes usadas: {{ fontesUsadasTexto }}</p>
           <p style="margin: 14px 0 0; font-size: 12px; line-height: 1.6; color: rgba(247,245,239,0.6);">Resumo de apoio à decisão, não recomendação de compra ou venda.</p>
         </div>
@@ -646,18 +666,18 @@
             <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.5; color: #6B4A34;">Estimativa pela cotação mais recente: {{ cotacaoAtualTexto }}.</p>
             <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
               Sacas de 60 kg
-              <input type="number" value="{{ sacas }}" onChange="{{ onSacas }}" min="0" step="10" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 12px 13px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+              <input data-cy="mercado-sacas" type="number" value="{{ sacas }}" onChange="{{ onSacas }}" min="0" step="10" style="font-family: Archivo, sans-serif; font-size: 15px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 12px 13px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
             </label>
             <div style="margin-top: 16px; border-top: 1px solid #E8DCB8; padding-top: 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 16px;">
               <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34;">Receita estimada</span>
-              <span style="font-family: Fraunces, Georgia, serif; font-size: 26px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ receitaSimulada }}</span>
+              <span data-cy="mercado-receita" style="font-family: Fraunces, Georgia, serif; font-size: 26px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ receitaSimulada }}</span>
             </div>
           </div>
           <h3 style="font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; margin: 0 0 14px; color: #1A1A18;">Notícias na curadoria</h3>
           <ul style="margin: 0; padding: 0; list-style: none; border-top: 1px solid #DDD8C9;">
             <sc-for list="{{ noticias }}" as="n" hint-placeholder-count="3">
               <li style="padding: 14px 0; border-bottom: 1px solid #DDD8C9;">
-                <div style="font-size: 14px; line-height: 1.5; color: #1A1A18;">{{ n.titulo }}</div>
+                <div data-cy="mercado-noticia-titulo" style="font-size: 14px; line-height: 1.5; color: #1A1A18;">{{ n.titulo }}</div>
                 <div style="margin-top: 5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                   <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #6B4A34;">{{ n.fonte }}</span>
                   <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #9A9587;">{{ n.dataTexto }}</span>
@@ -735,30 +755,30 @@
       <sc-if value="{{ pgConta }}" hint-placeholder-val="{{ false }}">
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; align-items: start;">
         <div style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 12px; padding: 26px;">
-          <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 18px; color: #1A1A18; letter-spacing: -0.01em;">Dados da conta</h2>
+          <h2 data-cy="conta-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 18px; color: #1A1A18; letter-spacing: -0.01em;">Dados da conta</h2>
           <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42; margin-bottom: 14px;">
             Nome
-            <input type="text" value="{{ cNome }}" onChange="{{ onCNome }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+            <input data-cy="conta-nome" type="text" value="{{ cNome }}" onChange="{{ onCNome }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
           </label>
           <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42; margin-bottom: 14px;">
             E-mail
-            <input type="email" value="{{ cEmail }}" onChange="{{ onCEmail }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+            <input data-cy="conta-email" type="email" value="{{ cEmail }}" onChange="{{ onCEmail }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
           </label>
           <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42; margin-bottom: 14px;">
             Telefone
-            <input type="tel" value="{{ cTelefone }}" onChange="{{ onCTelefone }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+            <input data-cy="conta-telefone" type="tel" value="{{ cTelefone }}" onChange="{{ onCTelefone }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
           </label>
           <div style="border: 1px solid #DDD8C9; border-radius: 10px; padding: 16px; background: #FAFAF7; margin-bottom: 14px;">
             <span style="display: block; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42; margin-bottom: 10px;">Localização</span>
             <div style="display: flex; gap: 8px; align-items: flex-end;">
               <label style="flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #6B4A34;">
                 CEP
-                <input type="text" placeholder="00000-000" value="{{ cCep }}" onChange="{{ onCCep }}" maxlength="9" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 10px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
+                <input data-cy="conta-cep" type="text" placeholder="00000-000" value="{{ cCep }}" onChange="{{ onCCep }}" maxlength="9" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 10px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
               </label>
-              <button type="button" onClick="{{ verificarCep }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #F7F5EF; background: #2F6E8F; border: 1px solid #2F6E8F; padding: 10px 16px; cursor: pointer; white-space: nowrap;" style-hover="background: #24505F;">{{ cCepBtnLabel }}</button>
+              <button data-cy="conta-verificar-cep" type="button" onClick="{{ verificarCep }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #F7F5EF; background: #2F6E8F; border: 1px solid #2F6E8F; padding: 10px 16px; cursor: pointer; white-space: nowrap;" style-hover="background: #24505F;">{{ cCepBtnLabel }}</button>
             </div>
-            <div style="margin-top: 8px; font-size: 12px; color: {{ cCepStatusCor }}; min-height: 16px;">{{ cCepStatus }}</div>
-            <div style="margin-top: 6px; font-size: 13px; color: #4A4A42; font-style: italic; min-height: 18px;">{{ cCidade }}</div>
+            <div data-cy="conta-cep-status" style="margin-top: 8px; font-size: 12px; color: {{ cCepStatusCor }}; min-height: 16px;">{{ cCepStatus }}</div>
+            <div data-cy="conta-cidade" style="margin-top: 6px; font-size: 13px; color: #4A4A42; font-style: italic; min-height: 18px;">{{ cCidade }}</div>
           </div>
           <div style="margin-top: 18px; display: flex; align-items: center; gap: 12px; border-top: 1px solid #DDD8C9; padding-top: 16px;">
             <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B4A34;">Papel</span>
@@ -772,10 +792,16 @@
           <span style="display: block; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #2F6E8F;">Cultura favorita</span>
           <div style="display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 20px;">
             <sc-for list="{{ culturasConta }}" as="c" hint-placeholder-count="5">
-              <button type="button" onClick="{{ c.pick }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: {{ c.fg }}; background: {{ c.bg }}; border: 1px solid {{ c.borda }}; padding: 8px 16px; border-radius: 999px; cursor: pointer;" style-hover="border-color: #2F6E8F;">{{ c.label }}</button>
+              <button data-cy="conta-cultura" type="button" onClick="{{ c.pick }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: {{ c.fg }}; background: {{ c.bg }}; border: 1px solid {{ c.borda }}; padding: 8px 16px; border-radius: 999px; cursor: pointer;" style-hover="border-color: #2F6E8F;">{{ c.label }}</button>
             </sc-for>
           </div>
 
+          <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer; border-top: 1px solid #CFE0E8; padding-top: 16px;">
+            <input data-cy="conta-notificacoes" type="checkbox" checked="{{ cNotificacoes }}" onChange="{{ onCNotificacoes }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
+            Receber alertas climáticos por e-mail e SMS.
+          </label>
+
+          <button data-cy="conta-salvar" type="button" onClick="{{ salvarConta }}" style="margin-top: 20px; width: 100%; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #2F6E8F; border: 1px solid #2F6E8F; padding: 13px 20px; cursor: pointer;" style-hover="background: #24505F;">{{ salvarContaLabel }}</button>
           <button type="button" onClick="{{ goNotificacoes }}">Gerenciar notificações</button>
 
           <sc-if value="{{ contaErro }}" hint-placeholder-val="{{ false }}">
@@ -951,6 +977,8 @@
 
       <sc-if value="{{ pgRelatorios }}" hint-placeholder-val="{{ false }}">
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
+        <h2 data-cy="relatorios-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0 0 4px; color: #1A1A18; letter-spacing: -0.01em;">Disponíveis para exportação</h2>
+        <p style="margin: 0 0 18px; font-size: 13px; color: #6B4A34;">Gerados a partir dos alertas, das comparações de preço e das análises de mercado.</p>
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 18px; flex-wrap: wrap;">
           <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">Histórico de relatórios gerados</h2>
           <button type="button" onClick="{{ toggleRelNovo }}" style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 10px 18px; cursor: pointer;" style-hover="background: #162C1F;">{{ relNovoLabel }}</button>
@@ -986,6 +1014,12 @@
             <p style="margin: 0; padding: 22px 0; font-size: 14px; color: #6B4A34; border-bottom: 1px solid #DDD8C9;">Nenhum relatório gerado ainda. Use o botão acima para gerar o primeiro.</p>
           </sc-if>
           <sc-for list="{{ relatorios }}" as="r" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 0; border-bottom: 1px solid #DDD8C9; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 14px; min-width: 0;">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#2F6E8F" stroke-width="1.4" style="flex: none;"><rect x="3" y="1.5" width="10" height="13"></rect><line x1="5.5" y1="5" x2="10.5" y2="5"></line><line x1="5.5" y1="8" x2="10.5" y2="8"></line><line x1="5.5" y1="11" x2="8.5" y2="11"></line></svg>
+                <div>
+                  <div data-cy="relatorio-titulo" style="font-size: 15px; font-weight: 500; color: #1A1A18;">{{ r.titulo }}</div>
+                  <div style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #6B4A34;">{{ r.meta }}</div>
             <div style="border-bottom: 1px solid #DDD8C9;">
               <div onClick="{{ r.alternar }}" style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 0; cursor: pointer;">
                 <div style="display: flex; align-items: center; gap: 14px; min-width: 0;">

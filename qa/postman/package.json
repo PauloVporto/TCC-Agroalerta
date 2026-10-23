@@ -1,0 +1,17 @@
+{
+  "name": "agroalerta-qa-postman",
+  "version": "1.0.0",
+  "description": "Testes de API do AgroAlerta (Postman + Newman)",
+  "private": true,
+  "scripts": {
+    "test": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json --reporters cli,htmlextra,json --reporter-htmlextra-export reports/newman-relatorio.html --reporter-htmlextra-title \"AgroAlerta - Testes de API\" --reporter-json-export reports/newman-relatorio.json",
+    "test:cli": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json",
+    "test:health": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json --folder Health",
+    "test:auth": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json --folder Auth --folder Limpeza",
+    "test:publico": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json --folder Health --folder Insumos --folder Mercado"
+  },
+  "devDependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}

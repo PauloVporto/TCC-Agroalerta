@@ -21,6 +21,51 @@ const { registrarEscolhasDoCadastro } = require("../services/notificacoes");
 
 const ERRO_TELEFONE = "Telefone inválido. Informe DDD e número, ex.: (35) 99999-0000.";
 
+/**
+ * @swagger
+ * /auth/registrar:
+ *   post:
+ *     summary: Cria uma conta e já cria o primeiro talhão na localização do CEP informado
+ *     description: >
+ *       O CEP é validado via ViaCEP e geocodificado via Nominatim (OpenStreetMap) - sem
+ *       necessidade de chave de API. Com as coordenadas já disponíveis, cria automaticamente
+ *       o primeiro talhão naquela localização, para que o produtor veja alertas e previsão
+ *       do tempo reais assim que entrar no painel.
+ *     tags: [Autenticação]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nome, email, senha, cep]
+ *             properties:
+ *               nome: { type: string, example: "Marina Rezende Alves" }
+ *               email: { type: string, example: "marina@fazenda.com.br" }
+ *               senha: { type: string, format: password, minLength: 6 }
+ *               cep: { type: string, example: "37540-000" }
+ *               cultura: { type: string, enum: [cafe, soja, milho, cana, feijao], example: cafe }
+ *     responses:
+ *       201:
+ *         description: Conta criada e autenticada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 usuario: { $ref: '#/components/schemas/Usuario' }
+ *                 token: { type: string }
+ *       400:
+ *         description: Campos obrigatórios ausentes, senha curta ou CEP não encontrado
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ *       409:
+ *         description: Já existe uma conta com esse e-mail
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ */
 // POST /api/auth/registrar
 // body: { nome, email, senha, cep, telefone, cultura?, notificacoes?: { email, whatsapp } }
 //
@@ -99,8 +144,43 @@ router.post("/registrar", async (req, res) => {
   }
 });
 
-// POST /api/auth/login
-// body: { email, senha }
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Autentica um usuário e retorna um token de sessão
+ *     tags: [Autenticação]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, senha]
+ *             properties:
+ *               email: { type: string }
+ *               senha: { type: string, format: password }
+ *     responses:
+ *       200:
+ *         description: Login bem-sucedido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 usuario: { $ref: '#/components/schemas/Usuario' }
+ *                 token: { type: string }
+ *       400:
+ *         description: E-mail ou senha ausentes
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ *       401:
+ *         description: Credenciais inválidas
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ */
 router.post("/login", async (req, res) => {
   const { email, senha } = req.body;
 
@@ -116,22 +196,94 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// POST /api/auth/logout
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Encerra a sessão atual (invalida o token)
+ *     tags: [Autenticação]
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       204: { description: Sessão encerrada }
+ *       401: { description: Token ausente ou inválido, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.post("/logout", exigirAutenticacao, async (req, res) => {
   const token = req.headers.authorization.slice(7);
   await encerrarSessao(token);
   res.status(204).send();
 });
 
-// GET /api/auth/me - retorna o usuário logado (útil para o frontend checar a sessão)
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Retorna o usuário autenticado (usado pelo frontend para checar a sessão)
+ *     tags: [Autenticação]
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: Usuário autenticado
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Usuario' }
+ *       401: { description: Token ausente ou inválido, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.get("/me", exigirAutenticacao, (req, res) => {
   res.json(req.usuario);
 });
 
+/**
+ * @swagger
+ * /auth/configuracoes:
+ *   get:
+ *     summary: Retorna perfil, localização e preferências do usuário autenticado
+ *     tags: [Autenticação]
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: Configurações do usuário
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Usuario'
+ *                 - type: object
+ *                   properties:
+ *                     culturaFavorita: { type: string, example: cafe }
+ *                     unidadeTemperatura: { type: string, enum: [celsius, fahrenheit] }
+ *                     notificacoes: { type: boolean }
+ *       401: { description: Token ausente ou inválido, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.get("/configuracoes", exigirAutenticacao, async (req, res) => {
   res.json(await obterConfiguracoes(req.usuario.id));
 });
 
+/**
+ * @swagger
+ * /auth/perfil:
+ *   patch:
+ *     summary: Atualiza nome e e-mail do usuário autenticado
+ *     tags: [Autenticação]
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nome, email]
+ *             properties:
+ *               nome: { type: string }
+ *               email: { type: string }
+ *     responses:
+ *       200:
+ *         description: Perfil atualizado
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Usuario' }
+ *       400: { description: Campos obrigatórios ausentes, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ *       409: { description: E-mail já em uso, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 // PATCH /api/auth/perfil
 // body: { nome, email, telefone?, cidade? } - sem o campo telefone, o número atual é mantido.
 router.patch("/perfil", exigirAutenticacao, async (req, res) => {
@@ -163,9 +315,40 @@ router.patch("/perfil", exigirAutenticacao, async (req, res) => {
   }
 });
 
-// PATCH /api/auth/localizacao
-// body: { cep }
-// Valida o CEP via Nominatim e atualiza a localização do usuário.
+/**
+ * @swagger
+ * /auth/localizacao:
+ *   patch:
+ *     summary: Atualiza a cidade/coordenadas do usuário a partir de um CEP
+ *     description: Valida o CEP via ViaCEP, geocodifica via Nominatim e salva a nova localização.
+ *     tags: [Autenticação]
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [cep]
+ *             properties:
+ *               cep: { type: string, example: "37540-000" }
+ *     responses:
+ *       200:
+ *         description: Localização atualizada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 cidade: { type: string }
+ *                 cidadeFormatada: { type: string }
+ *                 latitude: { type: number }
+ *                 longitude: { type: number }
+ *                 cep: { type: string }
+ *                 uf: { type: string }
+ *       400: { description: CEP ausente ou não encontrado, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ *       401: { description: Token ausente ou inválido, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.patch("/localizacao", exigirAutenticacao, async (req, res) => {
   const { cep } = req.body;
   if (!cep) return res.status(400).json({ erro: "Informe o CEP." });
@@ -190,6 +373,37 @@ router.patch("/localizacao", exigirAutenticacao, async (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /auth/preferencias:
+ *   patch:
+ *     summary: Atualiza as preferências do usuário (cultura favorita, unidade, notificações)
+ *     tags: [Autenticação]
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [culturaFavorita, unidadeTemperatura, notificacoes]
+ *             properties:
+ *               culturaFavorita: { type: string, enum: [cafe, soja, milho, cana, feijao] }
+ *               unidadeTemperatura: { type: string, enum: [celsius, fahrenheit] }
+ *               notificacoes: { type: boolean }
+ *     responses:
+ *       200:
+ *         description: Preferências atualizadas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 culturaFavorita: { type: string }
+ *                 unidadeTemperatura: { type: string }
+ *                 notificacoes: { type: boolean }
+ *       400: { description: Preferências inválidas, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.patch("/preferencias", exigirAutenticacao, async (req, res) => {
   const { culturaFavorita, unidadeTemperatura } = req.body;
   const culturas = ["cafe", "soja", "milho", "cana", "feijao"];
@@ -199,6 +413,34 @@ router.patch("/preferencias", exigirAutenticacao, async (req, res) => {
   res.json(await atualizarPreferencias(req.usuario.id, { culturaFavorita, unidadeTemperatura }));
 });
 
+/**
+ * @swagger
+ * /auth/senha:
+ *   patch:
+ *     summary: Altera a senha do usuário autenticado
+ *     tags: [Autenticação]
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [senhaAtual, novaSenha]
+ *             properties:
+ *               senhaAtual: { type: string, format: password }
+ *               novaSenha: { type: string, format: password, minLength: 6 }
+ *     responses:
+ *       200:
+ *         description: Senha alterada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mensagem: { type: string }
+ *       400: { description: Senha atual incorreta ou dados inválidos, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.patch("/senha", exigirAutenticacao, async (req, res) => {
   const { senhaAtual, novaSenha } = req.body;
   if (!senhaAtual || !novaSenha || novaSenha.length < 6) {
@@ -212,6 +454,17 @@ router.patch("/senha", exigirAutenticacao, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /auth/conta:
+ *   delete:
+ *     summary: Exclui a conta do usuário autenticado (e seus talhões, em cascata)
+ *     tags: [Autenticação]
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       204: { description: Conta excluída }
+ *       401: { description: Token ausente ou inválido, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.delete("/conta", exigirAutenticacao, async (req, res) => {
   await excluirConta(req.usuario.id);
   res.status(204).send();

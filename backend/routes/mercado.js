@@ -6,9 +6,33 @@ const { buscarCotacaoStooq, buscarHistoricoMensalStooq } = require("../services/
 const { buscarPtax, buscarIndiceCommoditiesAgro, SERIES_ICBR } = require("../services/bcb");
 const { montarSerieComProjecao } = require("../services/marketProjection");
 
-// GET /api/mercado/cotacoes?cultura=cafe
-// Dados externos: PTAX (BCB), cotação internacional (Alpha Vantage → Stooq) e IC-Br Agropecuário (BCB).
-// Rota definida ANTES de /:cultura para não ser capturada como parâmetro.
+/**
+ * @swagger
+ * /mercado/cotacoes:
+ *   get:
+ *     summary: Cotações externas de câmbio e commodities agro
+ *     description: >
+ *       Combina PTAX (Banco Central), índice IC-Br Agropecuário (Banco Central) e a cotação
+ *       internacional da cultura (Alpha Vantage, com fallback para Stooq). Cada fonte que
+ *       falhar retorna null nesse campo em vez de derrubar a resposta inteira.
+ *     tags: [Mercado]
+ *     parameters:
+ *       - in: query
+ *         name: cultura
+ *         required: false
+ *         schema: { type: string, default: cafe, enum: [cafe, soja] }
+ *     responses:
+ *       200:
+ *         description: Cotações agregadas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ptax: { type: object, nullable: true }
+ *                 icbr: { type: object, nullable: true }
+ *                 cotacaoInternacional: { type: object, nullable: true }
+ */
 router.get("/cotacoes", async (req, res) => {
   const cultura = req.query.cultura || "cafe";
 
@@ -33,8 +57,36 @@ router.get("/cotacoes", async (req, res) => {
   });
 });
 
-// GET /api/mercado/:cultura/historico
-// Tenta Stooq primeiro (dados reais mensais). Fallback: JSON local sintético.
+/**
+ * @swagger
+ * /mercado/{cultura}/historico:
+ *   get:
+ *     summary: Histórico de preço mensal da cultura
+ *     description: Tenta a Stooq primeiro (dados reais mensais); se falhar, usa um JSON local sintético como fallback.
+ *     tags: [Mercado]
+ *     parameters:
+ *       - in: path
+ *         name: cultura
+ *         required: true
+ *         schema: { type: string, example: cafe }
+ *     responses:
+ *       200:
+ *         description: Série histórica de preços
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 unidade: { type: string, example: "R$/saca 60kg" }
+ *                 historico:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       data: { type: string, format: date }
+ *                       preco: { type: number }
+ *       404: { description: Cultura não encontrada, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.get("/:cultura/historico", async (req, res) => {
   const cultura = req.params.cultura;
 
@@ -54,6 +106,41 @@ router.get("/:cultura/historico", async (req, res) => {
   res.json(historico);
 });
 
+/**
+ * @swagger
+ * /mercado/{cultura}/analise:
+ *   get:
+ *     summary: Gera uma análise qualitativa de tendência de mercado para a cultura
+ *     description: >
+ *       Busca notícias reais via Google News RSS e, se ANTHROPIC_API_KEY estiver configurada,
+ *       usa IA (Claude) para elaborar a análise; caso contrário, retorna um resumo simulado
+ *       baseado só na variação percentual do histórico de preços.
+ *     tags: [Mercado]
+ *     parameters:
+ *       - in: path
+ *         name: cultura
+ *         required: true
+ *         schema: { type: string, example: cafe }
+ *     responses:
+ *       200:
+ *         description: Análise de tendência
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 cultura: { type: string }
+ *                 variacaoPercentual: { type: number }
+ *                 precoAtual: { type: number }
+ *                 unidade: { type: string }
+ *                 resumo: { type: string }
+ *                 fatoresConsiderados:
+ *                   type: array
+ *                   items: { type: object }
+ *                 gerarPor: { type: string, enum: [ia, simulado] }
+ *                 geradoEm: { type: string, format: date-time }
+ *       400: { description: Cultura não suportada, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 // GET /api/mercado/:cultura/serie
 // Histórico em R$/saca + projeção mensal na mesma unidade, para o gráfico do painel.
 // Usa sempre a base local: o /historico pode vir do Stooq em centavos de dólar,

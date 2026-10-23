@@ -9,9 +9,43 @@ const { exigirAutenticacao } = require("../services/auth");
 
 router.use(exigirAutenticacao);
 
-// GET /api/alertas/:talhaoId
-// Usa Open-Meteo (variáveis agronômicas + histórico real de dias secos) para o motor
-// de regras, e INMET para avisos oficiais. Degrada graciosamente para OWM se necessário.
+/**
+ * @swagger
+ * /alertas/{talhaoId}:
+ *   get:
+ *     summary: Gera os alertas climáticos atuais para um talhão
+ *     description: >
+ *       Usa Open-Meteo (variáveis agronômicas + histórico real de dias secos) como fonte
+ *       primária para o motor de regras, com fallback para OpenWeatherMap, e consulta o
+ *       INMET para avisos oficiais da UF do talhão.
+ *     tags: [Alertas]
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: talhaoId
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Clima e alertas gerados para o talhão
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 talhao: { $ref: '#/components/schemas/Talhao' }
+ *                 clima: { $ref: '#/components/schemas/Clima' }
+ *                 alertas:
+ *                   type: array
+ *                   items: { $ref: '#/components/schemas/Alerta' }
+ *                 alertasOficiais:
+ *                   type: array
+ *                   description: Avisos oficiais do INMET para a UF do talhão
+ *                   items: { type: object }
+ *       403: { description: Talhão pertence a outro usuário, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ *       404: { description: Talhão não encontrado, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ *       503: { description: Dados meteorológicos indisponíveis no momento, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
+ */
 router.get("/:talhaoId", async (req, res) => {
   const talhao = await buscarTalhaoPorId(req.params.talhaoId);
 

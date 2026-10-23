@@ -44,11 +44,11 @@
       <img src="uploads/Logotipo-97c88bdf.png" alt="AgroAlerta" style="height: 36px; width: auto; display: block; object-fit: contain; align-self: center;" />
     </div>
     <nav style="display: flex; align-items: center; gap: 26px; font-size: 14px;">
-      <a href="#modulos">Recursos</a>
-      <a href="#fluxo">Como funciona</a>
-      <a href="#culturas">Culturas</a>
-      <a href="#sobre">Sobre</a>
-      <button type="button" onClick="{{ goLogin }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 10px 22px; cursor: pointer; letter-spacing: 0.02em;" style-hover="background: #162C1F; border-color: #162C1F;">Entrar</button>
+      <a data-cy="landing-link-recursos" href="#modulos">Recursos</a>
+      <a data-cy="landing-link-como-funciona" href="#fluxo">Como funciona</a>
+      <a data-cy="landing-link-culturas" href="#culturas">Culturas</a>
+      <a data-cy="landing-link-sobre" href="#sobre">Sobre</a>
+      <button data-cy="landing-entrar-header" type="button" onClick="{{ goLogin }}" style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 10px 22px; cursor: pointer; letter-spacing: 0.02em;" style-hover="background: #162C1F; border-color: #162C1F;">Entrar</button>
     </nav>
   </header>
 
@@ -58,11 +58,11 @@
         <img src="uploads/logo2-3261c888.png" alt="" style="height: 96px; width: auto; display: block; object-fit: contain;" />
         <img src="uploads/Logotipo-97c88bdf.png" alt="AgroAlerta" style="width: 100%; max-width: 300px; height: auto; display: block; object-fit: contain;" />
       </div>
-      <h1 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: clamp(34px, 4.2vw, 54px); line-height: 1.05; letter-spacing: -0.02em; margin: 0; color: #1F3D2B; max-width: 22ch; text-wrap: pretty;">O clima muda sem avisar. O <em class="agro-anim" style="position: relative; display: inline-block; text-transform: uppercase; font-style: italic; font-weight: 400; animation: agro-word 3.5s steps(1, end) infinite;">alerta<span style="position: absolute; left: 0; right: 0; bottom: 0.02em; height: 0.08em; background: #D4A537; display: block;"></span></em> não.</h1>
+      <h1 data-cy="landing-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: clamp(34px, 4.2vw, 54px); line-height: 1.05; letter-spacing: -0.02em; margin: 0; color: #1F3D2B; max-width: 22ch; text-wrap: pretty;">O clima muda sem avisar. O <em class="agro-anim" style="position: relative; display: inline-block; text-transform: uppercase; font-style: italic; font-weight: 400; animation: agro-word 3.5s steps(1, end) infinite;">alerta<span style="position: absolute; left: 0; right: 0; bottom: 0.02em; height: 0.08em; background: #D4A537; display: block;"></span></em> não.</h1>
       <div style="width: 64px; height: 3px; background: #D4A537;"></div>
       <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: center;">
-        <button type="button" onClick="{{ goLogin }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 15px 20px; cursor: pointer; width: 186px; text-align: center;" style-hover="background: #162C1F;">Acessar painel</button>
-        <button type="button" onClick="{{ goRegistro }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #1A1A18; background: #D4A537; border: 1px solid #D4A537; padding: 15px 20px; cursor: pointer; width: 186px; text-align: center;" style-hover="background: #C2942B; border-color: #C2942B;">Criar conta</button>
+        <button data-cy="landing-acessar-painel" type="button" onClick="{{ goLogin }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #F7F5EF; background: #1F3D2B; border: 1px solid #1F3D2B; padding: 15px 20px; cursor: pointer; width: 186px; text-align: center;" style-hover="background: #162C1F;">Acessar painel</button>
+        <button data-cy="landing-criar-conta" type="button" onClick="{{ goRegistro }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #1A1A18; background: #D4A537; border: 1px solid #D4A537; padding: 15px 20px; cursor: pointer; width: 186px; text-align: center;" style-hover="background: #C2942B; border-color: #C2942B;">Criar conta</button>
       </div>
     </div>
     <div style="border-left: 1px solid #DDD8C9; position: relative; min-height: 460px; background: #EFEBDF;">
@@ -192,12 +192,12 @@
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid rgba(247,245,239,0.16); padding-top: 20px;">
           <div style="display: flex; gap: 8px;">
             <sc-for list="{{ slides }}" as="s" hint-placeholder-count="4">
-              <button type="button" onClick="{{ s.ir }}" title="{{ s.rotulo }}" style="width: 30px; height: 4px; padding: 0; border: 0; border-radius: 999px; background: {{ s.fundo }}; cursor: pointer;" style-hover="background: #D4A537;"></button>
+              <button data-cy="carrossel-indicador" type="button" onClick="{{ s.ir }}" title="{{ s.rotulo }}" style="width: 30px; height: 4px; padding: 0; border: 0; border-radius: 999px; background: {{ s.fundo }}; cursor: pointer;" style-hover="background: #D4A537;"></button>
             </sc-for>
           </div>
           <div style="display: flex; gap: 8px;">
-            <button type="button" onClick="{{ slideAnterior }}" title="Anterior" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1; color: rgba(247,245,239,0.8); background: transparent; border: 1px solid rgba(247,245,239,0.3); padding: 8px 12px; cursor: pointer;" style-hover="border-color: #D4A537; color: #D4A537;">🠔</button>
-            <button type="button" onClick="{{ slideProximo }}" title="Próximo" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1; color: rgba(247,245,239,0.8); background: transparent; border: 1px solid rgba(247,245,239,0.3); padding: 8px 12px; cursor: pointer;" style-hover="border-color: #D4A537; color: #D4A537;">🠖</button>
+            <button data-cy="carrossel-anterior" type="button" onClick="{{ slideAnterior }}" title="Anterior" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1; color: rgba(247,245,239,0.8); background: transparent; border: 1px solid rgba(247,245,239,0.3); padding: 8px 12px; cursor: pointer;" style-hover="border-color: #D4A537; color: #D4A537;">🠔</button>
+            <button data-cy="carrossel-proximo" type="button" onClick="{{ slideProximo }}" title="Próximo" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1; color: rgba(247,245,239,0.8); background: transparent; border: 1px solid rgba(247,245,239,0.3); padding: 8px 12px; cursor: pointer;" style-hover="border-color: #D4A537; color: #D4A537;">🠖</button>
           </div>
         </div>
       </div>
@@ -241,7 +241,7 @@
 
   <section style="padding: 68px 40px; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; background: #F7F5EF;">
     <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 30px; margin: 0; color: #1F3D2B; max-width: 32ch; line-height: 1.15; letter-spacing: -0.015em;">Veja o painel com os alertas da safra em andamento.</h2>
-    <button type="button" onClick="{{ goLogin }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #F7F5EF; background: #6B4A34; border: 1px solid #6B4A34; padding: 15px 32px; cursor: pointer;" style-hover="background: #563A28;">Entrar no painel</button>
+    <button data-cy="landing-cta-final" type="button" onClick="{{ goLogin }}" style="font-family: Archivo, sans-serif; font-size: 15px; font-weight: 500; color: #F7F5EF; background: #6B4A34; border: 1px solid #6B4A34; padding: 15px 32px; cursor: pointer;" style-hover="background: #563A28;">Entrar no painel</button>
   </section>
 
   <footer style="background: #1A1A18; color: rgba(247,245,239,0.72); padding: 36px 40px; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; font-size: 13px;">

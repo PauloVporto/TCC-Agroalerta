@@ -1,0 +1,5 @@
+{
+  "ptax": { "cotacaoCompra": 5.01, "cotacaoVenda": 5.014, "dataHora": "2026-10-19 13:00:00.000", "fonte": "Banco Central do Brasil (PTAX)" },
+  "icbr": { "fonte": "Banco Central do Brasil (IC-Br Agropecuário)", "valorAtual": 210.5, "variacao12m": "29.2", "serie": [] },
+  "cotacaoInternacional": { "fonte": "Alpha Vantage", "funcao": "COFFEE", "unidade": "cents per pound", "valorAtual": 359.16, "serie": [] }
+}
