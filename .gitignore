@@ -10,6 +10,9 @@ jspm_packages/
 .env.development
 .env.production
 .env.test
+.env.*
+!.env.example
+!.env.*.example
 
 # Logs
 *.log
@@ -61,3 +64,17 @@ desktop.ini
 # Frontend runtime config (generated, not committed)
 frontend/config.js
 
+
+# Backups e artefatos locais de validação (podem conter dados pessoais).
+.local/
+.secrets/
+*.dump
+*.dump.*
+*.sql.gz
+*.sql.bz2
+*.rdb
+*.aof
+sessions/
+.sessions/
+evolution_instances/
+auth_info*/

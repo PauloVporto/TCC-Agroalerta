@@ -7,7 +7,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const PORT = 5173;
+const PORT = Number(process.env.PORT) || 5173;
 const DIR = __dirname;
 
 const TIPOS = {
@@ -18,6 +18,16 @@ const TIPOS = {
 
 http
   .createServer((req, res) => {
+    if (req.url.split('?')[0] === '/config.js') {
+      res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end('window.AGROALERTA_API_BASE = ' + JSON.stringify(process.env.PUBLIC_API_BASE || 'http://localhost:3001/api') + ';');
+      return;
+    }
+    if (['/clima-produtor.html', '/whatsapp.html'].includes(req.url.split('?')[0])) {
+      res.writeHead(302, { Location: '/dashboard.dc.html#notificacoes', 'Cache-Control': 'no-store' });
+      res.end();
+      return;
+    }
     let caminho = req.url === "/" ? "/AgroAlerta.dc.html" : req.url;
     caminho = path.join(DIR, decodeURIComponent(caminho.split("?")[0]));
 

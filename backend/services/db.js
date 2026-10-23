@@ -4,6 +4,22 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL || "postgres://agroalerta:agroalerta@localhost:5432/agroalerta",
 });
 
+// Executa `executar(cliente)` numa transação: COMMIT se der certo, ROLLBACK se lançar.
+async function emTransacao(executar) {
+  const cliente = await pool.connect();
+  try {
+    await cliente.query("BEGIN");
+    const resultado = await executar(cliente);
+    await cliente.query("COMMIT");
+    return resultado;
+  } catch (erro) {
+    await cliente.query("ROLLBACK");
+    throw erro;
+  } finally {
+    cliente.release();
+  }
+}
+
 async function inicializarBanco() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS usuarios (
@@ -172,4 +188,4 @@ async function inicializarBanco() {
   await pool.query(`DELETE FROM sessoes WHERE expira_em < NOW();`);
 }
 
-module.exports = { pool, inicializarBanco };
+module.exports = { pool, emTransacao, inicializarBanco };

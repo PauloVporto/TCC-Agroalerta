@@ -41,6 +41,18 @@ docker compose down
 
 Use `docker compose down -v` apenas quando quiser apagar também os dados do banco.
 
+### Notificações por WhatsApp (opcional)
+
+As boas-vindas e os alertas de geada saem pelo WhatsApp do Agro Alerta, via Evolution API
+(arquivo separado; sem ele, nada muda):
+
+```bash
+cp .env.whatsapp.example .env      # preencha os segredos (openssl rand -hex 32)
+docker compose -f docker-compose.yml -f docker-compose.whatsapp.yml up -d --build
+```
+
+Pareamento do número, administrador, testes e rollback: [`docs/WHATSAPP_EVOLUTION.md`](docs/WHATSAPP_EVOLUTION.md).
+
 ### 1. Backend
 
 ```bash
@@ -117,6 +129,17 @@ Decisões de API (Open-Meteo, mercado Brasil + internacional, PTAX e LLM) estão
 reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 `frontend/config.js` ao seu `.gitignore` também.
 
+## Notificações por e-mail e SMS
+
+O produtor escolhe no cadastro, de forma independente, se quer receber e-mail e/ou SMS
+(as duas opções começam desmarcadas). Os canais autorizados recebem boas-vindas, e o
+monitoramento climático automático (Open-Meteo) avisa sobre riscos reais nos talhões,
+pela fila persistente no PostgreSQL. E-mail pelo **Resend**, SMS pela **SMSGo**; sem
+`*_SENDING_ENABLED=true`, tudo roda em modo simulado, sem custo.
+
+Configuração, testes reais, ativação, limites de custo e diagnóstico:
+[`docs/NOTIFICACOES.md`](docs/NOTIFICACOES.md).
+
 ## Autenticação
 
 - Cadastro e login com e-mail/senha (senha armazenada com hash `scrypt`, nunca em texto puro)
@@ -135,6 +158,7 @@ reais no Git. O `.gitignore` do backend já cobre o `.env`; adicione
 | 4. Análise de mercado (Brasil + internacional) | Preço interno em R$/saca, bolsas ICE/CBOT, paridade cambial e leitura de tendência | `backend/services/market.js` |
 | Insight de compra de insumos (IA + busca web) | Recomendação sobre comprar agora ou esperar, considerando preços coletados e cenário de custo de matéria-prima/mercado | `backend/services/insumosIA.js` |
 | Mapa de talhões | Visualização geográfica dos talhões cadastrados (Google Maps) | `frontend/app.js` (`inicializarMapa`) |
+| Notificações | Consentimento por canal, boas-vindas, alertas automáticos, fila, limites de custo e histórico | `backend/services/notificacoes/`, `backend/services/monitoramento.js`, `docs/NOTIFICACOES.md` |
 
 ## Testes
 

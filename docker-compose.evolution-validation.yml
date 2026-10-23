@@ -1,0 +1,22 @@
+# Usar como terceiro arquivo, sempre com -p agroalerta-evolution-validation.
+# Requer Docker Compose >= 2.24.4 (!override). Não carrega backend/.env.
+services:
+  db:
+    environment:
+      POSTGRES_DB: agroalerta_evolution_teste
+      POSTGRES_PASSWORD: isolated-validation
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agroalerta -d agroalerta_evolution_teste"]
+  backend:
+    env_file: !reset []
+    ports: !override ["127.0.0.1:3301:3001"]
+    environment:
+      DATABASE_URL: postgres://agroalerta:isolated-validation@db:5432/agroalerta_evolution_teste
+      WHATSAPP_SENDING_ENABLED: "false"
+      WHATSAPP_EXPECTED_SENDER: "9503"
+      WEATHER_MONITOR_ENABLED: "false"
+      EMAIL_SENDING_ENABLED: "false"
+  frontend:
+    ports: !override ["127.0.0.1:55173:5173"]
+    environment:
+      PUBLIC_API_BASE: http://localhost:3301/api

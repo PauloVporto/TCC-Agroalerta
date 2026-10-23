@@ -11,8 +11,8 @@ test("fasesSuportadas devolve cópia: alterar o retorno não afeta a lista", () 
   assert.deepEqual(fasesSuportadas(), ["plantio", "floracao", "colheita"]);
 });
 
-test("culturas suportadas incluem as cinco do TCC", () => {
-  assert.deepEqual(culturasSuportadas().sort(), ["cafe", "cana", "feijao", "milho", "soja"]);
+test("o motor climático suporta café e soja", () => {
+  assert.deepEqual(culturasSuportadas().sort(), ["cafe", "soja"]);
 });
 
 test("café dispara geada alta com temperatura mínima 1°C", () => {

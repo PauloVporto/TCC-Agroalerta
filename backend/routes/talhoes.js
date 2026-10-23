@@ -8,7 +8,7 @@ const { pool } = require("../services/db");
 // Colunas devolvidas em toda resposta de talhão (listagem, cadastro, edição e busca).
 const COLUNAS_TALHAO = `id, usuario_id AS "usuarioId", nome, cultura, variedade, fase, endereco,
   latitude, longitude, endereco_formatado AS "enderecoFormatado",
-  poligono, area_ha AS "areaHa", area_unidade AS "areaUnidade", criado_em AS "criadoEm"`;
+  poligono, area_ha AS "areaHa", area_unidade AS "areaUnidade", regiao, criado_em AS "criadoEm"`;
 
 const TAMANHO_MAX_VARIEDADE = 60;
 // A área é gravada sempre em hectares; a unidade guarda como o produtor prefere vê-la.
@@ -81,7 +81,8 @@ router.post("/", async (req, res) => {
   }
 
   const talhao = await criarTalhao(req.usuario.id, {
-    nome, cultura, fase, ...detalhes, endereco: local.enderecoFormatado, coordenadas: local,
+    nome, cultura, fase, ...detalhes, endereco: local.enderecoFormatado,
+    regiao: local.cidade + " - " + local.uf, coordenadas: local,
   });
   res.status(201).json(talhao);
 });
@@ -121,16 +122,18 @@ function validarVariedadeEArea({ variedade, areaHa, areaUnidade }) {
 
 // variedade, poligono e área são opcionais: o cadastro feito na tela de login
 // cria o primeiro talhão só com cultura e fase.
-async function criarTalhao(usuarioId, { nome, cultura, variedade, fase, endereco, coordenadas, poligono, areaHa, areaUnidade }) {
+// `regiao` ("Cidade - UF") identifica a área afetada nas notificações de alerta.
+async function criarTalhao(usuarioId, { nome, cultura, variedade, fase, endereco, regiao, coordenadas, poligono, areaHa, areaUnidade }) {
   const resultado = await pool.query(
     `INSERT INTO talhoes
        (usuario_id, nome, cultura, variedade, fase, endereco, latitude, longitude, endereco_formatado,
-        poligono, area_ha, area_unidade)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        poligono, area_ha, area_unidade, regiao)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
      RETURNING ${COLUNAS_TALHAO}`,
     [usuarioId, nome, cultura, variedade || null, fase, endereco, coordenadas.latitude,
       coordenadas.longitude, coordenadas.enderecoFormatado,
-      poligono ? JSON.stringify(poligono) : null, areaHa != null ? areaHa : null, areaUnidade || "ha"]
+      poligono ? JSON.stringify(poligono) : null, areaHa != null ? areaHa : null, areaUnidade || "ha",
+      regiao || null]
   );
   return resultado.rows[0];
 }
