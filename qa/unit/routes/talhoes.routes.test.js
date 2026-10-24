@@ -13,7 +13,7 @@ const { router, buscarTalhaoPorId, criarTalhao } = require("../../../backend/rou
 const app = montarApp("/api/talhoes", router);
 const AUTH = { Authorization: "Bearer ok" };
 const talhao = { id: 10, usuarioId: 1, nome: "T1", cultura: "cafe", fase: "floracao" };
-const local = { valido: true, enderecoFormatado: "Lavras, MG", latitude: -21, longitude: -45 };
+const local = { valido: true, enderecoFormatado: "Lavras, MG", cidade: "Lavras", uf: "MG", latitude: -21, longitude: -45 };
 
 describe("autenticação do router de talhões", () => {
   test.each([["get", "/"], ["post", "/"], ["patch", "/1"], ["delete", "/1"]])("%s %s sem token => 401", async (m, p) => {
@@ -42,7 +42,40 @@ describe("POST /api/talhoes", () => {
     const r = await request(app).post("/api/talhoes").set(AUTH).send(corpo);
     expect(r.status).toBe(201);
     expect(r.body.id).toBe(5);
-    expect(pool.query.mock.calls[0][1]).toEqual([1, "Novo", "soja", "colheita", "Lavras, MG", -21, -45, "Lavras, MG"]);
+    // 13 colunas: usuario, nome, cultura, variedade, fase, endereco, lat, lon,
+    // endereco_formatado, poligono, area_ha, area_unidade e regiao.
+    expect(pool.query.mock.calls[0][1]).toEqual(
+      [1, "Novo", "soja", null, "colheita", "Lavras, MG", -21, -45, "Lavras, MG", null, null, "ha", "Lavras - MG"]
+    );
+  });
+
+  test("grava variedade e área quando informadas", async () => {
+    resolverLocalizacaoPorCep.mockResolvedValue(local);
+    pool.query.mockResolvedValue({ rows: [{ id: 6 }] });
+    const r = await request(app).post("/api/talhoes").set(AUTH)
+      .send({ ...corpo, variedade: "Catuaí 144", areaHa: 12.5, areaUnidade: "ha" });
+    expect(r.status).toBe(201);
+    const params = pool.query.mock.calls[0][1];
+    expect(params[3]).toBe("Catuaí 144");
+    expect(params[10]).toBe(12.5);
+  });
+
+  test("fase fora das suportadas => 400 listando as aceitas", async () => {
+    const r = await request(app).post("/api/talhoes").set(AUTH).send({ ...corpo, fase: "vegetativo" });
+    expect(r.status).toBe(400);
+    expect(r.body.erro).toContain("plantio, floracao, colheita");
+  });
+
+  test("unidade de área inválida => 400", async () => {
+    const r = await request(app).post("/api/talhoes").set(AUTH).send({ ...corpo, areaHa: 3, areaUnidade: "alqueire" });
+    expect(r.status).toBe(400);
+    expect(r.body.erro).toMatch(/Unidade de área inválida/);
+  });
+
+  test("área negativa => 400", async () => {
+    const r = await request(app).post("/api/talhoes").set(AUTH).send({ ...corpo, areaHa: -2 });
+    expect(r.status).toBe(400);
+    expect(r.body.erro).toMatch(/maior que zero/);
   });
 
   test.each([["nome"], ["cultura"], ["fase"], ["cep"]])("sem %s => 400", async (campo) => {
@@ -91,22 +124,55 @@ describe("DELETE /api/talhoes/:id", () => {
 });
 
 describe("PATCH /api/talhoes/:id", () => {
+  // Como o handler lê os valores atuais do banco para preencher o que não veio
+  // no corpo, o talhão salvo precisa trazer todas as colunas editáveis.
+  const salvo = {
+    id: 10, usuarioId: 1, nome: "Velho", cultura: "cafe", variedade: "Mundo Novo",
+    fase: "plantio", areaHa: 8, areaUnidade: "ha",
+  };
+
   test("dono atualiza nome e fase", async () => {
     pool.query
-      .mockResolvedValueOnce({ rows: [{ id: 10, usuarioId: 1, nome: "Velho", fase: "vegetativo" }] })
+      .mockResolvedValueOnce({ rows: [salvo] })
       .mockResolvedValueOnce({ rows: [{ id: 10, nome: "Novo", fase: "floracao" }] });
     const r = await request(app).patch("/api/talhoes/10").set(AUTH).send({ nome: "Novo", fase: "floracao" });
     expect(r.status).toBe(200);
     expect(r.body).toMatchObject({ nome: "Novo", fase: "floracao" });
-    expect(pool.query.mock.calls[1][1]).toEqual(["Novo", "floracao", 10]);
+    expect(pool.query.mock.calls[1][1]).toEqual(["Novo", "cafe", "Mundo Novo", "floracao", 8, "ha", 10]);
   });
 
   test("campos omitidos mantêm os valores atuais", async () => {
     pool.query
-      .mockResolvedValueOnce({ rows: [{ id: 10, usuarioId: 1, nome: "Velho", fase: "vegetativo" }] })
+      .mockResolvedValueOnce({ rows: [salvo] })
       .mockResolvedValueOnce({ rows: [{}] });
     await request(app).patch("/api/talhoes/10").set(AUTH).send({});
-    expect(pool.query.mock.calls[1][1]).toEqual(["Velho", "vegetativo", 10]);
+    expect(pool.query.mock.calls[1][1]).toEqual(["Velho", "cafe", "Mundo Novo", "plantio", 8, "ha", 10]);
+  });
+
+  test("fase inválida no corpo => 400 e nada é gravado", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [salvo] });
+    const r = await request(app).patch("/api/talhoes/10").set(AUTH).send({ fase: "vegetativo" });
+    expect(r.status).toBe(400);
+    expect(r.body.erro).toContain("plantio, floracao, colheita");
+    expect(pool.query).toHaveBeenCalledTimes(1);
+  });
+
+  // Talhões antigos podem ter fase fora da lista atual; isso não pode travar
+  // uma edição que nem mexe na fase.
+  test("talhão legado com fase antiga ainda aceita renomear", async () => {
+    pool.query
+      .mockResolvedValueOnce({ rows: [{ ...salvo, fase: "vegetativo" }] })
+      .mockResolvedValueOnce({ rows: [{ id: 10, nome: "Renomeado" }] });
+    const r = await request(app).patch("/api/talhoes/10").set(AUTH).send({ nome: "Renomeado" });
+    expect(r.status).toBe(200);
+    expect(pool.query.mock.calls[1][1][3]).toBe("vegetativo");
+  });
+
+  test("nome vazio => 400", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [salvo] });
+    const r = await request(app).patch("/api/talhoes/10").set(AUTH).send({ nome: "   " });
+    expect(r.status).toBe(400);
+    expect(r.body.erro).toMatch(/Informe o nome/);
   });
 
   test("inexistente => 404 e de outro dono => 403", async () => {
@@ -132,6 +198,20 @@ describe("helpers exportados", () => {
     pool.query.mockResolvedValueOnce({ rows: [{ id: 1 }] });
     const r = await criarTalhao(3, { nome: "N", cultura: "cafe", fase: "f", endereco: "e", coordenadas: { latitude: 1, longitude: 2, enderecoFormatado: "ef" } });
     expect(r).toEqual({ id: 1 });
-    expect(pool.query.mock.calls[0][1]).toEqual([3, "N", "cafe", "f", "e", 1, 2, "ef"]);
+    // Sem variedade/área/região, as colunas opcionais vão nulas e a unidade cai no padrão "ha".
+    expect(pool.query.mock.calls[0][1]).toEqual([3, "N", "cafe", null, "f", "e", 1, 2, "ef", null, null, "ha", null]);
+  });
+
+  test("criarTalhao serializa o polígono como JSON", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ id: 2 }] });
+    const poligono = [[-21, -45], [-21.1, -45.1]];
+    await criarTalhao(3, {
+      nome: "N", cultura: "cafe", fase: "plantio", endereco: "e", regiao: "Lavras - MG",
+      poligono, areaHa: 4, areaUnidade: "m2",
+      coordenadas: { latitude: 1, longitude: 2, enderecoFormatado: "ef" },
+    });
+    const params = pool.query.mock.calls[0][1];
+    expect(params[9]).toBe(JSON.stringify(poligono));
+    expect(params.slice(10)).toEqual([4, "m2", "Lavras - MG"]);
   });
 });

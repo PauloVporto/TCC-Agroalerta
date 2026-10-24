@@ -5,8 +5,6 @@ const { listarInsumos, insumosParaAlerta, catalogo } = require("../services/insu
 const { exigirAutenticacao, exigirPapel } = require("../services/auth");
 const { pool } = require("../services/db");
 
-const db = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "insumos.json"), "utf-8"));
-
 /**
  * @swagger
  * /insumos:
@@ -28,12 +26,6 @@ const db = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "insumo
  *               type: array
  *               items: { $ref: '#/components/schemas/Insumo' }
  */
-router.get("/", (req, res) => {
-  const { categoria } = req.query;
-
-  let insumos = db.insumos;
-  if (categoria) {
-    insumos = insumos.filter((i) => i.categoria === categoria);
 router.get("/", async (req, res) => {
   try {
     res.json(await listarInsumos(req.query.categoria));
@@ -65,30 +57,6 @@ router.get("/", async (req, res) => {
  *               items: { $ref: '#/components/schemas/Insumo' }
  *       404: { description: Regra de alerta desconhecida, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
  */
-router.get("/recomendados/:alertaId", (req, res) => {
-  const mapaAlertaCategoria = {
-    cafe_geada: ["protecao_termica"],
-    cafe_estiagem: ["irrigacao", "hidrogel"],
-    cafe_excesso_chuva: ["fungicida"],
-    soja_estiagem: ["irrigacao", "hidrogel"],
-    soja_chuva_colheita: [],
-    soja_vento_forte: [],
-    milho_estiagem: ["irrigacao", "hidrogel"],
-    milho_vento_forte: [],
-    milho_excesso_chuva: ["fungicida"],
-    cana_estiagem_prolongada: ["irrigacao"],
-    cana_geada: ["protecao_termica"],
-    cana_chuva_colheita: [],
-    feijao_estiagem: ["irrigacao", "hidrogel"],
-    feijao_excesso_chuva: ["fungicida"],
-    feijao_chuva_colheita: [],
-  };
-
-  const categorias = mapaAlertaCategoria[req.params.alertaId];
-
-  if (!categorias) {
-// GET /api/insumos/recomendados/:alertaId
-// Recomenda insumos com base no id de uma regra de alerta (ex: "cafe_geada")
 router.get("/recomendados/:alertaId", async (req, res) => {
   const insumos = await insumosParaAlerta(req.params.alertaId);
   if (insumos === null) {

@@ -26,11 +26,10 @@ Funcionalidade: Painel - Configurar conta
     Então o botão de salvar mostra "Alterações salvas"
     E a API retorna a cultura favorita "soja"
 
-  Cenário: Desativar as notificações
-    Quando desmarco as notificações
-    E salvo as alterações da conta
-    Então o botão de salvar mostra "Alterações salvas"
-    E a API retorna notificações desativadas
+  Cenário: A autorização de notificações é feita na página de Notificações
+    Então o perfil aponta para a página de Notificações
+    Quando clico em gerenciar notificações
+    Então vejo o título "Notificações"
 
   Cenário: Atualizar a localização por CEP válido
     Quando verifico o CEP "30130-010"

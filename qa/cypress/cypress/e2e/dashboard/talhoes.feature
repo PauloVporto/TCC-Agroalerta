@@ -10,7 +10,7 @@ Funcionalidade: Painel - Talhões
 
   Cenário: Lista o talhão criado no cadastro da conta
     Então vejo o título "Talhões"
-    E a tabela lista 1 talhão com nome "Talhão principal - Itajubá", cultura "Café" e fase "Vegetativo"
+    E a tabela lista 1 talhão com nome "Talhão principal - Itajubá", cultura "Café" e fase "Plantio"
 
   Cenário: Abrir e fechar o formulário de novo talhão
     Quando clico no botão de novo talhão
@@ -40,5 +40,5 @@ Funcionalidade: Painel - Talhões
     E preencho o talhão "Talhão QA Soja" cultura "Soja" fase "floracao" e CEP "37500-001"
     E envio o formulário de talhão
     Então a tabela lista 2 talhões
-    E a tabela contém o talhão "Talhão QA Soja" com cultura "Soja" e fase "Floracao"
+    E a tabela contém o talhão "Talhão QA Soja" com cultura "Soja" e fase "Floração"
     E a API confirma 2 talhões para o usuário

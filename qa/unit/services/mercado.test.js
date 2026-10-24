@@ -1,4 +1,6 @@
+const fs = require("fs");
 const { resposta, mockFetch, carregar } = require("../helpers/http");
+const { SERIES_ICBR } = require("../../../backend/services/bcb");
 
 afterEach(() => {
   delete process.env.ALPHA_VANTAGE_KEY;
@@ -57,23 +59,63 @@ describe("bcb.buscarIndiceCommoditiesAgro", () => {
     expect((await carregar("services/bcb.js").buscarIndiceCommoditiesAgro()).variacao12m).toBeNull();
   });
 
-  test.each([
-    ["HTTP não-ok", () => resposta({ ok: false, status: 500, json: [] })],
-    ["array vazio", () => resposta({ json: [] })],
-    ["não é array", () => resposta({ json: { a: 1 } })],
-    ["todos inválidos", () => resposta({ json: [{ valor: "x" }] })],
-    ["erro de rede", () => new Error("x")],
-  ])("%s retorna null", async (_, fabricar) => {
-    mockFetch(fabricar());
-    expect(await carregar("services/bcb.js").buscarIndiceCommoditiesAgro()).toBeNull();
+  // Quando todas as séries falham, o serviço tenta devolver o último valor
+  // gravado em disco. Sem esse arquivo, a resposta é null.
+  describe("sem valor anterior em disco", () => {
+    beforeEach(() => {
+      jest.spyOn(fs, "readFileSync").mockImplementation(() => {
+        throw new Error("sem cache salvo");
+      });
+      jest.spyOn(fs, "writeFileSync").mockImplementation(() => {});
+    });
+
+    test.each([
+      ["HTTP não-ok", () => resposta({ ok: false, status: 500, text: "<html>erro</html>" })],
+      ["array vazio", () => resposta({ json: [] })],
+      ["não é array", () => resposta({ json: { a: 1 } })],
+      ["uma única leitura", () => resposta({ json: [{ data: "a", valor: "1" }] })],
+      ["erro de rede", () => new Error("x")],
+    ])("%s em todas as séries retorna null", async (_, fabricar) => {
+      // Uma resposta para cada série consultada em paralelo.
+      mockFetch(...SERIES_ICBR.map(fabricar));
+      expect(await carregar("services/bcb.js").buscarIndiceCommoditiesAgro()).toBeNull();
+    });
+
+    test("valores não numéricos em todas as séries retornam null", async () => {
+      mockFetch(...SERIES_ICBR.map(() => resposta({ json: [{ data: "a", valor: "x" }, { data: "b", valor: "y" }] })));
+      expect(await carregar("services/bcb.js").buscarIndiceCommoditiesAgro()).toBeNull();
+    });
+  });
+
+  test("cai para a segunda série quando a primeira falha", async () => {
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {});
+    mockFetch(
+      new Error("série fora do ar"),
+      resposta({ json: [{ data: "a", valor: "100" }, { data: "b", valor: "110" }] })
+    );
+    const r = await carregar("services/bcb.js").buscarIndiceCommoditiesAgro();
+    expect(r.valorAtual).toBe(110);
+    expect(r.fonte).toContain(String(SERIES_ICBR[1]));
+  });
+
+  test("quando o BCB cai, devolve o último valor salvo marcado como desatualizado", async () => {
+    const salvo = { salvoEm: "2026-01-01T00:00:00.000Z", dados: { valorAtual: 99, fonte: "BCB", serie: [] } };
+    jest.spyOn(fs, "readFileSync").mockReturnValue(JSON.stringify(salvo));
+    mockFetch(...SERIES_ICBR.map(() => new Error("fora do ar")));
+    const r = await carregar("services/bcb.js").buscarIndiceCommoditiesAgro();
+    expect(r).toMatchObject({ valorAtual: 99, desatualizado: true, obtidoEm: salvo.salvoEm });
   });
 
   test("usa cache na segunda chamada", async () => {
-    const fetchMock = mockFetch(resposta({ json: [{ data: "a", valor: "1" }] }));
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {});
+    const fetchMock = mockFetch(
+      ...SERIES_ICBR.map(() => resposta({ json: [{ data: "a", valor: "1" }, { data: "b", valor: "2" }] }))
+    );
     const { buscarIndiceCommoditiesAgro } = carregar("services/bcb.js");
     await buscarIndiceCommoditiesAgro();
     await buscarIndiceCommoditiesAgro();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // Uma rodada consulta todas as séries em paralelo; a segunda não consulta nada.
+    expect(fetchMock).toHaveBeenCalledTimes(SERIES_ICBR.length);
   });
 });
 

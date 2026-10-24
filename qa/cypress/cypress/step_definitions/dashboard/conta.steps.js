@@ -41,8 +41,15 @@ When("escolho a cultura favorita {string}", (rotulo) => {
   cy.contains('[data-cy="conta-cultura"]', rotulo).click();
 });
 
-When("desmarco as notificações", () => {
-  cy.pegar("conta-notificacoes").should("be.checked").uncheck();
+// A autorização por canal saiu do perfil e virou a página de Notificações;
+// aqui o perfil só precisa encaminhar para lá.
+Then("o perfil aponta para a página de Notificações", () => {
+  cy.pegar("conta-notificacoes").should("not.exist");
+  cy.pegar("conta-ir-notificacoes").should("be.visible").and("contain", "Gerenciar notificações");
+});
+
+When("clico em gerenciar notificações", () => {
+  cy.pegar("conta-ir-notificacoes").click();
 });
 
 When("salvo as alterações da conta", () => {
@@ -69,13 +76,6 @@ Then("a API retorna a cultura favorita {string}", (cultura) => {
   configuracoesDaApi().then((cfg) => {
     expect(cfg.culturaFavorita).to.eq(cultura);
     expect(cfg.unidadeTemperatura).to.eq("celsius");
-  });
-});
-
-Then("a API retorna notificações desativadas", () => {
-  configuracoesDaApi().then((cfg) => {
-    expect(cfg.notificacoes).to.eq(false);
-    expect(cfg.culturaFavorita).to.eq("cafe");
   });
 });
 

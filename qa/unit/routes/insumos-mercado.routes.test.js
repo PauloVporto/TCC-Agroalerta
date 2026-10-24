@@ -2,7 +2,19 @@ jest.mock("../../../backend/services/insumosIA", () => ({ gerarInsightCompra: je
 jest.mock("../../../backend/services/market", () => ({ obterHistorico: jest.fn(), gerarAnaliseTendencia: jest.fn() }));
 jest.mock("../../../backend/services/alphavantage", () => ({ buscarCotacaoAV: jest.fn() }));
 jest.mock("../../../backend/services/stooq", () => ({ buscarCotacaoStooq: jest.fn(), buscarHistoricoMensalStooq: jest.fn() }));
-jest.mock("../../../backend/services/bcb", () => ({ buscarPtax: jest.fn(), buscarIndiceCommoditiesAgro: jest.fn() }));
+jest.mock("../../../backend/services/bcb", () => ({
+  buscarPtax: jest.fn(),
+  buscarIndiceCommoditiesAgro: jest.fn(),
+  SERIES_ICBR: ["27575", "29039"],
+}));
+jest.mock("../../../backend/services/marketProjection", () => ({ montarSerieComProjecao: jest.fn() }));
+// O catálogo de insumos consulta as ofertas cadastradas por fornecedores; sem
+// este mock a rota tentaria abrir conexão real com o Postgres.
+jest.mock("../../../backend/services/db", () => ({ pool: { query: jest.fn(async () => ({ rows: [] })) } }));
+jest.mock("../../../backend/services/auth", () => ({
+  exigirAutenticacao: (req, res, next) => require("../helpers/app").autenticacaoFalsa(req, res, next),
+  exigirPapel: () => (req, res, next) => next(),
+}));
 
 const request = require("supertest");
 const { montarApp } = require("../helpers/app");
@@ -11,6 +23,7 @@ const { obterHistorico, gerarAnaliseTendencia } = require("../../../backend/serv
 const { buscarCotacaoAV } = require("../../../backend/services/alphavantage");
 const { buscarCotacaoStooq, buscarHistoricoMensalStooq } = require("../../../backend/services/stooq");
 const { buscarPtax, buscarIndiceCommoditiesAgro } = require("../../../backend/services/bcb");
+const { montarSerieComProjecao } = require("../../../backend/services/marketProjection");
 
 describe("rotas de insumos", () => {
   const app = montarApp("/api/insumos", require("../../../backend/routes/insumos"));
@@ -85,7 +98,12 @@ describe("rotas de mercado", () => {
       buscarCotacaoStooq.mockResolvedValue({ fonte: "Stooq" });
       const r = await request(app).get("/api/mercado/cotacoes");
       expect(r.status).toBe(200);
-      expect(r.body).toEqual({ ptax: { cotacaoVenda: 5 }, icbr: { valorAtual: 100 }, cotacaoInternacional: { fonte: "Alpha Vantage" } });
+      expect(r.body).toEqual({
+        ptax: { cotacaoVenda: 5 },
+        icbr: { valorAtual: 100 },
+        icbrSeries: [27575, 29039],
+        cotacaoInternacional: { fonte: "Alpha Vantage" },
+      });
       expect(buscarCotacaoAV).toHaveBeenCalledWith("cafe");
     });
 
@@ -106,7 +124,36 @@ describe("rotas de mercado", () => {
       buscarCotacaoStooq.mockRejectedValue(new Error("x"));
       const r = await request(app).get("/api/mercado/cotacoes");
       expect(r.status).toBe(200);
-      expect(r.body).toEqual({ ptax: null, icbr: null, cotacaoInternacional: null });
+      expect(r.body).toEqual({ ptax: null, icbr: null, icbrSeries: [27575, 29039], cotacaoInternacional: null });
+    });
+
+    // A lista de séries é fixa e serve para o painel saber quais códigos do BCB
+    // foram tentados, mesmo quando nenhum deles respondeu.
+    test("informa as séries do IC-Br consultadas", async () => {
+      buscarPtax.mockResolvedValue(null);
+      buscarIndiceCommoditiesAgro.mockResolvedValue(null);
+      buscarCotacaoAV.mockResolvedValue(null);
+      buscarCotacaoStooq.mockResolvedValue(null);
+      const r = await request(app).get("/api/mercado/cotacoes");
+      expect(r.body.icbrSeries).toEqual([27575, 29039]);
+      expect(r.body.icbrSeries.every(Number.isFinite)).toBe(true);
+    });
+  });
+
+  describe("GET /:cultura/serie", () => {
+    test("devolve a série com projeção montada pelo serviço", async () => {
+      obterHistorico.mockReturnValue({ unidade: "R$/sc", historico: [{ data: "2026-01-01", preco: 1 }] });
+      montarSerieComProjecao.mockReturnValue({ unidade: "R$/sc", serie: [], projecao: [] });
+      const r = await request(app).get("/api/mercado/cafe/serie");
+      expect(r.status).toBe(200);
+      expect(montarSerieComProjecao).toHaveBeenCalledWith(expect.objectContaining({ unidade: "R$/sc" }), "cafe");
+    });
+
+    test("cultura sem histórico => 404", async () => {
+      obterHistorico.mockReturnValue(null);
+      const r = await request(app).get("/api/mercado/arroz/serie");
+      expect(r.status).toBe(404);
+      expect(r.body.erro).toBe("Cultura não encontrada");
     });
   });
 

@@ -10,6 +10,30 @@ jest.mock("../../../backend/routes/insumos", () => require("express").Router());
 jest.mock("../../../backend/routes/mercado", () => require("express").Router());
 jest.mock("../../../backend/routes/auth", () => require("express").Router());
 jest.mock("../../../backend/routes/clima", () => require("express").Router());
+jest.mock("../../../backend/routes/relatorios", () => require("express").Router());
+jest.mock("../../../backend/routes/notificacoes", () => require("express").Router());
+jest.mock("../../../backend/routes/webhooks", () => require("express").Router());
+jest.mock("../../../backend/routes/admin", () => require("express").Router());
+
+// Sem estes mocks, carregar o server.js sobe os agendadores de notificação de
+// verdade e o Jest não encerra (timers ativos).
+jest.mock("../../../backend/services/migracoes", () => ({ aplicarMigracoes: jest.fn() }));
+jest.mock("../../../backend/services/notificacoes", () => ({
+  iniciarNotificacoes: jest.fn(() => ({ email: "simulado", whatsapp: "simulado", monitoramento: "desligado" })),
+}));
+jest.mock("../../../backend/services/notificacoes/config", () => ({
+  lerConfiguracao: jest.fn(() => ({ monitoramento: { ativo: false } })),
+  modoDoCanal: jest.fn(() => "simulado"),
+}));
+// Gerar a especificação de verdade relê e analisa todas as rotas a cada
+// require, o que torna este arquivo lento demais. O conteúdo da spec é
+// verificado em services/swagger.test.js; aqui só importa que o servidor a
+// publique no endereço certo.
+jest.mock("../../../backend/swagger", () => ({
+  openapi: "3.0.3",
+  info: { title: "AgroAlerta API", version: "1.0.0" },
+  paths: { "/auth/login": { post: { summary: "Autentica" } } },
+}));
 
 /** Carrega o server.js interceptando app.listen para obter o app sem abrir porta. */
 async function subirServidor() {
@@ -20,9 +44,10 @@ async function subirServidor() {
     return {};
   });
   const { inicializarBanco } = require("../../../backend/services/db");
+  const { aplicarMigracoes } = require("../../../backend/services/migracoes");
   require(SERVER);
   await new Promise((r) => setImmediate(r));
-  return { app: listen.mock.contexts[0], listen, inicializarBanco };
+  return { app: listen.mock.contexts[0], listen, inicializarBanco, aplicarMigracoes };
 }
 
 afterEach(() => {
@@ -38,6 +63,13 @@ describe("server.js", () => {
     expect(listen.mock.calls[0][0]).toBe(3001);
   });
 
+  test("aplica as migrações depois de inicializar o banco", async () => {
+    const { inicializarBanco, aplicarMigracoes } = await subirServidor();
+    expect(aplicarMigracoes).toHaveBeenCalledTimes(1);
+    expect(inicializarBanco.mock.invocationCallOrder[0])
+      .toBeLessThan(aplicarMigracoes.mock.invocationCallOrder[0]);
+  });
+
   test("respeita a variável PORT", async () => {
     process.env.PORT = "4000";
     const { listen } = await subirServidor();
@@ -48,7 +80,16 @@ describe("server.js", () => {
     const { app } = await subirServidor();
     const r = await request(app).get("/api/health");
     expect(r.status).toBe(200);
-    expect(r.body).toEqual({ status: "ok", modoClima: "simulado", modoIA: "simulado", modoMapas: "nominatim" });
+    expect(r.body).toMatchObject({
+      status: "ok", modoClima: "simulado", modoIA: "simulado", modoMapas: "nominatim",
+    });
+  });
+
+  test("GET /api/health informa também os canais de notificação", async () => {
+    const { app } = await subirServidor();
+    const r = await request(app).get("/api/health");
+    expect(r.body).toMatchObject({ modoEmail: "simulado", modoWhatsapp: "simulado" });
+    expect(r.body.monitoramentoClimatico).toBe("desligado");
   });
 
   test("GET /api/health informa modo real quando há chaves", async () => {
@@ -65,6 +106,14 @@ describe("server.js", () => {
     const r = await request(app).get("/api/culturas");
     expect(r.status).toBe(200);
     expect(r.body).toEqual(["cafe", "soja"]);
+  });
+
+  test("expõe a especificação OpenAPI em /api-docs.json", async () => {
+    const { app } = await subirServidor();
+    const r = await request(app).get("/api-docs.json");
+    expect(r.status).toBe(200);
+    expect(r.body.openapi).toMatch(/^3\./);
+    expect(Object.keys(r.body.paths).length).toBeGreaterThan(0);
   });
 
   test("rota inexistente responde 404 em JSON", async () => {

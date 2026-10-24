@@ -1,13 +1,5 @@
 import { Then, When } from "@badeball/cypress-cucumber-preprocessor";
-
-const NAV = {
-  "Visão geral": "nav-visao",
-  Alertas: "nav-alertas",
-  Talhões: "nav-talhoes",
-  "Insumos e preços": "nav-insumos",
-  Mercado: "nav-mercado",
-  Relatórios: "nav-relatorios",
-};
+import { NAV } from "../../support/navegacao";
 
 When("acesso a página {string} pelo menu", (rotulo) => {
   cy.pegar(NAV[rotulo]).should("contain", rotulo).click();

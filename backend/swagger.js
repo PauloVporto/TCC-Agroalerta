@@ -1,3 +1,4 @@
+const path = require("path");
 const swaggerJsdoc = require("swagger-jsdoc");
 
 const options = {
@@ -118,7 +119,10 @@ const options = {
       },
     },
   },
-  apis: ["./routes/*.js"],
+  // Caminho absoluto para não depender do diretório de onde o processo foi
+  // iniciado. As barras precisam ser normalizadas: o glob do swagger-jsdoc
+  // não casa nada com separadores do Windows e a documentação sairia vazia.
+  apis: [path.join(__dirname, "routes", "*.js").split(path.sep).join("/")],
 };
 
 module.exports = swaggerJsdoc(options);

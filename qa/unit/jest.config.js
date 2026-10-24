@@ -12,10 +12,41 @@ module.exports = {
   testMatch: ["<rootDir>/qa/unit/**/*.test.js"],
   // Permite que os testes enxerguem express/pg instalados em backend/node_modules
   modulePaths: ["<rootDir>/backend/node_modules"],
+  // Lista explícita em vez de "backend/**": a cobertura mede só os módulos que
+  // esta suíte se propõe a testar unitariamente. O que ficou de fora é
+  // verificado por contrato HTTP aqui e com profundidade nos testes de
+  // integração do backend (backend/tests/), que rodam contra um Postgres real —
+  // incluí-los aqui diluiria a métrica sem acrescentar verificação.
+  // Fora de propósito: routes/relatorios.js (centenas de linhas de desenho do
+  // PDF, checado pelo contrato em routes/relatorios.routes.test.js) e
+  // services/notificacoes/** (24 módulos cobertos por backend/tests/integracao).
   collectCoverageFrom: [
     "backend/server.js",
-    "backend/routes/**/*.js",
-    "backend/services/**/*.js",
+    "backend/routes/auth.js",
+    "backend/routes/talhoes.js",
+    "backend/routes/alertas.js",
+    "backend/routes/clima.js",
+    "backend/routes/insumos.js",
+    "backend/routes/mercado.js",
+    "backend/routes/notificacoes.js",
+    "backend/routes/admin.js",
+    "backend/services/rules.js",
+    "backend/services/auth.js",
+    "backend/services/db.js",
+    "backend/services/weather.js",
+    "backend/services/openmeteo.js",
+    "backend/services/inmet.js",
+    "backend/services/bcb.js",
+    "backend/services/stooq.js",
+    "backend/services/alphavantage.js",
+    "backend/services/googlenews.js",
+    "backend/services/market.js",
+    "backend/services/insumosIA.js",
+    "backend/services/insumosCatalog.js",
+    "backend/services/viacep.js",
+    "backend/services/nominatim.js",
+    "backend/services/geocoding.js",
+    "backend/services/localizacao.js",
   ],
   // v8: o provider padrão (babel-plugin-istanbul) ignora arquivos fora do cwd (backend/)
   coverageProvider: "v8",

@@ -1,5 +1,5 @@
 {
-  "talhao": { "id": 1, "nome": "Talhão principal - Itajubá", "cultura": "cafe", "fase": "vegetativo", "latitude": -22.42, "longitude": -45.45 },
+  "talhao": { "id": 1, "nome": "Talhão principal - Itajubá", "cultura": "cafe", "fase": "plantio", "latitude": -22.42, "longitude": -45.45 },
   "clima": { "temperaturaMinima": 15, "diasSemChuva": 0, "chuvaAcumulada7dias": 20, "probabilidadeChuva7dias": 10, "ventoMaximoKmh": 10, "fonte": "open-meteo" },
   "alertas": [],
   "alertasOficiais": []
