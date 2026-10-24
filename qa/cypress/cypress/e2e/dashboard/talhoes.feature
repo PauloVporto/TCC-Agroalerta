@@ -12,6 +12,10 @@ Funcionalidade: Painel - Talhões
     Então vejo o título "Talhões"
     E a tabela lista 1 talhão com nome "Talhão principal - Itajubá", cultura "Café" e fase "Plantio"
 
+  Cenário: Cada talhão ocupa uma única linha da tabela
+    Então a tabela tem 1 linha de talhão, e ela é clicável
+    E a linha mostra nome, cultura e fase na mesma célula de origem
+
   Cenário: Abrir e fechar o formulário de novo talhão
     Quando clico no botão de novo talhão
     Então o formulário de talhão está visível e o botão mostra "Cancelar"

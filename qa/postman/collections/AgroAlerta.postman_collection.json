@@ -6600,6 +6600,209 @@
               }
             }
           ]
+        },
+        {
+          "name": "Talhões bloqueados para fornecedor",
+          "item": [
+            {
+              "name": "403 - fornecedor não lista talhões",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica quais contas podem gerenciar talhões\", function () {",
+                      "    const erro = pm.response.json().erro;",
+                      "    pm.expect(erro).to.include('produtor');",
+                      "    pm.expect(erro).to.include('administrador');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/talhoes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "talhoes"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "403 - fornecedor não cadastra talhão",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica quais contas podem gerenciar talhões\", function () {",
+                      "    const erro = pm.response.json().erro;",
+                      "    pm.expect(erro).to.include('produtor');",
+                      "    pm.expect(erro).to.include('administrador');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/talhoes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "talhoes"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Talhão QA\",\n  \"cultura\": \"cafe\",\n  \"fase\": \"plantio\",\n  \"cep\": \"{{cep}}\"\n}"
+                }
+              }
+            },
+            {
+              "name": "403 - fornecedor não edita talhão",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica quais contas podem gerenciar talhões\", function () {",
+                      "    const erro = pm.response.json().erro;",
+                      "    pm.expect(erro).to.include('produtor');",
+                      "    pm.expect(erro).to.include('administrador');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/talhoes/{{talhaoId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "talhoes",
+                    "{{talhaoId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Tentativa\"\n}"
+                }
+              }
+            },
+            {
+              "name": "403 - fornecedor não exclui talhão",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica quais contas podem gerenciar talhões\", function () {",
+                      "    const erro = pm.response.json().erro;",
+                      "    pm.expect(erro).to.include('produtor');",
+                      "    pm.expect(erro).to.include('administrador');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/talhoes/{{talhaoId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "talhoes",
+                    "{{talhaoId}}"
+                  ]
+                }
+              }
+            }
+          ]
         }
       ]
     },

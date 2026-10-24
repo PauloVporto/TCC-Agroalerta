@@ -84,10 +84,28 @@ describe("POST /api/auth/registrar", () => {
 
   test("papel informado é repassado ao serviço", async () => {
     resolverLocalizacaoPorCep.mockResolvedValue(local);
-    svc.criarUsuario.mockResolvedValue({ id: 1 });
+    svc.criarUsuario.mockResolvedValue({ id: 1, papel: "fornecedor" });
     svc.autenticar.mockResolvedValue({ token: "t" });
     await request(app).post("/api/auth/registrar").send({ ...corpo, papel: "fornecedor" });
     expect(svc.criarUsuario).toHaveBeenCalledWith(expect.objectContaining({ papel: "fornecedor" }));
+  });
+
+  // Fornecedor não tem lavoura: só o produtor ganha o talhão inicial.
+  test("cadastro de fornecedor não cria talhão", async () => {
+    resolverLocalizacaoPorCep.mockResolvedValue(local);
+    svc.criarUsuario.mockResolvedValue({ id: 1, papel: "fornecedor" });
+    svc.autenticar.mockResolvedValue({ token: "t" });
+    const r = await request(app).post("/api/auth/registrar").send({ ...corpo, papel: "fornecedor" });
+    expect(r.status).toBe(201);
+    expect(criarTalhao).not.toHaveBeenCalled();
+  });
+
+  test("cadastro de produtor cria o talhão inicial", async () => {
+    resolverLocalizacaoPorCep.mockResolvedValue(local);
+    svc.criarUsuario.mockResolvedValue({ id: 1, papel: "produtor" });
+    svc.autenticar.mockResolvedValue({ token: "t" });
+    await request(app).post("/api/auth/registrar").send({ ...corpo, papel: "produtor" });
+    expect(criarTalhao).toHaveBeenCalledWith(1, expect.objectContaining({ fase: "plantio" }));
   });
 
   test("cultura não suportada vira café", async () => {

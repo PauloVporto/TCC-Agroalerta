@@ -109,13 +109,6 @@ test("GET / lista só os talhões do usuário logado", async () => {
   assert.equal(corpo[0].areaHa, 8);
 });
 
-// --- GET /geocodificar ---
-
-test("GET /geocodificar exige o endereço", async () => {
-  const resposta = await requisicao("GET", "/geocodificar");
-  assert.equal(resposta.status, 400);
-});
-
 // --- POST / ---
 
 test("POST / exige todos os campos", async () => {

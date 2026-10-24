@@ -119,14 +119,17 @@ router.post("/registrar", async (req, res) => {
       longitude: local.longitude,
     });
 
-    await criarTalhao(usuario.id, {
-      nome: "Talhão principal - " + local.cidade,
-      cultura: culturaEscolhida,
-      fase: "plantio",
-      endereco: local.enderecoFormatado,
-      regiao: local.cidade + " - " + local.uf,
-      coordenadas: local,
-    });
+    // Fornecedor não tem lavoura: o talhão inicial é só para quem produz.
+    if (usuario.papel !== "fornecedor") {
+      await criarTalhao(usuario.id, {
+        nome: "Talhão principal - " + local.cidade,
+        cultura: culturaEscolhida,
+        fase: "plantio",
+        endereco: local.enderecoFormatado,
+        regiao: local.cidade + " - " + local.uf,
+        coordenadas: local,
+      });
+    }
 
     // A conta já existe: um problema ao gravar as notificações não desfaz o cadastro
     // (o produtor vê os canais desautorizados no painel e pode ativá-los lá).

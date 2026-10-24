@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { resolverLocalizacaoPorCep } = require("../services/localizacao");
 const { culturasSuportadas, fasesSuportadas } = require("../services/rules");
-const { exigirAutenticacao } = require("../services/auth");
+const { exigirAutenticacao, exigirPapel, PAPEL_ADMIN } = require("../services/auth");
 const { pool } = require("../services/db");
 
 // Colunas devolvidas em toda resposta de talhão (listagem, cadastro, edição e busca).
@@ -14,9 +14,10 @@ const TAMANHO_MAX_VARIEDADE = 60;
 // A área é gravada sempre em hectares; a unidade guarda como o produtor prefere vê-la.
 const UNIDADES_AREA = ["ha", "m2"];
 
-// Todas as rotas de talhão exigem usuário autenticado, e cada usuário
-// só enxerga/mexe nos próprios talhões.
-router.use(exigirAutenticacao);
+// Talhão é lavoura: fornecedor não tem. Admin entra porque o papel é uma
+// promoção de uma conta existente, que pode ter talhões próprios — e isso não
+// dá acesso a nada de terceiros, já que toda rota aqui filtra pelo dono.
+router.use(exigirAutenticacao, exigirPapel("produtor", PAPEL_ADMIN));
 
 /**
  * @swagger
@@ -72,31 +73,6 @@ router.get("/", async (req, res) => {
  *       400: { description: Campos obrigatórios ausentes, cultura inválida ou CEP não encontrado, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
  *       401: { description: Token ausente ou inválido, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
  */
-// GET /api/talhoes/geocodificar?endereco=... - localiza endereço para o mapa de cadastro
-router.get("/geocodificar", async (req, res) => {
-  const endereco = String(req.query.endereco || "").trim();
-  if (!endereco) {
-    return res.status(400).json({ erro: "Informe o endereço para localizar no mapa." });
-  }
-
-  try {
-    const coords = await geocodificarEndereco(endereco);
-    res.json(coords);
-  } catch (erro) {
-    console.error("[talhoes] Geocodificação falhou:", erro.message);
-    res.status(400).json({ erro: "Não foi possível localizar esse endereço. Tente cidade, bairro ou referência mais específica." });
-  }
-});
-
-router.get("/geocodificar-reverso", async (req, res) => {
-  try {
-    const coords = await geocodificarReverso(req.query.lat, req.query.lng);
-    res.json(coords);
-  } catch (erro) {
-    res.status(400).json({ erro: erro.message || "Não foi possível identificar o endereço desse ponto." });
-  }
-});
-
 // POST /api/talhoes - cadastra um novo talhão para o usuário logado
 // body: { nome, cultura, fase, cep, variedade?, areaHa? }
 router.post("/", async (req, res) => {
@@ -214,7 +190,9 @@ router.delete("/:id", async (req, res) => {
     return res.status(403).json({ erro: "Você não tem permissão para remover este talhão." });
   }
 
-  await pool.query("DELETE FROM talhoes WHERE id = $1", [id]);
+  // O dono já foi conferido acima; repetir o filtro aqui evita que um refactor
+  // futuro no `if` abra espaço para apagar talhão alheio.
+  await pool.query("DELETE FROM talhoes WHERE id = $1 AND usuario_id = $2", [id, req.usuario.id]);
   res.status(204).send();
 });
 
@@ -294,10 +272,16 @@ router.patch("/:id", async (req, res) => {
 
   const atualizado = await pool.query(
     `UPDATE talhoes SET nome = $1, cultura = $2, variedade = $3, fase = $4, area_ha = $5, area_unidade = $6
-     WHERE id = $7
+     WHERE id = $7 AND usuario_id = $8
      RETURNING ${COLUNAS_TALHAO}`,
-    [nome, cultura, variedade, fase, areaHa, areaUnidade, id]
+    [nome, cultura, variedade, fase, areaHa, areaUnidade, id, req.usuario.id]
   );
+
+  // Não deve acontecer (o dono foi conferido acima), mas sem isto um UPDATE que
+  // não casa nenhuma linha responderia 200 com corpo vazio.
+  if (!atualizado.rows[0]) {
+    return res.status(404).json({ erro: "Talhão não encontrado" });
+  }
 
   res.json(atualizado.rows[0]);
 });

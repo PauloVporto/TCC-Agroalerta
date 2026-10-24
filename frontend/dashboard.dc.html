@@ -285,8 +285,7 @@
           </label>
           <label style="display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #4A4A42;">
             Fase atual
-            <input data-cy="talhao-fase" type="text" value="{{ tFase }}" onChange="{{ onTFase }}" placeholder="floracao" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px; text-transform: none; letter-spacing: 0; font-weight: 400;" />
-            <select value="{{ tFase }}" onChange="{{ onTFase }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px;">
+            <select data-cy="talhao-fase" value="{{ tFase }}" onChange="{{ onTFase }}" style="font-family: Archivo, sans-serif; font-size: 14px; color: #1A1A18; background: #FFFFFF; border: 1px solid #C9C3B0; padding: 11px 12px;">
               <option value="">Selecione a fase</option>
               <sc-for list="{{ fasesTalhao }}" as="f" hint-placeholder-count="3">
                 <option value="{{ f.valor }}">{{ f.label }}</option>
@@ -387,12 +386,9 @@
             </thead>
             <tbody>
               <sc-for list="{{ talhoes }}" as="t" hint-placeholder-count="6">
-                <tr>
+                <tr onClick="{{ t.abrir }}" title="Abrir talhão para editar" style="cursor: pointer; background: {{ t.linhaBg }};" style-hover="background: #F7F5EF;">
                   <td data-cy="talhao-nome-celula" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-weight: 500; color: #1A1A18;">{{ t.id }}<div style="font-size: 12px; color: #6B4A34; font-weight: 400;">{{ t.setor }}</div></td>
                   <td data-cy="talhao-cultura-celula" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #1A1A18;">{{ t.cultura }}<div style="font-size: 12px; color: #6B4A34;">{{ t.variedade }}</div></td>
-                <tr onClick="{{ t.abrir }}" title="Abrir talhão para editar" style="cursor: pointer; background: {{ t.linhaBg }};" style-hover="background: #F7F5EF;">
-                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; font-weight: 500; color: #1A1A18;">{{ t.id }}<div style="font-size: 12px; color: #6B4A34; font-weight: 400;">{{ t.setor }}</div></td>
-                  <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #1A1A18;">{{ t.cultura }}<div style="font-size: 12px; color: #6B4A34;">{{ t.variedade }}</div></td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #1A1A18;">{{ t.area }}</td>
                   <td data-cy="talhao-fase-celula" style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA; color: #4A4A42;">{{ t.fase }}</td>
                   <td style="padding: 14px 16px; border-bottom: 1px solid #EAE6DA;">
@@ -827,13 +823,12 @@
             A autorização de alertas por e-mail e WhatsApp é feita em Notificações.
           </div>
 
-          <button data-cy="conta-salvar" type="button" onClick="{{ salvarConta }}" style="margin-top: 20px; width: 100%; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #2F6E8F; border: 1px solid #2F6E8F; padding: 13px 20px; cursor: pointer;" style-hover="background: #24505F;">{{ salvarContaLabel }}</button>
+          <button data-cy="conta-salvar" type="button" onClick="{{ salvarConta }}" disabled="{{ contaSalvando }}" style="margin-top: 20px; width: 100%; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #2F6E8F; border: 1px solid #2F6E8F; padding: 13px 20px; cursor: pointer;" style-hover="background: #24505F;">{{ salvarContaLabel }}</button>
           <button data-cy="conta-ir-notificacoes" type="button" onClick="{{ goNotificacoes }}" style="margin-top: 10px; width: 100%; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #24505F; background: transparent; border: 1px solid #CFE0E8; padding: 13px 20px; cursor: pointer;" style-hover="border-color: #2F6E8F;">Gerenciar notificações</button>
 
           <sc-if value="{{ contaErro }}" hint-placeholder-val="{{ false }}">
             <p style="margin: 16px 0 0; font-size: 13px; line-height: 1.5; color: #A33A22;">{{ contaErro }}</p>
           </sc-if>
-          <button type="button" onClick="{{ salvarConta }}" disabled="{{ contaSalvando }}" style="margin-top: 20px; width: 100%; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; color: #F7F5EF; background: #2F6E8F; border: 1px solid #2F6E8F; padding: 13px 20px; cursor: pointer;" style-hover="background: #24505F;">{{ salvarContaLabel }}</button>
         </div>
       </section>
       </sc-if>

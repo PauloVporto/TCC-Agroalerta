@@ -1,7 +1,10 @@
 jest.mock("../../../backend/services/db", () => ({ pool: { query: jest.fn() } }));
-jest.mock("../../../backend/services/auth", () => ({
-  exigirAutenticacao: (req, res, next) => require("../helpers/app").autenticacaoFalsa(req, res, next),
-}));
+// exigirPapel é o middleware real: é ele que barra fornecedor nas rotas de talhão.
+jest.mock("../../../backend/services/auth", () => {
+  const { autenticacaoFalsa } = require("../helpers/app");
+  const { exigirPapel, PAPEL_ADMIN } = jest.requireActual("../../../backend/services/auth");
+  return { exigirAutenticacao: autenticacaoFalsa, exigirPapel, PAPEL_ADMIN };
+});
 jest.mock("../../../backend/services/localizacao", () => ({ resolverLocalizacaoPorCep: jest.fn() }));
 
 const request = require("supertest");
@@ -20,6 +23,34 @@ describe("autenticação do router de talhões", () => {
     const r = await request(app)[m]("/api/talhoes" + p).send({});
     expect(r.status).toBe(401);
     expect(pool.query).not.toHaveBeenCalled();
+  });
+});
+
+describe("papel exigido no router de talhões", () => {
+  // Talhão é lavoura: fornecedor não tem, e o bloqueio precisa estar na API,
+  // não só no frontend (que apenas esconde a página).
+  test.each([["get", "/"], ["post", "/"], ["patch", "/1"], ["delete", "/1"]])(
+    "%s %s com conta de fornecedor => 403",
+    async (m, p) => {
+      const r = await request(app)[m]("/api/talhoes" + p).set({ Authorization: "Bearer fornecedor" }).send({});
+      expect(r.status).toBe(403);
+      expect(pool.query).not.toHaveBeenCalled();
+    }
+  );
+
+  test("a mensagem de 403 diz quais contas podem", async () => {
+    const r = await request(app).get("/api/talhoes").set({ Authorization: "Bearer fornecedor" });
+    expect(r.body.erro).toMatch(/produtor/);
+    expect(r.body.erro).toMatch(/administrador/);
+  });
+
+  // Admin é produtor promovido e pode ter talhões próprios; o filtro por dono
+  // continua valendo, então ele não enxerga nada de terceiros.
+  test("conta de administrador continua acessando os próprios talhões", async () => {
+    pool.query.mockResolvedValue({ rows: [talhao] });
+    const r = await request(app).get("/api/talhoes").set({ Authorization: "Bearer admin" });
+    expect(r.status).toBe(200);
+    expect(pool.query.mock.calls[0][1]).toEqual([4]);
   });
 });
 
@@ -105,7 +136,8 @@ describe("DELETE /api/talhoes/:id", () => {
     pool.query.mockResolvedValueOnce({ rows: [{ id: 10, usuarioId: 1 }] }).mockResolvedValueOnce({ rows: [] });
     const r = await request(app).delete("/api/talhoes/10").set(AUTH);
     expect(r.status).toBe(204);
-    expect(pool.query.mock.calls[1][0]).toMatch(/DELETE FROM talhoes/);
+    expect(pool.query.mock.calls[1][0]).toMatch(/DELETE FROM talhoes WHERE id = \$1 AND usuario_id = \$2/);
+    expect(pool.query.mock.calls[1][1]).toEqual([10, 1]);
   });
 
   test("talhão inexistente => 404", async () => {
@@ -138,7 +170,7 @@ describe("PATCH /api/talhoes/:id", () => {
     const r = await request(app).patch("/api/talhoes/10").set(AUTH).send({ nome: "Novo", fase: "floracao" });
     expect(r.status).toBe(200);
     expect(r.body).toMatchObject({ nome: "Novo", fase: "floracao" });
-    expect(pool.query.mock.calls[1][1]).toEqual(["Novo", "cafe", "Mundo Novo", "floracao", 8, "ha", 10]);
+    expect(pool.query.mock.calls[1][1]).toEqual(["Novo", "cafe", "Mundo Novo", "floracao", 8, "ha", 10, 1]);
   });
 
   test("campos omitidos mantêm os valores atuais", async () => {
@@ -146,7 +178,7 @@ describe("PATCH /api/talhoes/:id", () => {
       .mockResolvedValueOnce({ rows: [salvo] })
       .mockResolvedValueOnce({ rows: [{}] });
     await request(app).patch("/api/talhoes/10").set(AUTH).send({});
-    expect(pool.query.mock.calls[1][1]).toEqual(["Velho", "cafe", "Mundo Novo", "plantio", 8, "ha", 10]);
+    expect(pool.query.mock.calls[1][1]).toEqual(["Velho", "cafe", "Mundo Novo", "plantio", 8, "ha", 10, 1]);
   });
 
   test("fase inválida no corpo => 400 e nada é gravado", async () => {

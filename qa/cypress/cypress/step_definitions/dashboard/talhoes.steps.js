@@ -49,7 +49,7 @@ When("envio o formulário de talhão", () => {
 When("preencho o talhão {string} cultura {string} fase {string} e CEP {string}", (nome, cultura, fase, cep) => {
   cy.pegar("talhao-nome").type(nome);
   cy.pegar("talhao-cultura").select(cultura);
-  cy.pegar("talhao-fase").type(fase);
+  cy.pegar("talhao-fase").select(fase);
   cy.pegar("talhao-cep").type(cep);
 });
 
@@ -83,5 +83,23 @@ Then("a API confirma {int} talhões para o usuário", (qtd) => {
     expect(r.status).to.eq(200);
     expect(r.body).to.have.length(qtd);
     expect(r.body.map((t) => t.nome)).to.include("Talhão QA Soja");
+  });
+});
+
+// Regressão: o markup da linha já veio duplicado de um merge e cada talhão
+// renderizava duas linhas — uma truncada e a clicável.
+Then("a tabela tem {int} linha de talhão, e ela é clicável", (qtd) => {
+  cy.get("tbody tr").should("have.length", qtd);
+  cy.get("tbody tr").first().should("have.attr", "title", "Abrir talhão para editar");
+  cy.pegar("talhao-nome-celula").should("have.length", qtd);
+});
+
+// Os três seletores precisam viver na MESMA linha: antes, dois deles estavam
+// presos no fragmento antigo e um na linha nova.
+Then("a linha mostra nome, cultura e fase na mesma célula de origem", () => {
+  cy.get("tbody tr").first().within(() => {
+    cy.pegar("talhao-nome-celula").should("exist");
+    cy.pegar("talhao-cultura-celula").should("exist");
+    cy.pegar("talhao-fase-celula").should("exist");
   });
 });
