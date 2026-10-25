@@ -19,6 +19,7 @@ Funcionalidade: Painel - Navegação, relatórios e sessão
       | Insumos e preços | Insumos e preços     |
       | Mercado          | Tendência de mercado |
       | Relatórios       | Relatórios           |
+      | Notícias         | Notícias do agro     |
 
   Cenário: Recolher e expandir o menu lateral
     Dado que estou autenticado no painel

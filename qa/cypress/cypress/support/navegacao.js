@@ -13,4 +13,5 @@ export const NAV = {
   "Insumos e preços": "nav-insumos",
   Mercado: "nav-mercado",
   Relatórios: "nav-relatorios",
+  Notícias: "nav-noticias",
 };

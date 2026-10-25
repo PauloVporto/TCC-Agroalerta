@@ -5034,6 +5034,289 @@
       ]
     },
     {
+      "name": "Noticias",
+      "description": "Notícias por cultura, lidas dos RSS do Canal Rural e do g1 Agronegócios. Depende de internet. O primeiro cenário aquece o cache de 3 horas, por isso ele tem orçamento de tempo maior que o seguinte.",
+      "item": [
+        {
+          "name": "GET /api/noticias",
+          "item": [
+            {
+              "name": "200 - notícias de café com resumo e link",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"estrutura da resposta\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.include.keys('cultura', 'total', 'noticias');",
+                      "    pm.expect(body.cultura).to.eql('cafe');",
+                      "    pm.expect(body.noticias).to.be.an('array');",
+                      "    pm.expect(body.total).to.eql(body.noticias.length);",
+                      "});",
+                      "",
+                      "pm.test(\"cada notícia traz título, resumo e link para a matéria\", function () {",
+                      "    const body = pm.response.json();",
+                      "    // Sem resumo e sem link a página de notícias não se sustenta: é o",
+                      "    // motivo de o projeto ter trocado o Google News pelos RSS dos veículos.",
+                      "    pm.expect(body.noticias.length, 'os feeds devolveram notícias').to.be.above(0);",
+                      "    body.noticias.forEach(function (n) {",
+                      "        pm.expect(n).to.include.keys('titulo', 'resumo', 'link', 'fonte', 'dataTexto', 'publicadoEm');",
+                      "        pm.expect(n.titulo).to.be.a('string').and.not.empty;",
+                      "        pm.expect(n.resumo.length, 'resumo de: ' + n.titulo).to.be.above(40);",
+                      "        pm.expect(n.resumo.length).to.be.at.most(320);",
+                      "        pm.expect(n.link).to.match(/^https?:\\/\\//);",
+                      "        pm.expect(['Canal Rural', 'g1 Agronegócios']).to.include(n.fonte);",
+                      "    });",
+                      "});",
+                      "",
+                      "pm.test(\"não repete manchete e devolve no máximo 12\", function () {",
+                      "    const body = pm.response.json();",
+                      "    const titulos = body.noticias.map(function (n) { return n.titulo.toLowerCase(); });",
+                      "    pm.expect(new Set(titulos).size).to.eql(titulos.length);",
+                      "    pm.expect(body.noticias.length).to.be.at.most(12);",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é JSON\", function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 20s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(20000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias?cultura=cafe",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ],
+                  "query": [
+                    {
+                      "key": "cultura",
+                      "value": "cafe"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - segunda chamada da mesma cultura vem do cache",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"resposta igual à da primeira chamada\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.cultura).to.eql('cafe');",
+                      "    pm.expect(body.total).to.be.a('number');",
+                      "});",
+                      "",
+                      "// A requisição anterior já aqueceu o cache de 3 horas, então esta não",
+                      "// deve mais esperar os feeds externos.",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias?cultura=cafe",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ],
+                  "query": [
+                    {
+                      "key": "cultura",
+                      "value": "cafe"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - notícias de soja",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"responde com a cultura pedida\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.cultura).to.eql('soja');",
+                      "    pm.expect(body.noticias).to.be.an('array');",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é JSON\", function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 20s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(20000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias?cultura=soja",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ],
+                  "query": [
+                    {
+                      "key": "cultura",
+                      "value": "soja"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - sem o parâmetro cultura assume café",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"cultura padrão é café\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.cultura).to.eql('cafe');",
+                      "    pm.expect(body).to.have.property('total');",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é JSON\", function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "400 - cultura não suportada",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"o erro diz quais culturas valem\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.have.property('erro');",
+                      "    pm.expect(body.erro).to.match(/Cultura não suportada/);",
+                      "    pm.expect(body.erro).to.include('cafe');",
+                      "    pm.expect(body.erro).to.include('soja');",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é JSON\", function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias?cultura=abacaxi",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ],
+                  "query": [
+                    {
+                      "key": "cultura",
+                      "value": "abacaxi"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Relatorios",
       "item": [
         {

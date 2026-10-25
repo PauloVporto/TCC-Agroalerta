@@ -44,26 +44,24 @@
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="1.5" y="1.5" width="5" height="5"></rect><rect x="9.5" y="1.5" width="5" height="5"></rect><rect x="1.5" y="9.5" width="5" height="5"></rect><rect x="9.5" y="9.5" width="5" height="5"></rect></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Visão geral</span>
       </button>
-      <button data-cy="nav-alertas" type="button" onClick="{{ goAlertas }}" title="Alertas climáticos" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navAlertasBg }}; color: {{ navAlertasFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navAlertasBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
-        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><path d="M8 1.8 15 14H1z"></path><line x1="8" y1="6" x2="8" y2="10"></line><line x1="8" y1="11.6" x2="8" y2="12"></line></svg>
-        <span style="white-space: nowrap; display: {{ labelDisplay }};">Alertas</span>
+      </sc-if>
+      <button data-cy="nav-mercado" type="button" onClick="{{ goMercado }}" title="Mercado" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navMercadoBg }}; color: {{ navMercadoFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navMercadoBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><polyline points="1.5,12 5.5,7.5 9,10 14.5,3.5"></polyline><polyline points="10.5,3.5 14.5,3.5 14.5,7"></polyline></svg>
+        <span style="white-space: nowrap; display: {{ labelDisplay }};">Mercado</span>
       </button>
+      <sc-if value="{{ ehProdutor }}" hint-placeholder-val="{{ true }}">
       <button data-cy="nav-talhoes" type="button" onClick="{{ goTalhoes }}" title="Talhões" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navTalhoesBg }}; color: {{ navTalhoesFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navTalhoesBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="1.5" y="3.5" width="13" height="9"></rect><line x1="5.8" y1="3.5" x2="5.8" y2="12.5"></line><line x1="10.2" y1="3.5" x2="10.2" y2="12.5"></line></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Talhões</span>
       </button>
-      <button data-cy="nav-notificacoes" type="button" onClick="{{ goNotificacoes }}" title="Notificações" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navNotificacoesBg }}; color: {{ navNotificacoesFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navNotificacoesBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
-        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><path d="M4 11.5V7a4 4 0 0 1 8 0v4.5l1.2 1.3H2.8z"></path><path d="M6.6 14a1.5 1.5 0 0 0 2.8 0"></path></svg>
-        <span style="white-space: nowrap; display: {{ labelDisplay }};">Notificações</span>
+      <button data-cy="nav-alertas" type="button" onClick="{{ goAlertas }}" title="Alertas climáticos" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navAlertasBg }}; color: {{ navAlertasFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navAlertasBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><path d="M8 1.8 15 14H1z"></path><line x1="8" y1="6" x2="8" y2="10"></line><line x1="8" y1="11.6" x2="8" y2="12"></line></svg>
+        <span style="white-space: nowrap; display: {{ labelDisplay }};">Alertas</span>
       </button>
       </sc-if>
       <button data-cy="nav-insumos" type="button" onClick="{{ goInsumos }}" title="Insumos e preços" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navInsumosBg }}; color: {{ navInsumosFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navInsumosBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="4.5" y="5.5" width="7" height="9"></rect><line x1="6.5" y1="1.5" x2="9.5" y2="1.5"></line><line x1="8" y1="1.5" x2="8" y2="5.5"></line></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Insumos e preços</span>
-      </button>
-      <button data-cy="nav-mercado" type="button" onClick="{{ goMercado }}" title="Mercado" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navMercadoBg }}; color: {{ navMercadoFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navMercadoBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
-        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><polyline points="1.5,12 5.5,7.5 9,10 14.5,3.5"></polyline><polyline points="10.5,3.5 14.5,3.5 14.5,7"></polyline></svg>
-        <span style="white-space: nowrap; display: {{ labelDisplay }};">Mercado</span>
       </button>
       <sc-if value="{{ ehFornecedor }}" hint-placeholder-val="{{ false }}">
       <button data-cy="nav-ofertas" type="button" onClick="{{ goOfertas }}" title="Minhas ofertas" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navOfertasBg }}; color: {{ navOfertasFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navOfertasBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
@@ -75,10 +73,20 @@
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="3" y="1.5" width="10" height="13"></rect><line x1="5.5" y1="5" x2="10.5" y2="5"></line><line x1="5.5" y1="8" x2="10.5" y2="8"></line><line x1="5.5" y1="11" x2="8.5" y2="11"></line></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Relatórios</span>
       </button>
+      <button data-cy="nav-noticias" type="button" onClick="{{ goNoticias }}" title="Notícias" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navNoticiasBg }}; color: {{ navNoticiasFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navNoticiasBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><rect x="1.5" y="2.5" width="13" height="11"></rect><line x1="4" y1="5.5" x2="11.5" y2="5.5"></line><line x1="4" y1="8" x2="8" y2="8"></line><line x1="4" y1="10.5" x2="8" y2="10.5"></line></svg>
+        <span style="white-space: nowrap; display: {{ labelDisplay }};">Notícias</span>
+      </button>
       <sc-if value="{{ ehAdmin }}" hint-placeholder-val="{{ false }}">
       <button type="button" onClick="{{ goAdmin }}" title="Administração" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navAdminBg }}; color: {{ navAdminFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navAdminBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><path d="M8 1.5 13.5 3.5v4c0 3.2-2.3 5.9-5.5 7-3.2-1.1-5.5-3.8-5.5-7v-4z"></path><path d="M5.6 8 7.3 9.7 10.6 6.3"></path></svg>
         <span style="white-space: nowrap; display: {{ labelDisplay }};">Administração</span>
+      </button>
+      </sc-if>
+      <sc-if value="{{ ehProdutor }}" hint-placeholder-val="{{ true }}">
+      <button data-cy="nav-notificacoes" type="button" onClick="{{ goNotificacoes }}" title="Notificações" style="display: flex; align-items: center; gap: 12px; justify-content: {{ navJustify }}; font-family: Archivo, sans-serif; font-size: 14px; font-weight: 500; text-align: left; padding: 12px 19px; background: {{ navNotificacoesBg }}; color: {{ navNotificacoesFg }}; border: 0; border-radius: 0; border-left: 3px solid {{ navNotificacoesBar }}; cursor: pointer;" style-hover="color: #FFFFFF;">
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex: none;"><path d="M4 11.5V7a4 4 0 0 1 8 0v4.5l1.2 1.3H2.8z"></path><path d="M6.6 14a1.5 1.5 0 0 0 2.8 0"></path></svg>
+        <span style="white-space: nowrap; display: {{ labelDisplay }};">Notificações</span>
       </button>
       </sc-if>
     </nav>
@@ -680,7 +688,7 @@
             <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(247,245,239,0.8);">{{ resumoIAFonteTexto }}</span>
           </div>
           <p data-cy="mercado-resumo" style="margin: 16px 0 0; font-family: Newsreader, Georgia, serif; font-size: 19px; line-height: 1.6; color: #F7F5EF;">{{ resumoIATexto }}</p>
-          <p style="margin: 16px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.7; letter-spacing: 0.04em; color: rgba(247,245,239,0.66);">Fontes usadas: {{ fontesUsadasTexto }}</p>
+          <p data-cy="mercado-fontes" style="margin: 16px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.7; letter-spacing: 0.04em; color: rgba(247,245,239,0.66);">Fontes usadas: {{ fontesUsadasTexto }}</p>
           <p style="margin: 14px 0 0; font-size: 12px; line-height: 1.6; color: rgba(247,245,239,0.6);">Resumo de apoio à decisão, não recomendação de compra ou venda.</p>
         </div>
         <div>
@@ -696,19 +704,41 @@
               <span data-cy="mercado-receita" style="font-family: Fraunces, Georgia, serif; font-size: 26px; font-weight: 600; color: #1F3D2B; line-height: 1;">{{ receitaSimulada }}</span>
             </div>
           </div>
-          <h3 style="font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; margin: 0 0 14px; color: #1A1A18;">Notícias na curadoria</h3>
-          <ul style="margin: 0; padding: 0; list-style: none; border-top: 1px solid #DDD8C9;">
-            <sc-for list="{{ noticias }}" as="n" hint-placeholder-count="3">
-              <li style="padding: 14px 0; border-bottom: 1px solid #DDD8C9;">
-                <div data-cy="mercado-noticia-titulo" style="font-size: 14px; line-height: 1.5; color: #1A1A18;">{{ n.titulo }}</div>
-                <div style="margin-top: 5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #6B4A34;">{{ n.fonte }}</span>
-                  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #9A9587;">{{ n.dataTexto }}</span>
-                </div>
-              </li>
-            </sc-for>
-          </ul>
         </div>
+      </section>
+      </sc-if>
+
+      <sc-if value="{{ pgNoticias }}" hint-placeholder-val="{{ false }}">
+      <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 6px; flex-wrap: wrap;">
+          <h2 data-cy="noticias-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">{{ noticiasTitulo }}</h2>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <sc-for list="{{ culturasNoticias }}" as="c" hint-placeholder-count="5">
+              <button data-cy="noticias-cultura" type="button" onClick="{{ c.pick }}" style="font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: {{ c.fg }}; background: {{ c.bg }}; border: 1px solid {{ c.borda }}; padding: 7px 13px; border-radius: 999px; cursor: pointer;">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <p style="margin: 0 0 20px; font-size: 13px; line-height: 1.5; color: #6B4A34;">{{ noticiasNota }}</p>
+
+        <sc-if value="{{ noticiasVazia }}" hint-placeholder-val="{{ false }}">
+          <div data-cy="noticias-vazio" style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px; padding: 32px; text-align: center; font-size: 13px; color: #6B4A34;">{{ noticiasVaziaTexto }}</div>
+        </sc-if>
+
+        <sc-if value="{{ temNoticias }}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px;">
+          <sc-for list="{{ noticiasLista }}" as="n" hint-placeholder-count="6">
+            <a data-cy="noticias-item" href="{{ n.link }}" target="_blank" rel="noopener noreferrer" title="Abrir no site do veículo" style="display: flex; flex-direction: column; gap: 10px; border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px; padding: 20px; text-decoration: none; cursor: pointer;" style-hover="border-color: #2F6E8F;">
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span data-cy="noticias-item-fonte" style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #24505F; background: #EEF5F8; border: 1px solid #CFE0E8; padding: 3px 9px; border-radius: 999px;">{{ n.fonte }}</span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #9A9587;">{{ n.dataTexto }}</span>
+              </div>
+              <h3 data-cy="noticias-item-titulo" style="font-family: Fraunces, Georgia, serif; font-size: 17px; font-weight: 600; line-height: 1.3; margin: 0; color: #1A1A18;">{{ n.titulo }}</h3>
+              <p data-cy="noticias-item-resumo" style="margin: 0; font-size: 13px; line-height: 1.6; color: #4A4A42;">{{ n.resumo }}</p>
+              <span style="margin-top: auto; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: #2F6E8F;">Ler no site do veículo →</span>
+            </a>
+          </sc-for>
+        </div>
+        </sc-if>
       </section>
       </sc-if>
 
@@ -1067,6 +1097,8 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 const API_BASE = window.AGROALERTA_API_BASE || 'http://localhost:3001/api';
+// As culturas que o backend aceita em /api/noticias (services/noticias.js).
+const NOMES_CULTURA = { cafe: 'Café', soja: 'Soja', milho: 'Milho', cana: 'Cana-de-açúcar', feijao: 'Feijão' };
 
 function apiFetch(path, opts) {
   opts = opts || {};
@@ -1282,7 +1314,12 @@ class Component extends DCLogic {
       precos: [],
       _mercadoHistorico: [],
       _mercadoProjecao: [],
-      noticias: [],
+      // Notícias que a análise de IA citou como fatores. Não são a página de
+      // Notícias: ali os itens vêm de /api/noticias, com resumo e link.
+      _mercadoFatores: [],
+      _noticias: [],
+      _noticiasCultura: null,
+      _noticiasCarregando: false,
       _relHistorico: [],
       _relNovoAberto: false,
       _relItemAberto: null,
@@ -1640,6 +1677,27 @@ class Component extends DCLogic {
     }).catch(function() {});
   }
 
+  // Notícias da cultura, do /api/noticias: título, resumo para o preview e o
+  // link da matéria no site do veículo.
+  _carregarNoticias(cultura) {
+    this.setState({ _noticiasCultura: cultura, _noticiasCarregando: true });
+    fetch(API_BASE + '/noticias?cultura=' + encodeURIComponent(cultura))
+      .then(function(r) { return r.json(); })
+      .then((dados) => {
+        // Se a pessoa trocou de cultura enquanto a busca corria, a resposta
+        // antiga não deve sobrescrever a nova.
+        if (this.state._noticiasCultura !== cultura) return;
+        this.setState({
+          _noticias: Array.isArray(dados.noticias) ? dados.noticias : [],
+          _noticiasCarregando: false
+        });
+      })
+      .catch(() => {
+        if (this.state._noticiasCultura !== cultura) return;
+        this.setState({ _noticias: [], _noticiasCarregando: false });
+      });
+  }
+
   _carregarMercado(cultura) {
     this._carregarCotacoes(cultura);
     Promise.all([
@@ -1648,18 +1706,14 @@ class Component extends DCLogic {
     ]).then((results) => {
       const hist = results[0], analise = results[1];
       const fatores = Array.isArray(analise.fatoresConsiderados) ? analise.fatoresConsiderados : [];
-      const noticias = fatores.map(function(f) {
-        return {
-          titulo: typeof f === 'string' ? f : (f.titulo || ''),
-          fonte: typeof f === 'object' && f.fonte ? f.fonte : 'Google News',
-          dataTexto: typeof f === 'object' && f.dataTexto ? f.dataTexto : ''
-        };
+      const fontesFatores = fatores.map(function(f) {
+        return typeof f === 'object' && f.fonte ? f.fonte : '';
       });
       this.setState({
         _mercadoHistorico: Array.isArray(hist.historico) ? hist.historico : [],
         _mercadoProjecao: Array.isArray(hist.projecao) ? hist.projecao : [],
         _mercadoTendencia: typeof hist.tendenciaAnual === 'number' ? hist.tendenciaAnual : null,
-        noticias: noticias, _mercadoCultura: cultura,
+        _mercadoFatores: fontesFatores, _mercadoCultura: cultura,
         _mercadoUnidade: hist.unidade || '',
         _mercadoFonte: hist.fonte || '',
         _mercadoResumo: analise.resumo || '',
@@ -1699,6 +1753,7 @@ class Component extends DCLogic {
       ofertas: { title: 'Minhas ofertas' },
       conta: { title: 'Configurar conta' },
       mercado: { title: 'Tendência de mercado' },
+      noticias: { title: 'Notícias do agro' },
       relatorios: { title: 'Relatórios' },
       admin: { title: 'Administração · WhatsApp' }
     };
@@ -2186,6 +2241,7 @@ class Component extends DCLogic {
       pgInsumos: s.page === 'insumos',
       pgMercado: s.page === 'mercado',
       pgRelatorios: s.page === 'relatorios',
+      pgNoticias: s.page === 'noticias',
       pgOfertas: this.paginaAtual() === 'ofertas',
       pgConta: s.page === 'conta',
       goVisao: () => this.setState({ page: 'visao' }),
@@ -2201,6 +2257,10 @@ class Component extends DCLogic {
       goInsumos: () => this.setState({ page: 'insumos' }),
       goMercado: () => this.setState({ page: 'mercado' }),
       goRelatorios: () => this.setState({ page: 'relatorios' }),
+      goNoticias: () => {
+        this.setState({ page: 'noticias' });
+        this._carregarNoticias(s._noticiasCultura || s.cCultura || 'cafe');
+      },
       goOfertas: () => this.setState({ page: 'ofertas' }),
       goConta: () => this.setState({ page: 'conta', contaSalva: false }),
       goAdmin: () => {
@@ -2225,6 +2285,7 @@ class Component extends DCLogic {
       navInsumosBg: this.navStyle('insumos').bg, navInsumosFg: this.navStyle('insumos').fg, navInsumosBar: this.navStyle('insumos').bar,
       navMercadoBg: this.navStyle('mercado').bg, navMercadoFg: this.navStyle('mercado').fg, navMercadoBar: this.navStyle('mercado').bar,
       navRelatoriosBg: this.navStyle('relatorios').bg, navRelatoriosFg: this.navStyle('relatorios').fg, navRelatoriosBar: this.navStyle('relatorios').bar,
+      navNoticiasBg: this.navStyle('noticias').bg, navNoticiasFg: this.navStyle('noticias').fg, navNoticiasBar: this.navStyle('noticias').bar,
       navOfertasBg: this.navStyle('ofertas').bg, navOfertasFg: this.navStyle('ofertas').fg, navOfertasBar: this.navStyle('ofertas').bar,
       navContaBg: this.navStyle('conta').bg, navContaFg: this.navStyle('conta').fg, navContaBar: this.navStyle('conta').bar,
 
@@ -2517,16 +2578,37 @@ class Component extends DCLogic {
       resumoIATexto: s._mercadoResumo || (s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…'),
       resumoIAFonteTexto: s._mercadoGerarPor === 'ia' || s._mercadoGerarPor === 'ia_com_busca' ? 'Análise · Claude' : 'Análise de mercado',
       fontesUsadasTexto: (function() {
-        const fontes = s.noticias
-          .map(function(n) { return n.fonte; })
-          .filter(function(f, i, arr) { return f && f !== 'Google News' && arr.indexOf(f) === i; });
-        return fontes.length > 0
-          ? fontes.join(' · ')
-          : 'Google News RSS (Globo Rural, Canal Rural, Notícias Agrícolas)';
+        const fontes = (s._mercadoFatores || [])
+          .filter(function(f, i, arr) { return f && arr.indexOf(f) === i; });
+        return fontes.length > 0 ? fontes.join(' · ') : 'Canal Rural · g1 Agronegócios';
       })(),
-      noticias: s.noticias.length > 0 ? s.noticias : [
-        { titulo: s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…', fonte: s._dadosCarregados ? '—' : 'aguarde' }
-      ],
+      noticiasTitulo: 'Notícias de ' + (NOMES_CULTURA[s._noticiasCultura || s.cCultura || 'cafe'] || 'Café'),
+      noticiasNota: s._noticiasCarregando
+        ? 'Buscando as notícias mais recentes…'
+        : 'Direto do Canal Rural e do g1 Agronegócios. Toque em uma notícia para ler a matéria completa no site do veículo.',
+      culturasNoticias: Object.keys(NOMES_CULTURA).map((valor) => {
+        const on = (s._noticiasCultura || s.cCultura || 'cafe') === valor;
+        return {
+          label: NOMES_CULTURA[valor],
+          bg: on ? '#2F6E8F' : '#FFFFFF', fg: on ? '#F7F5EF' : '#24505F', borda: on ? '#2F6E8F' : '#CFE0E8',
+          pick: () => this._carregarNoticias(valor)
+        };
+      }),
+      noticiasLista: (s._noticias || []).map(function(n) {
+        return {
+          titulo: n.titulo,
+          resumo: n.resumo,
+          link: n.link,
+          fonte: n.fonte,
+          dataTexto: n.dataTexto || ''
+        };
+      }),
+      temNoticias: (s._noticias || []).length > 0,
+      noticiasVazia: !s._noticiasCarregando && (s._noticias || []).length === 0,
+      noticiasVaziaTexto: s._noticiasCarregando
+        ? 'Carregando…'
+        : 'Nenhuma notícia encontrada para esta cultura agora. As fontes são atualizadas ao longo do dia — tente novamente mais tarde.',
+
       relatorios: (s._relHistorico || []).map((item) => {
         const d = new Date(item.geradoEm);
         return {

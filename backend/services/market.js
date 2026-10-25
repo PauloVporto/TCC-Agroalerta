@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { buscarNoticiasCultura } = require("./googlenews");
+const { buscarNoticiasCultura } = require("./noticias");
 
 const mercadoData = JSON.parse(
   fs.readFileSync(path.join(__dirname, "..", "data", "mercado.json"), "utf-8")
@@ -74,7 +74,7 @@ async function gerarAnaliseTendencia(cultura) {
   const variacaoPercentual = (((precoAtual - precoInicio) / precoInicio) * 100).toFixed(1);
   const nomeCultura = NOMES_CULTURA[cultura] || cultura;
 
-  // Sempre busca notícias reais do Google News RSS — independente de ter API Key ou não
+  // Sempre busca notícias reais dos RSS dos veículos — independente de ter API Key ou não
   let noticias = [];
   try {
     noticias = await buscarNoticiasCultura(cultura);

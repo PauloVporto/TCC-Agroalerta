@@ -245,55 +245,153 @@ describe("alphavantage.buscarCotacaoAV", () => {
   });
 });
 
-describe("googlenews.buscarNoticiasCultura", () => {
-  const item = (titulo, fonte, data) =>
-    `<item><title><![CDATA[${titulo} - ${fonte}]]></title><pubDate>${data}</pubDate><source url="x">${fonte}</source></item>`;
-  const rss = `<rss>${item("Preço do café sobe forte na bolsa", "Canal Rural", "Mon, 05 Jan 2026 10:00:00 GMT")}${item("Curto", "X", "Mon, 05 Jan 2026 10:00:00 GMT")}${item("Safra de soja deve bater recorde", "Globo Rural", "invalida")}</rss>`;
+describe("noticias.buscarNoticiasCultura", () => {
+  // A ordem das respostas importa: o serviço busca o Canal Rural e, em seguida, o g1.
+  const itemCanal = (titulo, data, descricao) =>
+    `<item><title><![CDATA[${titulo}]]></title>` +
+    `<link>https://www.canalrural.com.br/${encodeURIComponent(titulo)}/</link>` +
+    `<pubDate>${data}</pubDate><description><![CDATA[${descricao}]]></description></item>`;
 
-  test("cultura sem query retorna []", async () => {
+  const itemG1 = (titulo, data, resumo) =>
+    `<item><title>${titulo}</title><atom:subtitle>${resumo}</atom:subtitle>` +
+    `<link>https://g1.globo.com/economia/agronegocios/noticia/${encodeURIComponent(titulo)}.ghtml</link>` +
+    `<pubDate>${data}</pubDate><description><![CDATA[<img src="foto.jpg"/>]]></description></item>`;
+
+  const DIA_23 = "Fri, 23 Oct 2026 10:00:00 GMT";
+  const DIA_24 = "Sat, 24 Oct 2026 10:00:00 GMT";
+
+  // Como o Canal Rural entrega de verdade: legenda com crédito da foto antes do
+  // texto e, no fim, a assinatura automática do WordPress.
+  const descricaoCanal =
+    '<div><figure><img src="x.jpg"/><figcaption>Foto: Canal Rural/Divulgação</figcaption></figure></div>' +
+    "<p>Queda das cotações em Nova York pressiona os preços do café no mercado brasileiro.</p>" +
+    '<p>O post <a href="x">Preço do café recua</a> apareceu primeiro em <a href="y">Canal Rural</a>.</p>';
+
+  const rssCanal = `<rss>${itemCanal("Preço do café recua e fecha a semana em queda", DIA_23, descricaoCanal)}</rss>`;
+  const rssG1 =
+    `<rss>${itemG1("Exportação de café bate recorde no trimestre", DIA_24, "Volume embarcado superou o do ano passado, segundo a Cecafé.")}` +
+    `${itemG1("Frango pode ficar mais barato no Sul", DIA_24, "Suspensão de compras pela China deve aumentar a oferta interna.")}</rss>`;
+
+  test("cultura sem termos cadastrados retorna [] sem bater nos feeds", async () => {
     const fetchMock = mockFetch();
-    expect(await carregar("services/googlenews.js").buscarNoticiasCultura("arroz")).toEqual([]);
+    expect(await carregar("services/noticias.js").buscarNoticiasCultura("arroz")).toEqual([]);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  test("extrai título sem o sufixo da fonte e filtra títulos curtos", async () => {
-    mockFetch(resposta({ text: rss }));
-    const r = await carregar("services/googlenews.js").buscarNoticiasCultura("cafe");
-    expect(r).toHaveLength(2);
-    expect(r[0]).toMatchObject({ titulo: "Preço do café sobe forte na bolsa", fonte: "Canal Rural" });
-    expect(r[0].dataTexto).toMatch(/2026/);
-    expect(r[1].dataTexto).toBe(""); // data inválida
+  test("tira o crédito da foto e a assinatura do WordPress do resumo", async () => {
+    mockFetch(resposta({ text: rssCanal }), resposta({ text: "<rss></rss>" }));
+    const r = await carregar("services/noticias.js").buscarNoticiasCultura("cafe");
+    const canal = r.find((n) => n.fonte === "Canal Rural");
+    expect(canal.resumo).toBe(
+      "Queda das cotações em Nova York pressiona os preços do café no mercado brasileiro."
+    );
+    expect(canal.resumo).not.toContain("Foto:");
+    expect(canal.resumo).not.toContain("apareceu primeiro em");
+    expect(canal.link).toContain("canalrural.com.br");
   });
 
-  test("entende texto simples com entidades HTML e fonte ausente", async () => {
-    const xml = "<rss><item><title>Milho &amp; soja em alta - Jornal &lt;b&gt;X&lt;/b&gt;</title></item></rss>";
-    mockFetch(resposta({ text: xml }));
-    const [n] = await carregar("services/googlenews.js").buscarNoticiasCultura("milho");
-    expect(n.fonte).toBe("Google News");
-    expect(n.titulo).toBe("Milho & soja em alta");
+  test("no g1 usa o <atom:subtitle>, porque o <description> é só a imagem", async () => {
+    mockFetch(resposta({ text: "<rss></rss>" }), resposta({ text: rssG1 }));
+    const r = await carregar("services/noticias.js").buscarNoticiasCultura("cafe");
+    const g1 = r.find((n) => n.fonte === "g1 Agronegócios");
+    expect(g1.resumo).toBe("Volume embarcado superou o do ano passado, segundo a Cecafé.");
+    expect(g1.resumo).not.toContain("img");
+    expect(g1.dataTexto).toMatch(/2026/);
   });
 
-  test("limita a 5 notícias", async () => {
-    const xml = "<rss>" + Array.from({ length: 8 }, (_, i) => item("Notícia número " + i + " longa", "F", "Mon, 05 Jan 2026 10:00:00 GMT")).join("") + "</rss>";
-    mockFetch(resposta({ text: xml }));
-    expect(await carregar("services/googlenews.js").buscarNoticiasCultura("soja")).toHaveLength(5);
+  test("filtra o feed geral do g1 pela cultura pedida", async () => {
+    mockFetch(resposta({ text: rssCanal }), resposta({ text: rssG1 }));
+    const r = await carregar("services/noticias.js").buscarNoticiasCultura("cafe");
+    const titulos = r.map((n) => n.titulo);
+    expect(titulos).toContain("Exportação de café bate recorde no trimestre");
+    expect(titulos).not.toContain("Frango pode ficar mais barato no Sul");
+  });
+
+  test("ordena da mais recente para a mais antiga", async () => {
+    mockFetch(resposta({ text: rssCanal }), resposta({ text: rssG1 }));
+    const r = await carregar("services/noticias.js").buscarNoticiasCultura("cafe");
+    expect(r[0].titulo).toBe("Exportação de café bate recorde no trimestre"); // dia 24
+    expect(r[1].titulo).toBe("Preço do café recua e fecha a semana em queda"); // dia 23
+  });
+
+  test("não repete a mesma manchete vinda das duas fontes", async () => {
+    const mesmo = "Preço do café sobe com a quebra de safra";
+    mockFetch(
+      resposta({
+        text: `<rss>${itemCanal(mesmo, DIA_23, "<p>Cotação do café em alta na bolsa de Nova York.</p>")}</rss>`,
+      }),
+      resposta({
+        text: `<rss>${itemG1(mesmo, DIA_24, "Cotação do café em alta na bolsa de Nova York, diz consultoria.")}</rss>`,
+      })
+    );
+    const r = await carregar("services/noticias.js").buscarNoticiasCultura("cafe");
+    expect(r).toHaveLength(1);
+    expect(r[0].titulo).toBe(mesmo);
+  });
+
+  test("um feed fora do ar não impede o outro de alimentar a página", async () => {
+    mockFetch(new Error("canal rural fora"), resposta({ text: rssG1 }));
+    const r = await carregar("services/noticias.js").buscarNoticiasCultura("cafe");
+    expect(r).toHaveLength(1);
+    expect(r[0].fonte).toBe("g1 Agronegócios");
   });
 
   test.each([
-    ["HTTP não-ok", () => resposta({ ok: false, status: 500, text: "" })],
-    ["sem <item>", () => resposta({ text: "<rss></rss>" })],
-    ["erro de rede", () => new Error("x")],
+    ["erro de rede nos dois", () => [new Error("x"), new Error("y")]],
+    [
+      "HTTP não-ok nos dois",
+      () => [resposta({ ok: false, status: 500, text: "" }), resposta({ ok: false, status: 503, text: "" })],
+    ],
+    ["resposta sem <item>", () => [resposta({ text: "<rss></rss>" }), resposta({ text: "<rss></rss>" })]],
   ])("%s retorna []", async (_, fabricar) => {
-    mockFetch(fabricar());
-    expect(await carregar("services/googlenews.js").buscarNoticiasCultura("cafe")).toEqual([]);
+    const fetchMock = mockFetch(...fabricar());
+    expect(await carregar("services/noticias.js").buscarNoticiasCultura("cafe")).toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  test("usa cache", async () => {
-    const fetchMock = mockFetch(resposta({ text: rss }));
-    const { buscarNoticiasCultura } = carregar("services/googlenews.js");
-    await buscarNoticiasCultura("cafe");
-    await buscarNoticiasCultura("cafe");
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+  test("completa com o resto da busca do Canal Rural quando o filtro deixa a lista magra", async () => {
+    // A busca do Canal Rural casa o termo no corpo da matéria, que não vem no RSS:
+    // esses dois itens são pertinentes mesmo sem repetir "café" no título ou resumo.
+    const xml =
+      `<rss>${itemCanal("Preço do café recua e fecha a semana em queda", DIA_23, descricaoCanal)}` +
+      `${itemCanal("IPCA-15 desacelera em outubro, aponta o IBGE", DIA_24, "<p>Índice veio abaixo do esperado pelo mercado financeiro.</p>")}` +
+      `${itemCanal("Porto de Paranaguá amplia a capacidade de embarque", DIA_24, "<p>Obra deve reduzir a fila de navios na safra nova.</p>")}</rss>`;
+    mockFetch(resposta({ text: xml }), resposta({ text: "<rss></rss>" }));
+    const r = await carregar("services/noticias.js").buscarNoticiasCultura("cafe");
+    expect(r).toHaveLength(3);
+    expect(r.map((n) => n.titulo)).toContain("IPCA-15 desacelera em outubro, aponta o IBGE");
+  });
+
+  test("corta o resumo longo no fim de uma frase", async () => {
+    const frase = "O mercado de café segue atento ao clima nas regiões produtoras de Minas Gerais. ";
+    const xml = `<rss>${itemCanal("Café: clima dita o humor do mercado", DIA_23, "<p>" + frase.repeat(6) + "</p>")}</rss>`;
+    mockFetch(resposta({ text: xml }), resposta({ text: "<rss></rss>" }));
+    const [n] = await carregar("services/noticias.js").buscarNoticiasCultura("cafe");
+    expect(n.resumo.length).toBeLessThanOrEqual(320);
+    expect(n.resumo.endsWith(".")).toBe(true);
+  });
+
+  test("devolve no máximo 12 notícias", async () => {
+    const muitos = Array.from({ length: 15 }, (_, i) =>
+      itemCanal(
+        "Café em alta pela " + i + "ª semana seguida",
+        DIA_23,
+        "<p>Cotação do café avança no mercado físico brasileiro.</p>"
+      )
+    ).join("");
+    mockFetch(resposta({ text: `<rss>${muitos}</rss>` }), resposta({ text: "<rss></rss>" }));
+    const r = await carregar("services/noticias.js").buscarNoticiasCultura("cafe");
+    expect(r).toHaveLength(12);
+    expect(r.every((n) => n.resumo.length > 40)).toBe(true);
+  });
+
+  test("usa cache na segunda chamada da mesma cultura", async () => {
+    const fetchMock = mockFetch(resposta({ text: rssCanal }), resposta({ text: rssG1 }));
+    const { buscarNoticiasCultura } = carregar("services/noticias.js");
+    const a = await buscarNoticiasCultura("cafe");
+    const b = await buscarNoticiasCultura("cafe");
+    expect(b).toBe(a);
+    expect(fetchMock).toHaveBeenCalledTimes(2); // uma por feed, só na primeira vez
   });
 });
 
@@ -310,7 +408,7 @@ describe("market (histórico e análise de tendência)", () => {
 
   test("análise simulada (sem chave) calcula a variação e usa as notícias", async () => {
     jest.resetModules();
-    jest.doMock("../../../backend/services/googlenews", () => ({ buscarNoticiasCultura: jest.fn().mockResolvedValue(noticia) }));
+    jest.doMock("../../../backend/services/noticias", () => ({ buscarNoticiasCultura: jest.fn().mockResolvedValue(noticia) }));
     const { gerarAnaliseTendencia, obterHistorico } = require("../../../backend/services/market");
     const hist = obterHistorico("cafe").historico.slice(-14);
     const esperada = (((hist[13].preco - hist[0].preco) / hist[0].preco) * 100).toFixed(1);
@@ -321,17 +419,17 @@ describe("market (histórico e análise de tendência)", () => {
     expect(r.precoAtual).toBe(hist[13].preco);
     expect(r.fatoresConsiderados).toEqual(noticia);
     expect(r.resumo).toContain(Number(esperada) >= 0 ? "alta" : "queda");
-    jest.dontMock("../../../backend/services/googlenews");
+    jest.dontMock("../../../backend/services/noticias");
   });
 
   test("sem notícias reais usa o fallback de curadoria interna", async () => {
     jest.resetModules();
-    jest.doMock("../../../backend/services/googlenews", () => ({ buscarNoticiasCultura: jest.fn().mockRejectedValue(new Error("x")) }));
+    jest.doMock("../../../backend/services/noticias", () => ({ buscarNoticiasCultura: jest.fn().mockRejectedValue(new Error("x")) }));
     const { gerarAnaliseTendencia } = require("../../../backend/services/market");
     const r = await gerarAnaliseTendencia("soja");
     expect(r.fatoresConsiderados).toHaveLength(3);
     expect(r.fatoresConsiderados[0].fonte).toBe("Curadoria interna");
-    jest.dontMock("../../../backend/services/googlenews");
+    jest.dontMock("../../../backend/services/noticias");
   });
 
   test("cultura desconhecida lança erro", async () => {
@@ -342,38 +440,38 @@ describe("market (histórico e análise de tendência)", () => {
   test("com chave, usa o texto da IA", async () => {
     process.env.ANTHROPIC_API_KEY = "k";
     jest.resetModules();
-    jest.doMock("../../../backend/services/googlenews", () => ({ buscarNoticiasCultura: jest.fn().mockResolvedValue(noticia) }));
+    jest.doMock("../../../backend/services/noticias", () => ({ buscarNoticiasCultura: jest.fn().mockResolvedValue(noticia) }));
     const fetchMock = mockFetch(resposta({ json: { content: [{ type: "text", text: "Análise A" }, { type: "tool", text: "x" }, { type: "text", text: "B" }] } }));
     const { gerarAnaliseTendencia } = require("../../../backend/services/market");
     const r = await gerarAnaliseTendencia("cafe");
     expect(r.gerarPor).toBe("ia");
     expect(r.resumo).toBe("Análise A\nB");
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).messages[0].content).toContain("café arábica");
-    jest.dontMock("../../../backend/services/googlenews");
+    jest.dontMock("../../../backend/services/noticias");
   });
 
   test("com chave mas IA falhando, cai para o simulado", async () => {
     process.env.ANTHROPIC_API_KEY = "k";
     jest.resetModules();
-    jest.doMock("../../../backend/services/googlenews", () => ({ buscarNoticiasCultura: jest.fn().mockResolvedValue(noticia) }));
+    jest.doMock("../../../backend/services/noticias", () => ({ buscarNoticiasCultura: jest.fn().mockResolvedValue(noticia) }));
     mockFetch(resposta({ ok: false, status: 500, json: {}, text: "erro" }));
     const { gerarAnaliseTendencia } = require("../../../backend/services/market");
     const r = await gerarAnaliseTendencia("soja");
     expect(r.gerarPor).toBe("simulado");
     expect(r.cultura).toBe("soja");
-    jest.dontMock("../../../backend/services/googlenews");
+    jest.dontMock("../../../backend/services/noticias");
   });
 
   test("IA devolvendo texto vazio usa mensagem padrão", async () => {
     process.env.ANTHROPIC_API_KEY = "k";
     jest.resetModules();
-    jest.doMock("../../../backend/services/googlenews", () => ({ buscarNoticiasCultura: jest.fn().mockResolvedValue([]) }));
+    jest.doMock("../../../backend/services/noticias", () => ({ buscarNoticiasCultura: jest.fn().mockResolvedValue([]) }));
     mockFetch(resposta({ json: { content: [] } }));
     const { gerarAnaliseTendencia } = require("../../../backend/services/market");
     const r = await gerarAnaliseTendencia("cafe");
     expect(r.resumo).toMatch(/Não foi possível gerar/);
     expect(r.gerarPor).toBe("ia");
-    jest.dontMock("../../../backend/services/googlenews");
+    jest.dontMock("../../../backend/services/noticias");
   });
 });
 

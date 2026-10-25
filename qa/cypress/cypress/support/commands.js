@@ -101,7 +101,7 @@ export function serieDeMercado() {
 }
 
 /** Intercepta as chamadas de dados do dashboard com fixtures determinísticas. */
-Cypress.Commands.add("simularDadosDoPainel", ({ alertas = "alertas-vazio.json", clima = true, mercado = true } = {}) => {
+Cypress.Commands.add("simularDadosDoPainel", ({ alertas = "alertas-vazio.json", clima = true, mercado = true, noticias = "noticias-cafe.json" } = {}) => {
   cy.intercept("GET", "**/api/alertas/*", { fixture: alertas }).as("alertas");
   if (clima) cy.intercept("GET", "**/api/clima", { fixture: "clima-7dias.json" }).as("clima");
   if (mercado) {
@@ -113,4 +113,7 @@ Cypress.Commands.add("simularDadosDoPainel", ({ alertas = "alertas-vazio.json", 
     cy.intercept("GET", "**/api/mercado/*/analise", { fixture: "analise-cafe.json" }).as("analise");
     cy.intercept("GET", "**/api/mercado/cotacoes*", { fixture: "cotacoes.json" }).as("cotacoes");
   }
+  // As notícias vêm de RSS de veículos externos: sem fixture, a lista mudaria
+  // a cada execução e os cenários não teriam o que afirmar.
+  if (noticias) cy.intercept("GET", "**/api/noticias*", { fixture: noticias }).as("noticias");
 });

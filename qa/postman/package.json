@@ -8,7 +8,8 @@
     "test:cli": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json",
     "test:health": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json --folder Health",
     "test:auth": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json --folder Auth --folder Limpeza",
-    "test:publico": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json --folder Health --folder Insumos --folder Mercado"
+    "test:publico": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json --folder Health --folder Insumos --folder Mercado --folder Noticias",
+    "test:noticias": "newman run collections/AgroAlerta.postman_collection.json -e environments/local.postman_environment.json --folder Noticias"
   },
   "devDependencies": {
     "newman": "^6.2.1",

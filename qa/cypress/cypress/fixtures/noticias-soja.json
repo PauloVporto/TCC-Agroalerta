@@ -1,0 +1,22 @@
+{
+  "cultura": "soja",
+  "total": 2,
+  "noticias": [
+    {
+      "titulo": "Soja: preços sobem no Brasil, mas portos saturados limitam os embarques",
+      "resumo": "Cotações avançaram no mercado físico brasileiro nesta sexta-feira, enquanto a soja em Chicago fechou em leve queda com a pressão da safra norte-americana.",
+      "link": "https://www.canalrural.com.br/agricultura/soja/precos-sobem-no-brasil/",
+      "fonte": "Canal Rural",
+      "dataTexto": "23 de out. de 2026",
+      "publicadoEm": "2026-10-23T18:10:00.000Z"
+    },
+    {
+      "titulo": "Plantio de soja em MT pode superar 80% até o fim de outubro",
+      "resumo": "Avanço semanal foi de 23,95 pontos percentuais; o instituto estima queda na produtividade e alta nos custos por hectare para a safra que começa.",
+      "link": "https://g1.globo.com/economia/agronegocios/noticia/2026/10/23/plantio-de-soja-em-mt.ghtml",
+      "fonte": "g1 Agronegócios",
+      "dataTexto": "23 de out. de 2026",
+      "publicadoEm": "2026-10-23T11:00:00.000Z"
+    }
+  ]
+}

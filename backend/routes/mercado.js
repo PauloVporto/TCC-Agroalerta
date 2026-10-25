@@ -108,11 +108,47 @@ router.get("/:cultura/historico", async (req, res) => {
 
 /**
  * @swagger
+ * /mercado/{cultura}/serie:
+ *   get:
+ *     summary: Série de preço em R$/saca com projeção, para o gráfico do painel
+ *     description: >
+ *       Usa sempre a base local em R$/saca. O /historico pode vir da Stooq em centavos de
+ *       dólar, que não combinaria com a projeção nem com o simulador de venda em reais.
+ *     tags: [Mercado]
+ *     parameters:
+ *       - in: path
+ *         name: cultura
+ *         required: true
+ *         schema: { type: string, example: cafe }
+ *     responses:
+ *       200:
+ *         description: Histórico mais projeção mensal na mesma unidade
+ *       404:
+ *         description: Cultura não encontrada
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Erro' }
+ */
+// GET /api/mercado/:cultura/serie
+// Histórico em R$/saca + projeção mensal na mesma unidade, para o gráfico do painel.
+// Usa sempre a base local: o /historico pode vir do Stooq em centavos de dólar,
+// o que não combinaria com a projeção nem com o simulador de venda em R$.
+router.get("/:cultura/serie", (req, res) => {
+  const base = obterHistorico(req.params.cultura);
+  if (!base || !Array.isArray(base.historico)) {
+    return res.status(404).json({ erro: "Cultura não encontrada" });
+  }
+  res.json(montarSerieComProjecao(base, req.params.cultura));
+});
+
+/**
+ * @swagger
  * /mercado/{cultura}/analise:
  *   get:
  *     summary: Gera uma análise qualitativa de tendência de mercado para a cultura
  *     description: >
- *       Busca notícias reais via Google News RSS e, se ANTHROPIC_API_KEY estiver configurada,
+ *       Busca notícias reais nos RSS do Canal Rural e do g1 Agronegócios e, se ANTHROPIC_API_KEY
+ *       estiver configurada,
  *       usa IA (Claude) para elaborar a análise; caso contrário, retorna um resumo simulado
  *       baseado só na variação percentual do histórico de preços.
  *     tags: [Mercado]
@@ -141,18 +177,6 @@ router.get("/:cultura/historico", async (req, res) => {
  *                 geradoEm: { type: string, format: date-time }
  *       400: { description: Cultura não suportada, content: { application/json: { schema: { $ref: '#/components/schemas/Erro' } } } }
  */
-// GET /api/mercado/:cultura/serie
-// Histórico em R$/saca + projeção mensal na mesma unidade, para o gráfico do painel.
-// Usa sempre a base local: o /historico pode vir do Stooq em centavos de dólar,
-// o que não combinaria com a projeção nem com o simulador de venda em R$.
-router.get("/:cultura/serie", (req, res) => {
-  const base = obterHistorico(req.params.cultura);
-  if (!base || !Array.isArray(base.historico)) {
-    return res.status(404).json({ erro: "Cultura não encontrada" });
-  }
-  res.json(montarSerieComProjecao(base, req.params.cultura));
-});
-
 // GET /api/mercado/:cultura/analise
 router.get("/:cultura/analise", async (req, res) => {
   try {
