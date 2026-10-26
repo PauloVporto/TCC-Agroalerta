@@ -22,12 +22,11 @@ const _cache = {};
 const CACHE_TTL_MS = 3 * 60 * 60 * 1000; // 3 horas
 
 // Termos usados na busca do Canal Rural e na filtragem do feed geral do g1.
+// São as duas culturas que o cadastro oferece (services/auth.js) e que o resto
+// do painel acompanha: o produtor recebe as notícias da lavoura que declarou.
 const TERMOS = {
   cafe: ["café", "cafeeiro", "cafeicultura", "arábica"],
   soja: ["soja", "complexo soja", "oleaginosa"],
-  milho: ["milho"],
-  cana: ["cana", "cana-de-açúcar", "açúcar", "etanol"],
-  feijao: ["feijão"],
 };
 
 const MAX_RESUMO = 320;

@@ -2,7 +2,8 @@
 // dependa dos RSS do Canal Rural e do g1 estarem no ar.
 jest.mock("../../../backend/services/noticias", () => ({
   buscarNoticiasCultura: jest.fn(),
-  TERMOS: { cafe: ["café"], soja: ["soja"], milho: ["milho"], cana: ["cana"], feijao: ["feijão"] },
+  // O serviço só cobre as duas culturas do cadastro.
+  TERMOS: { cafe: ["café"], soja: ["soja"] },
 }));
 
 const request = require("supertest");
@@ -42,19 +43,25 @@ describe("rotas de notícias", () => {
     expect(buscarNoticiasCultura).toHaveBeenCalledWith("cafe");
   });
 
-  test.each(["soja", "milho", "cana", "feijao"])("GET /?cultura=%s é aceita", async (cultura) => {
+  test("GET /?cultura=soja é aceita", async () => {
     buscarNoticiasCultura.mockResolvedValue([]);
-    const r = await request(app).get("/api/noticias?cultura=" + cultura);
+    const r = await request(app).get("/api/noticias?cultura=soja");
     expect(r.status).toBe(200);
-    expect(r.body.cultura).toBe(cultura);
+    expect(r.body.cultura).toBe("soja");
   });
 
-  test("cultura fora da lista responde 400 dizendo quais valem", async () => {
-    const r = await request(app).get("/api/noticias?cultura=abacaxi");
-    expect(r.status).toBe(400);
-    expect(r.body.erro).toContain("cafe");
-    expect(buscarNoticiasCultura).not.toHaveBeenCalled();
-  });
+  // Só café e soja: são as culturas que o cadastro oferece, e a página de
+  // notícias acompanha a que o produtor declarou.
+  test.each(["milho", "cana", "feijao", "abacaxi"])(
+    "cultura fora da lista (%s) responde 400 dizendo quais valem",
+    async (cultura) => {
+      const r = await request(app).get("/api/noticias?cultura=" + cultura);
+      expect(r.status).toBe(400);
+      expect(r.body.erro).toContain("cafe");
+      expect(r.body.erro).toContain("soja");
+      expect(buscarNoticiasCultura).not.toHaveBeenCalled();
+    }
+  );
 
   test("lista vazia responde 200 com total 0, não 404", async () => {
     buscarNoticiasCultura.mockResolvedValue([]);

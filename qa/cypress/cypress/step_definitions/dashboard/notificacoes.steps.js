@@ -38,8 +38,10 @@ When("acesso as notificações pelo menu lateral", () => {
   cy.pegar("preferencias-notificacoes").should("be.visible");
 
   // A página preenche os controles quando essas respostas chegam. Interagir
-  // antes disso faz o carregamento sobrescrever o que foi marcado.
-  cy.wait(["@carregarPreferencias", "@carregarCategorias"]);
+  // antes disso faz o carregamento sobrescrever o que foi marcado. As previsões
+  // são pedidas depois das categorias, dentro da mesma função: esperar por elas
+  // garante que o estado das categorias já foi aplicado.
+  cy.wait(["@carregarPreferencias", "@carregarCategorias", "@previsoes"]);
 });
 
 Then("a página mostra os canais de e-mail e WhatsApp", () => {

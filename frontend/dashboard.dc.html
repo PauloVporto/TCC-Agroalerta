@@ -712,11 +712,7 @@
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 6px; flex-wrap: wrap;">
           <h2 data-cy="noticias-titulo" style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 21px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">{{ noticiasTitulo }}</h2>
-          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <sc-for list="{{ culturasNoticias }}" as="c" hint-placeholder-count="5">
-              <button data-cy="noticias-cultura" type="button" onClick="{{ c.pick }}" style="font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: {{ c.fg }}; background: {{ c.bg }}; border: 1px solid {{ c.borda }}; padding: 7px 13px; border-radius: 999px; cursor: pointer;">{{ c.label }}</button>
-            </sc-for>
-          </div>
+          <button data-cy="noticias-trocar-cultura" type="button" onClick="{{ goConta }}" title="Mudar a cultura em Configurar conta" style="font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: #24505F; background: #FFFFFF; border: 1px solid #CFE0E8; padding: 7px 13px; border-radius: 999px; cursor: pointer;" style-hover="border-color: #2F6E8F;">Mudar cultura</button>
         </div>
         <p style="margin: 0 0 20px; font-size: 13px; line-height: 1.5; color: #6B4A34;">{{ noticiasNota }}</p>
 
@@ -1097,8 +1093,9 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 const API_BASE = window.AGROALERTA_API_BASE || 'http://localhost:3001/api';
-// As culturas que o backend aceita em /api/noticias (services/noticias.js).
-const NOMES_CULTURA = { cafe: 'Café', soja: 'Soja', milho: 'Milho', cana: 'Cana-de-açúcar', feijao: 'Feijão' };
+// As culturas que o backend aceita em /api/noticias (services/noticias.js) e
+// que o cadastro oferece.
+const NOMES_CULTURA = { cafe: 'Café', soja: 'Soja' };
 
 function apiFetch(path, opts) {
   opts = opts || {};
@@ -1425,7 +1422,11 @@ class Component extends DCLogic {
     this._carregarHistoricoRelatorios();
     this._carregarConfiguracoes();
     this._carregarNotificacoes();
-    this._carregarClimaNotificacoes();
+    // Categorias e previsões só existem na página de Notificações, e goNotificacoes
+    // já as carrega. Buscar aqui também duplicava a requisição, e a resposta
+    // atrasada chegava depois de o produtor marcar uma categoria — desmarcando-a.
+    // O hash #notificacoes abre direto nessa página, então ali a carga é a única.
+    if(this.state.page==='notificacoes')this._carregarClimaNotificacoes();
     if(this.state.papel==='admin' && this.state.page==='notificacoes')this._carregarAdmin();
     this._carregarHistoricoNotificacoes();
     this._carregarClimaCidade();
@@ -1449,6 +1450,11 @@ class Component extends DCLogic {
       });
       if (novaCultura !== this.state._mercadoCultura) {
         this._carregarMercado(novaCultura);
+      }
+      // A página de notícias segue a cultura do cadastro: se ela já tinha sido
+      // aberta com outra, recarrega para não ficar mostrando a lavoura antiga.
+      if (this.state._noticiasCultura && this.state._noticiasCultura !== novaCultura) {
+        this._carregarNoticias(novaCultura);
       }
     }).catch(function() {});
   }
@@ -2259,7 +2265,7 @@ class Component extends DCLogic {
       goRelatorios: () => this.setState({ page: 'relatorios' }),
       goNoticias: () => {
         this.setState({ page: 'noticias' });
-        this._carregarNoticias(s._noticiasCultura || s.cCultura || 'cafe');
+        this._carregarNoticias(s.cCultura || 'cafe');
       },
       goOfertas: () => this.setState({ page: 'ofertas' }),
       goConta: () => this.setState({ page: 'conta', contaSalva: false }),
@@ -2395,6 +2401,9 @@ class Component extends DCLogic {
             this._carregarNotificacoes();
             this._carregarClimaCidade();
             this._carregarMercado(s.cCultura || 'cafe');
+            if (s._noticiasCultura && s._noticiasCultura !== s.cCultura) {
+              this._carregarNoticias(s.cCultura || 'cafe');
+            }
           })
           .catch((erro) => this.setState({ contaSalvando: false, contaErro: erro.message }));
       },
@@ -2582,18 +2591,10 @@ class Component extends DCLogic {
           .filter(function(f, i, arr) { return f && arr.indexOf(f) === i; });
         return fontes.length > 0 ? fontes.join(' · ') : 'Canal Rural · g1 Agronegócios';
       })(),
-      noticiasTitulo: 'Notícias de ' + (NOMES_CULTURA[s._noticiasCultura || s.cCultura || 'cafe'] || 'Café'),
+      noticiasTitulo: 'Notícias de ' + (NOMES_CULTURA[s.cCultura] || 'Café'),
       noticiasNota: s._noticiasCarregando
         ? 'Buscando as notícias mais recentes…'
-        : 'Direto do Canal Rural e do g1 Agronegócios. Toque em uma notícia para ler a matéria completa no site do veículo.',
-      culturasNoticias: Object.keys(NOMES_CULTURA).map((valor) => {
-        const on = (s._noticiasCultura || s.cCultura || 'cafe') === valor;
-        return {
-          label: NOMES_CULTURA[valor],
-          bg: on ? '#2F6E8F' : '#FFFFFF', fg: on ? '#F7F5EF' : '#24505F', borda: on ? '#2F6E8F' : '#CFE0E8',
-          pick: () => this._carregarNoticias(valor)
-        };
-      }),
+        : 'Da cultura que você cadastrou, direto do Canal Rural e do g1 Agronegócios. Toque em uma notícia para ler a matéria completa no site do veículo.',
       noticiasLista: (s._noticias || []).map(function(n) {
         return {
           titulo: n.titulo,

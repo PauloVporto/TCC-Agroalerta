@@ -20,7 +20,7 @@ const CULTURAS = Object.keys(TERMOS);
  *       - in: query
  *         name: cultura
  *         required: false
- *         schema: { type: string, default: cafe, enum: [cafe, soja, milho, cana, feijao] }
+ *         schema: { type: string, default: cafe, enum: [cafe, soja] }
  *     responses:
  *       200:
  *         description: Lista de notícias da cultura

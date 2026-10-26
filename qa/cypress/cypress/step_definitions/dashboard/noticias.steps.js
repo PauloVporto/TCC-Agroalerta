@@ -52,15 +52,21 @@ Then("a notícia da fonte {string} aponta para {string}", (fonte, dominio) => {
     });
 });
 
-When("escolho a cultura {string} nas notícias", (label) => {
-  cy.intercept("GET", "**/api/noticias?cultura=soja*", { fixture: "noticias-soja.json" }).as("noticiasSoja");
-  cy.pegar("noticias-cultura").contains(label).click();
-  cy.wait("@noticiasSoja");
-});
-
 Then("o título da seção de notícias é {string}", (titulo) => {
   cy.pegar("noticias-titulo").should("have.text", titulo);
   cy.pegar("noticias-item").should("have.length.at.least", 1);
+});
+
+// A cultura vem do cadastro (café ou soja), e não de um filtro próprio da
+// página: é a lavoura que o produtor declarou que define o que ele lê.
+Then("a página não tem seletor de cultura", () => {
+  cy.pegar("noticias-titulo").should("be.visible");
+  cy.get('[data-cy="noticias-cultura"]').should("not.exist");
+});
+
+Then("o atalho para mudar a cultura leva ao perfil", () => {
+  cy.pegar("noticias-trocar-cultura").should("be.visible").and("contain", "Mudar cultura").click();
+  cy.pegar("page-titulo").should("have.text", "Configurar conta");
 });
 
 // Os dois feeds podem estar fora do ar ao mesmo tempo; a rota responde 200 com

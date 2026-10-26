@@ -114,6 +114,12 @@ Cypress.Commands.add("simularDadosDoPainel", ({ alertas = "alertas-vazio.json", 
     cy.intercept("GET", "**/api/mercado/cotacoes*", { fixture: "cotacoes.json" }).as("cotacoes");
   }
   // As notícias vêm de RSS de veículos externos: sem fixture, a lista mudaria
-  // a cada execução e os cenários não teriam o que afirmar.
-  if (noticias) cy.intercept("GET", "**/api/noticias*", { fixture: noticias }).as("noticias");
+  // a cada execução e os cenários não teriam o que afirmar. A página pede a
+  // cultura do cadastro, então cada uma tem a sua resposta — o intercept mais
+  // específico vem depois porque o Cypress casa as rotas da última para a
+  // primeira.
+  if (noticias) {
+    cy.intercept("GET", "**/api/noticias*", { fixture: noticias }).as("noticias");
+    cy.intercept("GET", "**/api/noticias?cultura=soja*", { fixture: "noticias-soja.json" }).as("noticiasSoja");
+  }
 });

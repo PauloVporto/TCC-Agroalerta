@@ -19,11 +19,19 @@ Funcionalidade: Painel - Notícias do agro
     E a notícia da fonte "Canal Rural" aponta para "canalrural.com.br"
     E a notícia da fonte "g1 Agronegócios" aponta para "g1.globo.com"
 
-  Cenário: Trocar a cultura recarrega a lista
-    Quando escolho a cultura "Soja" nas notícias
-    Então a página lista 2 notícias
+  Cenário: As notícias seguem a cultura cadastrada na conta
+    Então o título da seção de notícias é "Notícias de Café"
+    Quando acesso o perfil pelo menu lateral
+    E escolho a cultura favorita "Soja"
+    E salvo as alterações da conta
+    E acesso a página "Notícias" pelo menu
+    Então o título da seção de notícias é "Notícias de Soja"
     E a primeira notícia é "Soja: preços sobem no Brasil, mas portos saturados limitam os embarques"
-    E o título da seção de notícias é "Notícias de Soja"
+    E a página lista 2 notícias
+
+  Cenário: A cultura é escolhida no perfil, não na página de notícias
+    Então a página não tem seletor de cultura
+    E o atalho para mudar a cultura leva ao perfil
 
   Cenário: Sem notícias, a página explica em vez de ficar vazia
     Quando as fontes de notícias não devolvem nada
