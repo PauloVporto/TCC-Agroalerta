@@ -33,6 +33,7 @@ module.exports = {
     "backend/routes/admin.js",
     "backend/services/rules.js",
     "backend/services/auth.js",
+    "backend/services/anthropic.js",
     "backend/services/db.js",
     "backend/services/weather.js",
     "backend/services/openmeteo.js",

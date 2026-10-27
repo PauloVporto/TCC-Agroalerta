@@ -6,7 +6,7 @@ const mercadoData = JSON.parse(
   fs.readFileSync(path.join(__dirname, "..", "data", "mercado.json"), "utf-8")
 );
 
-const API_KEY = (process.env.ANTHROPIC_API_KEY || "").trim() || undefined;
+const anthropic = require("./anthropic");
 
 const NOMES_CULTURA = {
   cafe: "café arábica",
@@ -32,33 +32,12 @@ function obterHistorico(cultura) {
 }
 
 async function chamarClaude(prompt, maxTokens = 900) {
-  const resposta = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": API_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
-    }),
+  const { texto, dados, requestId } = await anthropic.mensagens({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: maxTokens,
+    messages: [{ role: "user", content: prompt }],
   });
-
-  if (!resposta.ok) {
-    const corpo = await resposta.text();
-    throw new Error("Erro na API: " + resposta.status + " - " + corpo.slice(0, 200));
-  }
-
-  const dados = await resposta.json();
-  const texto = dados.content
-    .filter((bloco) => bloco.type === "text")
-    .map((bloco) => bloco.text)
-    .join("\n")
-    .trim();
-
-  return { texto };
+  return { texto, modelo: dados.model, respostaId: dados.id, requestId };
 }
 
 async function gerarAnaliseTendencia(cultura) {
@@ -83,8 +62,9 @@ async function gerarAnaliseTendencia(cultura) {
     noticias = NOTICIAS_FALLBACK[cultura] || [];
   }
 
-  if (!API_KEY) {
-    return gerarAnaliseSimulada(cultura, variacaoPercentual, precoAtual, noticias);
+  if (!anthropic.chaveConfigurada()) {
+    return { ...gerarAnaliseSimulada(cultura, variacaoPercentual, precoAtual, noticias),
+      ia: anthropic.estadoFalha({ codigo: "nao_configurada" }) };
   }
 
   const prompt =
@@ -118,8 +98,9 @@ async function gerarAnaliseTendencia(cultura) {
       geradoEm: new Date().toISOString(),
     };
   } catch (erro) {
-    console.error("[market] Falha ao chamar Claude, usando fallback simulado:", erro.message);
-    return gerarAnaliseSimulada(cultura, variacaoPercentual, precoAtual, noticias);
+    const ia = anthropic.estadoFalha(erro);
+    console.error("[market] IA indisponível:", ia.codigo);
+    return { ...gerarAnaliseSimulada(cultura, variacaoPercentual, precoAtual, noticias), ia };
   }
 }
 

@@ -2585,7 +2585,7 @@ class Component extends DCLogic {
       icbrFonte: s._icbr ? s._icbr.fonte + (s._icbr.desatualizado && s._icbr.obtidoEm ? ' · desatualizado (obtido em ' + new Date(s._icbr.obtidoEm).toLocaleDateString('pt-BR') + ')' : '') : '',
       temDadosExternos: !!(s._ptax || s._cotacaoIntl || s._icbr),
       resumoIATexto: s._mercadoResumo || (s._dadosCarregados ? 'Nenhuma análise disponível no momento.' : 'Carregando análise de mercado…'),
-      resumoIAFonteTexto: s._mercadoGerarPor === 'ia' || s._mercadoGerarPor === 'ia_com_busca' ? 'Análise · Claude' : 'Análise de mercado',
+      resumoIAFonteTexto: s._mercadoGerarPor === 'ia' || s._mercadoGerarPor === 'ia_com_busca' ? 'Análise · Claude' : (s._mercadoGerarPor === 'simulado' ? 'Resumo demonstrativo · IA indisponível' : 'Análise de mercado'),
       fontesUsadasTexto: (function() {
         const fontes = (s._mercadoFatores || [])
           .filter(function(f, i, arr) { return f && arr.indexOf(f) === i; });
