@@ -68,4 +68,6 @@ function estadoFalha(erro) {
   const codigo = Object.hasOwn(MENSAGENS, erro.codigo) ? erro.codigo : 'provedor';
   return { status: 'indisponivel', codigo, mensagem: MENSAGENS[codigo] };
 }
-module.exports = { chaveConfigurada, mensagens, verificarAutenticacao, estadoFalha };
+// Mesmo modelo para mercado e clima; a avaliação de assertividade mede exatamente este.
+const MODELO_ANALISE = (process.env.ANTHROPIC_MODEL_ANALISE || '').trim() || 'claude-haiku-4-5-20251001';
+module.exports = { chaveConfigurada, mensagens, verificarAutenticacao, estadoFalha, MODELO_ANALISE };

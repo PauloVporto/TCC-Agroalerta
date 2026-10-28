@@ -240,6 +240,53 @@
         </div>
         </sc-if>
 
+        <div data-cy="clima-ia" style="margin-bottom: 20px; border: 1px solid #CFE0E8; background: #EEF5F8; border-radius: 10px; overflow: hidden;">
+          <div style="padding: 11px 18px; border-bottom: 1px solid #CFE0E8; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #2F6E8F; font-weight: 600;">Análise por IA · monitoramento climático</span>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span data-cy="clima-ia-fonte" style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.06em; color: #24505F;">{{ climaIAFonteTexto }}</span>
+              <button type="button" onClick="{{ atualizarClimaIA }}" disabled="{{ climaIACarregando }}" style="font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: #24505F; background: transparent; border: 1px solid #A9C6D3; padding: 6px 12px; cursor: pointer;" style-hover="border-color: #2F6E8F;">Atualizar análise</button>
+            </div>
+          </div>
+          <div style="padding: 16px 18px;">
+            <sc-if value="{{ climaIACarregando }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 14px; color: #24505F;">Analisando os dados do talhão…</div>
+            </sc-if>
+            <sc-if value="{{ climaIAIndisponivel }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-bottom: 12px; padding: 10px 12px; border: 1px dashed #C9A33A; background: #FBF4E0; border-radius: 8px; font-size: 12px; color: #6B4A00;">{{ climaIAMensagemIndisponivel }} O texto abaixo é um resumo automático das regras, não uma resposta da IA.</div>
+            </sc-if>
+            <sc-if value="{{ climaIAFormatoAviso }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-bottom: 12px; font-size: 12px; color: #6B4A34;">A IA respondeu fora do formato esperado; exibindo o texto original.</div>
+            </sc-if>
+            <sc-if value="{{ climaIATemAnalise }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap;">
+                <span data-cy="clima-ia-nivel" style="flex-shrink: 0; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid {{ climaIACor }}; color: {{ climaIACorTexto }}; background: {{ climaIAFundo }};">Nível geral: {{ climaIANivel }}</span>
+                <p data-cy="clima-ia-resumo" style="flex: 1; min-width: 240px; margin: 0; font-size: 15px; line-height: 1.55; color: #24505F;">{{ climaIAResumo }}</p>
+              </div>
+              <sc-if value="{{ climaIATemRiscos }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <sc-for list="{{ climaIARiscos }}" as="cr">
+                  <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-size: 13px; color: #1A1A18;">
+                    <span style="font-size: 11px; padding: 3px 10px; border-radius: 999px; border: 1px solid {{ cr.cor }}; color: {{ cr.corTexto }}; background: {{ cr.fundo }};">{{ cr.nivel }}</span>
+                    <strong style="font-weight: 600;">{{ cr.tipo }}</strong>
+                    <span style="color: #4A4A42;">{{ cr.justificativa }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              </sc-if>
+              <sc-if value="{{ climaIATemRecomendacoes }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 14px;">
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #2F6E8F; margin-bottom: 6px;">O que fazer agora</div>
+                <sc-for list="{{ climaIARecomendacoes }}" as="rec">
+                  <div style="font-size: 13px; line-height: 1.5; color: #24505F; padding: 2px 0;">• {{ rec.texto }}</div>
+                </sc-for>
+              </div>
+              </sc-if>
+              <div data-cy="clima-ia-proveniencia" style="margin-top: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6C8A97;">{{ climaIAProveniencia }}</div>
+            </sc-if>
+          </div>
+        </div>
+
         <div style="overflow-x: auto; border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 10px;">
           <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px;">
             <thead>
@@ -1294,6 +1341,8 @@ class Component extends DCLogic {
       _talhaoSelecionadoId: null,
       _mercadoCultura: 'cafe',
       _climaMetrics: null,
+      _climaIA: null,
+      _climaIACarregando: false,
       _climaCidade: null,
       cLatitude: null, cLongitude: null,
       cCep: '', cCepStatus: '', cCepVerificando: false,
@@ -1625,7 +1674,7 @@ class Component extends DCLogic {
       eAreaUnidade: talhao.areaUnidade || 'ha',
       eArea: talhao.areaHa != null ? String(deHectares(talhao.areaHa, talhao.areaUnidade || 'ha')) : '',
       eErro: '', novoTalhaoAberto: false,
-      alertas: [], alertasOficiais: [], _climaMetrics: null
+      alertas: [], alertasOficiais: [], _climaMetrics: null, _climaIA: null
     });
     this._carregarAlertas(talhao.id);
   }
@@ -1637,7 +1686,22 @@ class Component extends DCLogic {
         alertasOficiais: Array.isArray(dados.alertasOficiais) ? dados.alertasOficiais : [],
         _climaMetrics: dados.clima || null
       });
+      if (dados.clima) this._carregarAnaliseIA(talhaoId, false);
     }).catch(function() {});
+  }
+
+  // A origem (Claude ou resumo demonstrativo) vem da API e é exibida sem disfarce.
+  _carregarAnaliseIA(talhaoId, forcar) {
+    this.setState({ _climaIACarregando: true, _climaIA: forcar ? this.state._climaIA : null });
+    apiFetch('/alertas/' + talhaoId + '/analise-ia' + (forcar ? '?forcar=1' : ''))
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then((dados) => {
+        if (talhaoId !== this.state._talhaoSelecionadoId) return;
+        this.setState({ _climaIA: dados && dados.analise ? dados : null, _climaIACarregando: false });
+      })
+      .catch(() => {
+        if (talhaoId === this.state._talhaoSelecionadoId) this.setState({ _climaIACarregando: false });
+      });
   }
 
   _carregarInsumos() {
@@ -2095,6 +2159,17 @@ class Component extends DCLogic {
     }));
     const temAlertasOficiais = alertasOficiais.length > 0;
 
+    const iaClima = s._climaIA;
+    const TIPO_RISCO = { geada: 'Geada', estiagem: 'Estiagem', excesso_chuva: 'Excesso de chuva', vento: 'Ventos fortes', chuva_colheita: 'Chuva na colheita' };
+    const climaIATemAnalise = !!(iaClima && iaClima.analise);
+    const climaIANivelCores = this.nivelCores(climaIATemAnalise ? iaClima.analise.nivelGeral : 'baixo');
+    const climaIARiscos = climaIATemAnalise ? iaClima.analise.riscos.map((r) => Object.assign({}, this.nivelCores(r.nivel), {
+      tipo: TIPO_RISCO[r.tipo] || r.tipo,
+      nivel: NIVEL_DISPLAY[r.nivel] || r.nivel,
+      justificativa: r.justificativa || ''
+    })) : [];
+    const climaIARecomendacoes = climaIATemAnalise ? iaClima.analise.recomendacoes.map(function(t) { return { texto: t }; }) : [];
+
     const talhaoEditando = s.talhoes.find(function(t) { return t.id === s._talhaoEditandoId; }) || null;
     const talhoes = s.talhoes.map((t) => {
       const ehSelecionado = s._talhaoSelecionadoId === t.id;
@@ -2548,6 +2623,27 @@ class Component extends DCLogic {
         }
       ],
       alertas, regras, talhoes, alertasOficiais, temAlertasOficiais, precos, clima, previsaoTitulo,
+      climaIATemAnalise,
+      climaIACarregando: !!s._climaIACarregando,
+      climaIAIndisponivel: !!(iaClima && iaClima.origem === 'simulado'),
+      climaIAMensagemIndisponivel: iaClima && iaClima.ia ? iaClima.ia.mensagem : '',
+      climaIAFonteTexto: iaClima
+        ? (iaClima.origem === 'anthropic' ? 'Gerado por Claude · ' + (iaClima.modelo || 'Anthropic') : 'Resumo demonstrativo · IA indisponível')
+        : '',
+      climaIAProveniencia: iaClima && iaClima.origem === 'anthropic'
+        ? 'Requisição Anthropic ' + (iaClima.requestId || '—') + (iaClima.emCache ? ' · reaproveitada do cache (30 min)' : '')
+        : '',
+      climaIAFormatoAviso: !!(iaClima && iaClima.origem === 'anthropic' && iaClima.formatoValido === false),
+      climaIANivel: climaIATemAnalise ? (NIVEL_DISPLAY[iaClima.analise.nivelGeral] || iaClima.analise.nivelGeral) : '',
+      climaIACor: climaIANivelCores.cor,
+      climaIACorTexto: climaIANivelCores.corTexto,
+      climaIAFundo: climaIANivelCores.fundo,
+      climaIAResumo: climaIATemAnalise ? iaClima.analise.resumo : '',
+      climaIARiscos,
+      climaIATemRiscos: climaIARiscos.length > 0,
+      climaIARecomendacoes,
+      climaIATemRecomendacoes: climaIARecomendacoes.length > 0,
+      atualizarClimaIA: () => { if (s._talhaoSelecionadoId) this._carregarAnaliseIA(s._talhaoSelecionadoId, true); },
       mapaDisponivel, mapaIndisponivel: !mapaDisponivel, mapaSrc, mapaMensagem,
       resumoChuva7dTexto, resumoMinimaTexto,
 

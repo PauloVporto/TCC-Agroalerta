@@ -16,7 +16,9 @@
     "admin": "node scripts/administradores.js",
     "whatsapp:preparar": "node scripts/preparar-evolution.js",
     "test:e2e:clima": "node tests/e2e/notificacoes-dashboard.browser.cjs",
-    "ia:diagnostico": "node scripts/diagnosticar-ia.js"
+    "ia:diagnostico": "node scripts/diagnosticar-ia.js",
+    "ia:avaliar": "node avaliacao-ia/executar.js",
+    "ia:relatorio-pdf": "node avaliacao-ia/gerar-pdf.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
