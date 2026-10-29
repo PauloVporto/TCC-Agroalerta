@@ -1,0 +1,221 @@
+﻿modulo;cenario;descricao;dados_enviados;resposta_do_claude;coerencia_1a5;clareza_1a5;relevancia_1a5;ausencia_invencao_1a5;observacoes
+clima;C01;Café vegetativo com clima ameno;"Talhão: Talhão C01 (café arábica, fase vegetativo)
+Leitura meteorológica (fonte cenario-controlado):
+- Temperatura mínima prevista nos próximos 7 dias: 14 °C
+- Chuva acumulada prevista nos próximos 7 dias: 25 mm
+- Dias secos consecutivos até ontem: 2
+- Probabilidade máxima de chuva nos próximos 7 dias: 40%
+- Vento máximo previsto: 15 km/h
+- Evapotranspiração (ET0) prevista em 7 dias: 28 mm
+Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):
+- nenhum alerta disparado";"Nível geral: baixo
+Resumo: Não há riscos relevantes identificados para o Talhão C01 nos próximos 7 dias. As condições meteorológicas previstas estão dentro dos limites seguros para a fase vegetativa do café arábica. Continue monitorando conforme o calendário regular.
+Riscos: nenhum
+Recomendações: nenhuma";;;;;
+clima;C04;Geada moderada na granação;"Talhão: Talhão C04 (café arábica, fase granacao)
+Leitura meteorológica (fonte cenario-controlado):
+- Temperatura mínima prevista nos próximos 7 dias: 4 °C
+- Chuva acumulada prevista nos próximos 7 dias: 25 mm
+- Dias secos consecutivos até ontem: 2
+- Probabilidade máxima de chuva nos próximos 7 dias: 40%
+- Vento máximo previsto: 15 km/h
+- Evapotranspiração (ET0) prevista em 7 dias: 28 mm
+Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):
+- [medio] Risco de geada: Temperatura mínima prevista de 4°C. Risco moderado de geada. (janela: próximos dias)";"Nível geral: medio
+Resumo: Há risco moderado de geada nos próximos dias, com temperatura mínima prevista de 4°C. O café arábica em fase de granação é sensível a esta condição. A chuva prevista de 25 mm será insuficiente para compensar a evapotranspiração de 28 mm. Monitore as condições noturnas.
+Riscos:
+- geada (medio): Temperatura mínima prevista de 4°C nos próximos 7 dias indica risco moderado de geada para o café em granação.
+Recomendações:
+- Acompanhe as temperaturas noturnas diariamente
+- Prepare sistemas de proteção caso temperatura caia abaixo de 0°C
+- Monitore a umidade do solo nos próximos dias";;;;;
+clima;C07;Estiagem moderada fora da fase crítica (12 dias);"Talhão: Talhão C07 (café arábica, fase vegetativo)
+Leitura meteorológica (fonte cenario-controlado):
+- Temperatura mínima prevista nos próximos 7 dias: 14 °C
+- Chuva acumulada prevista nos próximos 7 dias: 8 mm
+- Dias secos consecutivos até ontem: 12
+- Probabilidade máxima de chuva nos próximos 7 dias: 40%
+- Vento máximo previsto: 15 km/h
+- Evapotranspiração (ET0) prevista em 7 dias: 28 mm
+Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):
+- [medio] Risco de estiagem: 12 dias sem chuva registrados. (janela: últimos 12 dias)";"Nível geral: medio
+Resumo: Há risco médio de estiagem no Talhão C07 devido aos 12 dias consecutivos sem chuva registrados. A chuva prevista nos próximos 7 dias é baixa (8 mm) e a evapotranspiração é elevada (28 mm), ampliando o déficit hídrico. Recomenda-se monitorar a umidade do solo e preparar irrigação se necessário.
+Riscos:
+- estiagem (medio): 12 dias sem chuva registrados com apenas 8 mm previstos nos próximos 7 dias contra 28 mm de evapotranspiração.
+Recomendações:
+- Monitorar a umidade do solo no Talhão C07
+- Ativar irrigação se umidade do solo cair abaixo do crítico
+- Aumentar frequência de observações até retorno das chuvas";;;;;
+clima;C10;"149 mm de chuva, logo abaixo do limiar de excesso";"Talhão: Talhão C10 (café arábica, fase vegetativo)
+Leitura meteorológica (fonte cenario-controlado):
+- Temperatura mínima prevista nos próximos 7 dias: 14 °C
+- Chuva acumulada prevista nos próximos 7 dias: 149 mm
+- Dias secos consecutivos até ontem: 0
+- Probabilidade máxima de chuva nos próximos 7 dias: 85%
+- Vento máximo previsto: 15 km/h
+- Evapotranspiração (ET0) prevista em 7 dias: 28 mm
+Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):
+- nenhum alerta disparado";"Nível geral: baixo
+Resumo: Não há riscos relevantes identificados para o Talhão C10 nos próximos 7 dias. As condições meteorológicas estão dentro dos limites adequados para o café em fase vegetativo. Temperatura, chuva e vento não apresentam ameaças ao desenvolvimento da lavoura.
+Riscos: nenhum
+Recomendações: nenhuma";;;;;
+clima;C13;Frio moderado com chuva excessiva;"Talhão: Talhão C13 (café arábica, fase vegetativo)
+Leitura meteorológica (fonte cenario-controlado):
+- Temperatura mínima prevista nos próximos 7 dias: 4.5 °C
+- Chuva acumulada prevista nos próximos 7 dias: 160 mm
+- Dias secos consecutivos até ontem: 0
+- Probabilidade máxima de chuva nos próximos 7 dias: 90%
+- Vento máximo previsto: 15 km/h
+- Evapotranspiração (ET0) prevista em 7 dias: 28 mm
+Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):
+- [medio] Risco de geada: Temperatura mínima prevista de 4.5°C. Risco moderado de geada. (janela: próximos dias)
+- [medio] Excesso de chuva: 160 mm de chuva previstos para os próximos dias. Risco de doenças fúngicas (ferrugem). (janela: próximos dias)";"Nível geral: medio
+Resumo: O talhão C13 apresenta dois riscos moderados nos próximos 7 dias. Temperatura mínima de 4.5°C oferece risco de geada, e 160 mm de chuva prevista aumenta a probabilidade de doenças fúngicas como ferrugem. Recomenda-se monitoramento contínuo durante este período.
+Riscos:
+- geada (medio): Temperatura mínima prevista de 4.5°C nos próximos 7 dias representa risco moderado de geada para o café em fase vegetativo.
+- excesso_chuva (medio): 160 mm de chuva previstos para os próximos dias aumentam o risco de doenças fúngicas como ferrugem no talhão.
+Recomendações:
+- Monitorar temperatura diária, especialmente durante madrugadas nos próximos 7 dias
+- Inspecionar plantas regularmente para sintomas de ferrugem ou outras doenças fúngicas
+- Avaliar necessidade de fungicida preventivo após período chuvoso";;;;;
+clima;S01;Soja vegetativa com clima ameno;"Talhão: Talhão S01 (soja, fase vegetativo)
+Leitura meteorológica (fonte cenario-controlado):
+- Temperatura mínima prevista nos próximos 7 dias: 14 °C
+- Chuva acumulada prevista nos próximos 7 dias: 25 mm
+- Dias secos consecutivos até ontem: 2
+- Probabilidade máxima de chuva nos próximos 7 dias: 40%
+- Vento máximo previsto: 15 km/h
+- Evapotranspiração (ET0) prevista em 7 dias: 28 mm
+Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):
+- nenhum alerta disparado";"Nível geral: baixo
+Resumo: Não há risco relevante identificado para o talhão de soja em fase vegetativo nos próximos 7 dias. As condições meteorológicas previstas estão dentro dos limites aceitáveis para a cultura.
+Riscos: nenhum
+Recomendações: nenhuma";;;;;
+clima;S04;"6 dias secos, abaixo do limiar";"Talhão: Talhão S04 (soja, fase vegetativo)
+Leitura meteorológica (fonte cenario-controlado):
+- Temperatura mínima prevista nos próximos 7 dias: 14 °C
+- Chuva acumulada prevista nos próximos 7 dias: 12 mm
+- Dias secos consecutivos até ontem: 6
+- Probabilidade máxima de chuva nos próximos 7 dias: 40%
+- Vento máximo previsto: 15 km/h
+- Evapotranspiração (ET0) prevista em 7 dias: 28 mm
+Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):
+- nenhum alerta disparado";"Nível geral: baixo
+Resumo: Não há risco relevante identificado no momento para o Talhão S04. As condições meteorológicas previstas não disparam alertas para a soja em fase vegetativo. Continue monitorando as próximas leituras.
+Riscos: nenhum
+Recomendações: nenhuma";;;;;
+clima;S07;Colheita com 40% de chance de chuva;"Talhão: Talhão S07 (soja, fase colheita)
+Leitura meteorológica (fonte cenario-controlado):
+- Temperatura mínima prevista nos próximos 7 dias: 14 °C
+- Chuva acumulada prevista nos próximos 7 dias: 15 mm
+- Dias secos consecutivos até ontem: 2
+- Probabilidade máxima de chuva nos próximos 7 dias: 40%
+- Vento máximo previsto: 15 km/h
+- Evapotranspiração (ET0) prevista em 7 dias: 28 mm
+Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):
+- nenhum alerta disparado";"Nível geral: baixo
+Resumo: Não há risco relevante para o Talhão S07 no momento. As condições meteorológicas previstas para os próximos 7 dias estão dentro dos limites aceitáveis para soja em colheita. Continue monitorando as condições.
+Riscos: nenhum
+Recomendações: nenhuma";;;;;
+clima;S10;Colheita com chuva provável e vento forte;"Talhão: Talhão S10 (soja, fase colheita)
+Leitura meteorológica (fonte cenario-controlado):
+- Temperatura mínima prevista nos próximos 7 dias: 14 °C
+- Chuva acumulada prevista nos próximos 7 dias: 60 mm
+- Dias secos consecutivos até ontem: 2
+- Probabilidade máxima de chuva nos próximos 7 dias: 80%
+- Vento máximo previsto: 62 km/h
+- Evapotranspiração (ET0) prevista em 7 dias: 28 mm
+Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):
+- [alto] Ventos fortes: Ventos de até 62 km/h previstos. (janela: próximos dias)
+- [medio] Chuva na janela de colheita: Probabilidade de 80% de chuva nos próximos 7 dias durante a janela de colheita. (janela: próximos dias)";"Nível geral: alto
+Resumo: Há risco alto de ventos fortes nos próximos dias, com velocidades até 62 km/h, que podem prejudicar a colheita da soja. Somado a isso, há 80% de probabilidade de chuva nos próximos 7 dias, o que também complica as operações de colheita. Recomenda-se antecipar a colheita se possível e acompanhar as previsões diárias.
+Riscos:
+- vento (alto): Ventos máximos de 62 km/h previstos para os próximos dias podem causar perdas durante a colheita.
+- chuva_colheita (medio): Probabilidade de 80% de chuva acumulada de 60 mm nos próximos 7 dias impede operações de colheita e prejudica a qualidade dos grãos.
+Recomendações:
+- Antecipe a colheita antes dos ventos fortes previstos
+- Monitore as previsões diárias de chuva para janelas de trabalho
+- Prepare máquinas e equipe para operações rápidas entre períodos de vento e chuva";;;;;
+clima;S13;Enchimento de grãos com solo úmido (3 dias secos);"Talhão: Talhão S13 (soja, fase enchimento graos)
+Leitura meteorológica (fonte cenario-controlado):
+- Temperatura mínima prevista nos próximos 7 dias: 14 °C
+- Chuva acumulada prevista nos próximos 7 dias: 35 mm
+- Dias secos consecutivos até ontem: 3
+- Probabilidade máxima de chuva nos próximos 7 dias: 40%
+- Vento máximo previsto: 15 km/h
+- Evapotranspiração (ET0) prevista em 7 dias: 28 mm
+Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):
+- nenhum alerta disparado";"Nível geral: baixo
+Resumo: Não há risco relevante identificado para o Talhão S13 nos próximos 7 dias. As condições meteorológicas estão dentro dos limites aceitáveis para a fase de enchimento de grãos da soja. Temperatura, chuva e vento apresentam valores normais para o período.
+Riscos: nenhum
+Recomendações: nenhuma";;;;;
+mercado;MC01;"Alta forte e contínua (+9,5%)";"Cultura: café arábica
+Unidade: saca 60kg (arábica)
+Observações: 14 (de 2026-09-01 a 2026-09-14)
+Preço inicial: 1680; preço final: 1839.6; variação: 9.5%
+Mínimo: 1680 em 2026-09-01; máximo: 1839.6 em 2026-09-14
+Série: 2026-09-01=1680; 2026-09-02=1686.25; 2026-09-03=1700.65; 2026-09-04=1710.3; 2026-09-05=1726.3; 2026-09-06=1744.02; 2026-09-07=1761.66; 2026-09-08=1767.59; 2026-09-09=1784.15; 2026-09-10=1793.47; 2026-09-11=1800.25; 2026-09-12=1809.26; 2026-09-13=1820.52; 2026-09-14=1839.6";"Tendência: alta
+Resumo: O preço do café arábica está em alta, com variação de +9,5% no período de 14 dias. O preço inicial foi 1680 reais por saca e fechou em 1839,6 reais, atingindo o máximo exatamente no último dia (14 de setembro). A série mostra uma valorização consistente e progressiva, sem reversões significativas, sugerindo um movimento de mercado bem definido. Como produtor, considere aproveitar esta tendência de alta, mas mantenha acompanhamento diário dos preços para identificar possíveis consolidações ou correções de curto prazo.";;;;;
+mercado;MC04;"Queda forte e contínua (-8,5%)";"Cultura: café arábica
+Unidade: saca 60kg (arábica)
+Observações: 14 (de 2026-09-01 a 2026-09-14)
+Preço inicial: 1680; preço final: 1537.2; variação: -8.5%
+Mínimo: 1537.2 em 2026-09-14; máximo: 1680 em 2026-09-01
+Série: 2026-09-01=1680; 2026-09-02=1663.56; 2026-09-03=1654.26; 2026-09-04=1646.49; 2026-09-05=1638.35; 2026-09-06=1626; 2026-09-07=1605.9; 2026-09-08=1604.07; 2026-09-09=1594.42; 2026-09-10=1579.01; 2026-09-11=1575.38; 2026-09-12=1555; 2026-09-13=1554.76; 2026-09-14=1537.2";"Tendência: queda
+Resumo: O preço do café arábica está em queda acentuada, caindo 8,5% no período de 14 dias. O preço inicial foi 1680 reais por saca e fechou em 1537,2 reais, com mínima exatamente no último dia. Não houve reversão: a tendência foi consistentemente baixista do início ao fim, com quedas diárias sucessivas. Recomenda-se acompanhar atentamente os próximos dias antes de tomar decisões de venda, buscando identificar possíveis pontos de estabilização.";;;;;
+mercado;MC07;"Estável, leve alta de +0,4%";"Cultura: café arábica
+Unidade: saca 60kg (arábica)
+Observações: 14 (de 2026-09-01 a 2026-09-14)
+Preço inicial: 1680; preço final: 1686.72; variação: 0.4%
+Mínimo: 1677.51 em 2026-09-04; máximo: 1688.06 em 2026-09-11
+Série: 2026-09-01=1680; 2026-09-02=1684.26; 2026-09-03=1678.44; 2026-09-04=1677.51; 2026-09-05=1681.33; 2026-09-06=1679.13; 2026-09-07=1678.53; 2026-09-08=1678.85; 2026-09-09=1684.99; 2026-09-10=1679.75; 2026-09-11=1688.06; 2026-09-12=1681.5; 2026-09-13=1682.8; 2026-09-14=1686.72";"Tendência: estavel
+Resumo: O preço do café arábica manteve-se estável no período de 1º a 14 de setembro, com variação de apenas 0,4%, saindo de R$ 1.680,00 e fechando em R$ 1.686,72 a saca de 60kg. A cotação oscilou entre o mínimo de R$ 1.677,51 (4 de setembro) e máximo de R$ 1.688,06 (11 de setembro), revelando um movimento de reversão no dia 11, seguido de leve recuo nos dias 12 e 13. Para o curto prazo, recomenda-se manter cautela e acompanhar o comportamento da resistência próxima a R$ 1.688,00, sem tomar decisões precipitadas neste cenário de baixa volatilidade.";;;;;
+mercado;MC10;"Lateral com oscilações de ±3% e fechamento em +0,3%";"Cultura: café arábica
+Unidade: saca 60kg (arábica)
+Observações: 14 (de 2026-09-01 a 2026-09-14)
+Preço inicial: 1680; preço final: 1685.04; variação: 0.3%
+Mínimo: 1634.49 em 2026-09-06; máximo: 1727.09 em 2026-09-09
+Série: 2026-09-01=1680; 2026-09-02=1698.7; 2026-09-03=1721.81; 2026-09-04=1718.8; 2026-09-05=1674.58; 2026-09-06=1634.49; 2026-09-07=1658.84; 2026-09-08=1695.05; 2026-09-09=1727.09; 2026-09-10=1684.13; 2026-09-11=1646.3; 2026-09-12=1641.18; 2026-09-13=1663.39; 2026-09-14=1685.04";"Tendência: estavel
+Resumo: O preço do café arábica manteve-se estável no período, com variação de apenas 0,3%, saindo de R$ 1680 e fechando em R$ 1685,04 por saca. A série apresentou alta volatilidade, oscilando entre o mínimo de R$ 1634,49 (06/09) e o máximo de R$ 1727,09 (09/09), gerando uma amplitude de quase R$ 93. Houve reversão clara no meio do período, com queda de 02 a 06 de setembro, seguida de recuperação até 09, novo recuo até 12 e estabilização final. A recomendação é cautela: aguarde consolidação de preços antes de decisões maiores, pois a volatilidade sugere indefinição do mercado no curto prazo.";;;;;
+mercado;MC13;"Alta com realização no fim, fechando em +4%";"Cultura: café arábica
+Unidade: saca 60kg (arábica)
+Observações: 14 (de 2026-09-01 a 2026-09-14)
+Preço inicial: 1680; preço final: 1747.2; variação: 4%
+Mínimo: 1680 em 2026-09-01; máximo: 1792.76 em 2026-09-08
+Série: 2026-09-01=1680; 2026-09-02=1693.27; 2026-09-03=1713.13; 2026-09-04=1736.22; 2026-09-05=1754.94; 2026-09-06=1766.79; 2026-09-07=1792.59; 2026-09-08=1792.76; 2026-09-09=1786.79; 2026-09-10=1780.25; 2026-09-11=1772.25; 2026-09-12=1765.08; 2026-09-13=1756.9; 2026-09-14=1747.2";"Tendência: alta
+Resumo: O preço do café arábica apresentou alta de 4% no período, saindo de R$ 1.680 e fechando em R$ 1.747,20 por saca. O preço iniciou uma trajetória de valorização consistente até 8 de setembro, quando atingiu o pico de R$ 1.792,76, seguido por reversão com queda gradual nos últimos seis dias. Apesar da correção recente, o fechamento mantém-se bem acima do preço inicial. Recomenda-se acompanhar se a queda dos últimos dias consolida-se ou se há nova tentativa de alta, mantendo posição cautelosa no curto prazo.";;;;;
+mercado;MS01;"Alta forte e contínua (+9,5%)";"Cultura: soja
+Unidade: saca 60kg
+Observações: 14 (de 2026-09-01 a 2026-09-14)
+Preço inicial: 128; preço final: 140.16; variação: 9.5%
+Mínimo: 128 em 2026-09-01; máximo: 140.16 em 2026-09-14
+Série: 2026-09-01=128; 2026-09-02=128.45; 2026-09-03=129.86; 2026-09-04=130.78; 2026-09-05=131.89; 2026-09-06=132.13; 2026-09-07=133.39; 2026-09-08=134.14; 2026-09-09=135.38; 2026-09-10=135.84; 2026-09-11=136.97; 2026-09-12=137.73; 2026-09-13=139.08; 2026-09-14=140.16";"Tendência: alta
+Resumo: O preço da soja está em alta, com variação de 9.5% no período. Iniciou em R$ 128,00 a saca de 60kg em 01/09 e chegou a R$ 140,16 em 14/09, sendo este também o valor máximo registrado. Não houve reversão significativa; a tendência foi consistentemente ascendente ao longo dos 14 dias. Para o curto prazo, recomenda-se acompanhar se o preço consegue manter esse patamar ou se há consolidação, evitando decisões precipitadas após movimento tão expressivo.";;;;;
+mercado;MS04;"Queda forte e contínua (-8,5%)";"Cultura: soja
+Unidade: saca 60kg
+Observações: 14 (de 2026-09-01 a 2026-09-14)
+Preço inicial: 128; preço final: 117.12; variação: -8.5%
+Mínimo: 117.12 em 2026-09-14; máximo: 128 em 2026-09-01
+Série: 2026-09-01=128; 2026-09-02=126.99; 2026-09-03=126.62; 2026-09-04=126.03; 2026-09-05=124.89; 2026-09-06=124.18; 2026-09-07=122.35; 2026-09-08=122.37; 2026-09-09=120.9; 2026-09-10=120.86; 2026-09-11=119.26; 2026-09-12=118.44; 2026-09-13=118.16; 2026-09-14=117.12";"Tendência: queda
+Resumo: O preço da soja está em queda acentuada, recuando 8,5% no período de 14 dias. O preço inicial foi R$ 128,00 por saca de 60kg e caiu continuamente até R$ 117,12, sendo este também o preço mínimo registrado. Não houve reversão ou recuperação durante o período analisado, apenas movimento descendente consistente. Para o curto prazo, é prudente acompanhar se os preços encontram suporte no patamar atual, evitando decisões precipitadas enquanto a tendência de queda persistir.";;;;;
+mercado;MS07;"Estável, leve alta de +0,4%";"Cultura: soja
+Unidade: saca 60kg
+Observações: 14 (de 2026-09-01 a 2026-09-14)
+Preço inicial: 128; preço final: 128.51; variação: 0.4%
+Mínimo: 127.72 em 2026-09-02; máximo: 128.67 em 2026-09-09
+Série: 2026-09-01=128; 2026-09-02=127.72; 2026-09-03=128.08; 2026-09-04=128.01; 2026-09-05=127.83; 2026-09-06=127.99; 2026-09-07=128.18; 2026-09-08=128.59; 2026-09-09=128.67; 2026-09-10=128.67; 2026-09-11=128.19; 2026-09-12=128.21; 2026-09-13=128.4; 2026-09-14=128.51";"Tendência: estavel
+Resumo: O preço da soja manteve-se estável no período de 1º a 14 de setembro, com variação de apenas 0,4%, saindo de R$ 128,00 e fechando em R$ 128,51 a saca. A série oscilou entre o mínimo de R$ 127,72 (2 de setembro) e máximo de R$ 128,67 (9 e 10 de setembro), demonstrando movimento de reversão com queda inicial até o dia 5 e posterior recuperação. Para o curto prazo, recomenda-se acompanhar o comportamento próximo ao topo de R$ 128,67 como referência de resistência, mantendo cautela diante da baixa volatilidade.";;;;;
+mercado;MS10;"Lateral com oscilações de ±3% e fechamento em +0,3%";"Cultura: soja
+Unidade: saca 60kg
+Observações: 14 (de 2026-09-01 a 2026-09-14)
+Preço inicial: 128; preço final: 128.38; variação: 0.3%
+Mínimo: 125.02 em 2026-09-06; máximo: 131.22 em 2026-09-09
+Série: 2026-09-01=128; 2026-09-02=129.2; 2026-09-03=130.76; 2026-09-04=130.57; 2026-09-05=127.68; 2026-09-06=125.02; 2026-09-07=126.81; 2026-09-08=129.34; 2026-09-09=131.22; 2026-09-10=128.53; 2026-09-11=125.08; 2026-09-12=125.4; 2026-09-13=126.64; 2026-09-14=128.38";"Tendência: estavel
+Resumo: O preço da soja manteve-se estável no período, com variação de apenas 0,3%, saindo de R$ 128,00 e fechando em R$ 128,38 a saca. A série apresentou forte volatilidade, oscilando entre R$ 125,02 (mínimo em 6 de setembro) e R$ 131,22 (máximo em 9 de setembro), evidenciando reversões significativas ao longo dos 14 dias. Após atingir o pico no meio do período, o preço recuou e se estabilizou nos últimos dias próximo ao valor inicial. Como produtor, é prudente monitorar se o preço consegue se firmar acima de R$ 128,00 ou se volta a testar os níveis mais baixos, evitando decisões precipitadas neste momento de consolidação.";;;;;
+mercado;MS13;"Alta com realização no fim, fechando em +4%";"Cultura: soja
+Unidade: saca 60kg
+Observações: 14 (de 2026-09-01 a 2026-09-14)
+Preço inicial: 128; preço final: 133.12; variação: 4%
+Mínimo: 128 em 2026-09-01; máximo: 136.82 em 2026-09-08
+Série: 2026-09-01=128; 2026-09-02=129.35; 2026-09-03=130.43; 2026-09-04=131.79; 2026-09-05=133.2; 2026-09-06=134.66; 2026-09-07=136.6; 2026-09-08=136.82; 2026-09-09=135.98; 2026-09-10=135.27; 2026-09-11=134.66; 2026-09-12=134.37; 2026-09-13=133.9; 2026-09-14=133.12";"Tendência: alta
+Resumo: O preço da soja apresentou alta de 4% no período, subindo de R$ 128,00 para R$ 133,12 por saca. A cotação iniciou em R$ 128,00 no dia 1º e atingiu o pico de R$ 136,82 no dia 8, seguido de reversão com queda gradual até o final do período. Apesar da retração nos últimos dias, o preço encerrou ainda bem acima do nível inicial. Como produtor, monitore se essa queda recente se intensifica nos próximos dias, pois pode indicar perda de momentum da alta.";;;;;

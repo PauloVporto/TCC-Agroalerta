@@ -1,0 +1,143 @@
+{
+  "meta": {
+    "executadoEm": "29/10/2026, 16:36:36",
+    "modeloAvaliado": "claude-haiku-4-5-20251001",
+    "modeloJuiz": "claude-sonnet-4-6",
+    "promptVersoes": [
+      "clima-v1",
+      "mercado-v2"
+    ],
+    "execucoes": 2,
+    "chamadas": [
+      {
+        "papel": "geracao",
+        "modelo": "claude-haiku-4-5-20251001",
+        "ok": 120,
+        "falhas": 0,
+        "tokensEntrada": 68886,
+        "tokensSaida": 24778
+      },
+      {
+        "papel": "juiz",
+        "modelo": "claude-sonnet-4-6",
+        "ok": 120,
+        "falhas": 0,
+        "tokensEntrada": 145881,
+        "tokensSaida": 22504
+      }
+    ],
+    "respostasComprovadas": 120,
+    "respostasExcluidas": 0
+  },
+  "clima": {
+    "resumo": {
+      "n": 30,
+      "criterios": {
+        "coerencia": {
+          "media": 5,
+          "desvio": 0,
+          "pctNota4ouMais": 100
+        },
+        "clareza": {
+          "media": 4.98,
+          "desvio": 0.09,
+          "pctNota4ouMais": 100
+        },
+        "relevancia": {
+          "media": 4.88,
+          "desvio": 0.31,
+          "pctNota4ouMais": 100
+        },
+        "ausenciaInvencao": {
+          "media": 4.82,
+          "desvio": 0.31,
+          "pctNota4ouMais": 100
+        },
+        "consistencia": {
+          "media": 5,
+          "desvio": 0,
+          "pctNota4ouMais": 100
+        }
+      },
+      "mediaGeral": 4.94,
+      "satisfatorios": {
+        "k": 30,
+        "n": 30,
+        "pct": 100,
+        "ic95": [
+          88.6,
+          100
+        ]
+      }
+    },
+    "objetivo": {
+      "respostas": 60,
+      "jsonValidoPct": 100,
+      "nivelGeralCorretoPct": 100,
+      "conjuntoDeRiscosExatoPct": 100,
+      "precisaoRiscosPct": 100,
+      "recallRiscosPct": 100,
+      "comFalsoAlarmePct": 0,
+      "comNumeroForaDoContextoPct": 0
+    }
+  },
+  "mercado": {
+    "resumo": {
+      "n": 30,
+      "criterios": {
+        "coerencia": {
+          "media": 4.92,
+          "desvio": 0.23,
+          "pctNota4ouMais": 100
+        },
+        "clareza": {
+          "media": 4.7,
+          "desvio": 0.45,
+          "pctNota4ouMais": 96.7
+        },
+        "relevancia": {
+          "media": 4.58,
+          "desvio": 0.37,
+          "pctNota4ouMais": 100
+        },
+        "ausenciaInvencao": {
+          "media": 4.57,
+          "desvio": 0.37,
+          "pctNota4ouMais": 96.7
+        },
+        "consistencia": {
+          "media": 5,
+          "desvio": 0,
+          "pctNota4ouMais": 100
+        }
+      },
+      "mediaGeral": 4.75,
+      "satisfatorios": {
+        "k": 30,
+        "n": 30,
+        "pct": 100,
+        "ic95": [
+          88.6,
+          100
+        ]
+      }
+    },
+    "objetivo": {
+      "respostas": 60,
+      "jsonValidoPct": 100,
+      "tendenciaCorretaPct": 100,
+      "comNumeroForaDoContextoPct": 5,
+      "matrizConfusao": {
+        "alta": {
+          "alta": 20
+        },
+        "queda": {
+          "queda": 20
+        },
+        "estavel": {
+          "estavel": 20
+        }
+      }
+    }
+  }
+}

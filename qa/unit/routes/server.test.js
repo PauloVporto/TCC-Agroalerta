@@ -15,6 +15,10 @@ jest.mock("../../../backend/routes/notificacoes", () => require("express").Route
 jest.mock("../../../backend/routes/webhooks", () => require("express").Router());
 jest.mock("../../../backend/routes/admin", () => require("express").Router());
 
+// O server.js chama dotenv.config() ao carregar. Sem este mock, o backend/.env real da máquina
+// (PORT, chaves de API) entra no teste e muda o resultado: passa no CI, falha em quem tem .env.
+jest.mock("dotenv", () => ({ config: jest.fn() }));
+
 // Sem estes mocks, carregar o server.js sobe os agendadores de notificação de
 // verdade e o Jest não encerra (timers ativos).
 jest.mock("../../../backend/services/migracoes", () => ({ aplicarMigracoes: jest.fn() }));
@@ -49,6 +53,13 @@ async function subirServidor() {
   await new Promise((r) => setImmediate(r));
   return { app: listen.mock.contexts[0], listen, inicializarBanco, aplicarMigracoes };
 }
+
+// Parte de um ambiente limpo mesmo que o shell já exporte PORT ou chaves de API.
+beforeEach(() => {
+  delete process.env.OPENWEATHER_API_KEY;
+  delete process.env.ANTHROPIC_API_KEY;
+  delete process.env.PORT;
+});
 
 afterEach(() => {
   delete process.env.OPENWEATHER_API_KEY;
