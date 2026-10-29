@@ -462,15 +462,15 @@ describe("market (histórico e análise de tendência)", () => {
     jest.dontMock("../../../backend/services/noticias");
   });
 
-  test("IA devolvendo texto vazio usa mensagem padrão", async () => {
+  test("IA devolvendo texto vazio fica indisponível e não é rotulada como IA", async () => {
     process.env.ANTHROPIC_API_KEY = "k";
     jest.resetModules();
     jest.doMock("../../../backend/services/noticias", () => ({ buscarNoticiasCultura: jest.fn().mockResolvedValue([]) }));
     mockFetch(resposta({ json: { content: [] } }));
     const { gerarAnaliseTendencia } = require("../../../backend/services/market");
     const r = await gerarAnaliseTendencia("cafe");
-    expect(r.resumo).toMatch(/Não foi possível gerar/);
-    expect(r.gerarPor).toBe("ia");
+    expect(r.gerarPor).toBe("simulado");
+    expect(r.ia).toMatchObject({ status: "indisponivel", codigo: "resposta_invalida" });
     jest.dontMock("../../../backend/services/noticias");
   });
 });
@@ -502,11 +502,11 @@ describe("insumosIA.gerarInsightCompra", () => {
     expect(r.recomendacao).toContain("R$ 89.00");
   });
 
-  test("IA com resposta vazia usa texto padrão", async () => {
+  test("IA com resposta vazia é identificada como indisponível", async () => {
     process.env.ANTHROPIC_API_KEY = "k";
     mockFetch(resposta({ json: { content: [] } }));
     const r = await carregar("services/insumosIA.js").gerarInsightCompra("fungicida");
-    expect(r.recomendacao).toMatch(/Não foi possível gerar/);
-    expect(r.gerarPor).toBe("ia");
+    expect(r.gerarPor).toBe("simulado");
+    expect(r.ia).toMatchObject({ status: "indisponivel", codigo: "resposta_invalida" });
   });
 });

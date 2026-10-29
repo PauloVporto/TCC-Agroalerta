@@ -6,7 +6,7 @@
  * quando há chave, complementar pesquisa na web.
  */
 
-const API_KEY = process.env.ANTHROPIC_API_KEY;
+const anthropic = require("./anthropic");
 
 const NOMES_CULTURA = {
   cafe: "café arábica",
@@ -107,38 +107,12 @@ function promptAnaliseMercado(contexto) {
 }
 
 async function chamarClaudeComBusca(prompt, maxTokens = 900) {
-  const resposta = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": API_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
-      tools: [
-        {
-          type: "web_search_20250305",
-          name: "web_search",
-          max_uses: 6,
-        },
-      ],
-    }),
+  const { dados, texto } = await anthropic.mensagens({
+    model: "claude-sonnet-4-6",
+    max_tokens: maxTokens,
+    messages: [{ role: "user", content: prompt }],
+    tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 }],
   });
-
-  if (!resposta.ok) {
-    const corpo = await resposta.text();
-    throw new Error("Erro na API de IA: " + resposta.status + " - " + corpo.slice(0, 200));
-  }
-
-  const dados = await resposta.json();
-  const texto = dados.content
-    .filter((bloco) => bloco.type === "text")
-    .map((bloco) => bloco.text)
-    .join("\n")
-    .trim();
 
   const fontes = [];
   for (const bloco of dados.content) {
@@ -166,7 +140,7 @@ function dedupFontes(fontes) {
 }
 
 function temChaveLlm() {
-  return Boolean(API_KEY);
+  return anthropic.chaveConfigurada();
 }
 
 function promptAlertaProdutor({ talhao, clima, previsao, alertas }) {
