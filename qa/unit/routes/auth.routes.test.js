@@ -12,6 +12,14 @@ jest.mock("../../../backend/services/auth", () => ({
 }));
 jest.mock("../../../backend/services/localizacao", () => ({ resolverLocalizacaoPorCep: jest.fn() }));
 jest.mock("../../../backend/routes/talhoes", () => ({ criarTalhao: jest.fn() }));
+// O cadastro passou a registrar os consentimentos de notificação; sem estes
+// mocks o teste subiria a fila de envio de verdade.
+jest.mock("../../../backend/services/notificacoes", () => ({ registrarEscolhasDoCadastro: jest.fn() }));
+jest.mock("../../../backend/services/notificacoes/consentimentos", () => ({
+  contatoDoProdutor: jest.fn(() => ({ email: "ana@x.com", telefone: "35999990000" })),
+  obterConsentimentos: jest.fn(async () => ({})),
+  autorizacaoVigente: jest.fn(() => false),
+}));
 
 const request = require("supertest");
 const { montarApp } = require("../helpers/app");
@@ -25,7 +33,10 @@ const AUTH = { Authorization: "Bearer ok" };
 const local = { valido: true, cidade: "Santa Rita", uf: "MG", enderecoFormatado: "Santa Rita, MG", latitude: -22, longitude: -45, cep: "37540-000" };
 
 describe("POST /api/auth/registrar", () => {
-  const corpo = { nome: "Ana", email: "ana@x.com", senha: "123456", cep: "37540-000", cultura: "soja" };
+  const corpo = {
+    nome: "Ana", email: "ana@x.com", senha: "123456", cep: "37540-000",
+    cultura: "soja", telefone: "(35) 99999-0000",
+  };
 
   test("cria usuário, talhão inicial e devolve 201 com token", async () => {
     resolverLocalizacaoPorCep.mockResolvedValue(local);
@@ -36,7 +47,65 @@ describe("POST /api/auth/registrar", () => {
 
     expect(r.status).toBe(201);
     expect(r.body).toEqual({ usuario: { id: 1, nome: "Ana", email: "ana@x.com" }, token: "tok" });
-    expect(criarTalhao).toHaveBeenCalledWith(1, expect.objectContaining({ cultura: "soja", fase: "vegetativo" }));
+    expect(criarTalhao).toHaveBeenCalledWith(1, expect.objectContaining({ cultura: "soja", fase: "plantio" }));
+  });
+
+  test("sem telefone responde 400", async () => {
+    const c = { ...corpo };
+    delete c.telefone;
+    const r = await request(app).post("/api/auth/registrar").send(c);
+    expect(r.status).toBe(400);
+    expect(r.body.erro).toMatch(/celular com DDD/);
+    expect(svc.criarUsuario).not.toHaveBeenCalled();
+  });
+
+  test("telefone em formato inválido responde 400", async () => {
+    const r = await request(app).post("/api/auth/registrar").send({ ...corpo, telefone: "123" });
+    expect(r.status).toBe(400);
+    expect(r.body.erro).toMatch(/Telefone inválido/);
+  });
+
+  test("e-mail em formato inválido responde 400", async () => {
+    const r = await request(app).post("/api/auth/registrar").send({ ...corpo, email: "ana-arroba-x" });
+    expect(r.status).toBe(400);
+    expect(r.body.erro).toMatch(/E-mail em formato inválido/);
+  });
+
+  test("telefone normalizado é repassado ao serviço", async () => {
+    resolverLocalizacaoPorCep.mockResolvedValue(local);
+    svc.criarUsuario.mockResolvedValue({ id: 1 });
+    svc.autenticar.mockResolvedValue({ token: "t" });
+    await request(app).post("/api/auth/registrar").send(corpo);
+    // normalizarTelefone devolve o número em E.164 (ex.: +5535999990000).
+    expect(svc.criarUsuario).toHaveBeenCalledWith(
+      expect.objectContaining({ telefone: "+5535999990000" })
+    );
+  });
+
+  test("papel informado é repassado ao serviço", async () => {
+    resolverLocalizacaoPorCep.mockResolvedValue(local);
+    svc.criarUsuario.mockResolvedValue({ id: 1, papel: "fornecedor" });
+    svc.autenticar.mockResolvedValue({ token: "t" });
+    await request(app).post("/api/auth/registrar").send({ ...corpo, papel: "fornecedor" });
+    expect(svc.criarUsuario).toHaveBeenCalledWith(expect.objectContaining({ papel: "fornecedor" }));
+  });
+
+  // Fornecedor não tem lavoura: só o produtor ganha o talhão inicial.
+  test("cadastro de fornecedor não cria talhão", async () => {
+    resolverLocalizacaoPorCep.mockResolvedValue(local);
+    svc.criarUsuario.mockResolvedValue({ id: 1, papel: "fornecedor" });
+    svc.autenticar.mockResolvedValue({ token: "t" });
+    const r = await request(app).post("/api/auth/registrar").send({ ...corpo, papel: "fornecedor" });
+    expect(r.status).toBe(201);
+    expect(criarTalhao).not.toHaveBeenCalled();
+  });
+
+  test("cadastro de produtor cria o talhão inicial", async () => {
+    resolverLocalizacaoPorCep.mockResolvedValue(local);
+    svc.criarUsuario.mockResolvedValue({ id: 1, papel: "produtor" });
+    svc.autenticar.mockResolvedValue({ token: "t" });
+    await request(app).post("/api/auth/registrar").send({ ...corpo, papel: "produtor" });
+    expect(criarTalhao).toHaveBeenCalledWith(1, expect.objectContaining({ fase: "plantio" }));
   });
 
   test("cultura não suportada vira café", async () => {
@@ -141,7 +210,32 @@ describe("rotas autenticadas", () => {
     svc.atualizarPerfil.mockResolvedValue({ id: 1, nome: "N", email: "n@n.com" });
     const r = await request(app).patch("/api/auth/perfil").set(AUTH).send({ nome: "N", email: "n@n.com" });
     expect(r.status).toBe(200);
-    expect(svc.atualizarPerfil).toHaveBeenCalledWith(1, { nome: "N", email: "n@n.com" });
+    // Sem telefone no corpo, o já cadastrado é preservado.
+    expect(svc.atualizarPerfil).toHaveBeenCalledWith(1, {
+      nome: "N", email: "n@n.com", telefone: "35999990000",
+    });
+  });
+
+  test("PATCH /perfil com e-mail inválido => 400", async () => {
+    const r = await request(app).patch("/api/auth/perfil").set(AUTH).send({ nome: "N", email: "sem-arroba" });
+    expect(r.status).toBe(400);
+    expect(r.body.erro).toMatch(/E-mail em formato inválido/);
+    expect(svc.atualizarPerfil).not.toHaveBeenCalled();
+  });
+
+  test("PATCH /perfil troca o telefone quando informado", async () => {
+    svc.atualizarPerfil.mockResolvedValue({ id: 1 });
+    const r = await request(app).patch("/api/auth/perfil").set(AUTH)
+      .send({ nome: "N", email: "n@n.com", telefone: "(35) 98888-0000" });
+    expect(r.status).toBe(200);
+    expect(svc.atualizarPerfil.mock.calls[0][1].telefone).toBe("+5535988880000");
+  });
+
+  test("PATCH /perfil com telefone inválido => 400", async () => {
+    const r = await request(app).patch("/api/auth/perfil").set(AUTH)
+      .send({ nome: "N", email: "n@n.com", telefone: "123" });
+    expect(r.status).toBe(400);
+    expect(r.body.erro).toMatch(/Telefone inválido/);
   });
 
   test("PATCH /perfil sem campos responde 400 e com e-mail duplicado 409", async () => {
@@ -179,13 +273,25 @@ describe("rotas autenticadas", () => {
   });
 
   test.each([
-    [{ culturaFavorita: "arroz", unidadeTemperatura: "celsius", notificacoes: true }],
-    [{ culturaFavorita: "cafe", unidadeTemperatura: "kelvin", notificacoes: true }],
-    [{ culturaFavorita: "cafe", unidadeTemperatura: "celsius", notificacoes: "sim" }],
+    [{ culturaFavorita: "arroz", unidadeTemperatura: "celsius" }],
+    [{ culturaFavorita: "cafe", unidadeTemperatura: "kelvin" }],
+    [{ unidadeTemperatura: "celsius" }],
   ])("PATCH /preferencias inválidas %j => 400", async (corpo) => {
     const r = await request(app).patch("/api/auth/preferencias").set(AUTH).send(corpo);
     expect(r.status).toBe(400);
     expect(r.body.erro).toBe("Preferências inválidas.");
+  });
+
+  // O consentimento de notificação saiu daqui: agora é do módulo de
+  // notificações (PUT /api/notificacoes/preferencias) e é ignorado nesta rota.
+  test("PATCH /preferencias ignora o campo notificacoes", async () => {
+    svc.atualizarPreferencias.mockResolvedValue({ culturaFavorita: "cafe" });
+    const r = await request(app).patch("/api/auth/preferencias").set(AUTH)
+      .send({ culturaFavorita: "cafe", unidadeTemperatura: "celsius", notificacoes: "sim" });
+    expect(r.status).toBe(200);
+    expect(svc.atualizarPreferencias).toHaveBeenCalledWith(1, {
+      culturaFavorita: "cafe", unidadeTemperatura: "celsius",
+    });
   });
 
   test("PATCH /senha altera a senha", async () => {

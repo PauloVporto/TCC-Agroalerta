@@ -16,7 +16,7 @@ Funcionalidade: Cadastro de conta
     Quando envio o cadastro sem preencher nada
     Então vejo o erro de cadastro "nome" com "Informe nome e sobrenome."
     E vejo o erro de cadastro "cep" com "Informe o CEP."
-    E vejo o erro de cadastro "telefone" com "Informe um telefone."
+    E vejo o erro de cadastro "telefone" com "Informe o celular com DDD."
     E vejo o erro de cadastro "email" com "Informe um e-mail."
     E vejo o erro de cadastro "termos" com "É necessário aceitar os termos."
 
@@ -35,7 +35,7 @@ Funcionalidade: Cadastro de conta
   Cenário: Telefone incompleto é recusado
     Quando preencho o cadastro válido com telefone "(34) 9999"
     E envio o cadastro
-    Então vejo o erro de cadastro "telefone" com "Telefone incompleto."
+    Então vejo o erro de cadastro "telefone" com "Telefone incompleto: informe DDD e número."
     E permaneço na tela de cadastro
 
   Cenário: Senhas diferentes são recusadas

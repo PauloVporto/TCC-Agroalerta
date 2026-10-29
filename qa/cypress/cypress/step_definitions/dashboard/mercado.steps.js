@@ -90,9 +90,8 @@ Then("o resumo de mercado é {string}", (texto) => {
   cy.pegar("mercado-resumo").should("have.text", texto);
 });
 
-Then("a curadoria lista {int} notícias, incluindo {string}", (qtd, titulo) => {
-  cy.pegar("mercado-noticia-titulo").should("have.length", qtd);
-  cy.pegar("mercado-noticia-titulo").then(($n) => {
-    expect([...$n].map((e) => e.textContent.trim())).to.include(titulo);
-  });
+// As notícias saíram desta página e ganharam a sua própria (noticias.feature);
+// aqui resta a procedência da análise, que vem dos fatores considerados.
+Then("as fontes usadas da análise são {string}", (texto) => {
+  cy.pegar("mercado-fontes").should("be.visible").and("have.text", "Fontes usadas: " + texto);
 });

@@ -8,7 +8,11 @@ const USUARIO_KEY = "agroalerta_usuario";
 /** cy.pegar("login-email") => cy.get('[data-cy="login-email"]') */
 Cypress.Commands.add("pegar", (id) => cy.get(`[data-cy="${id}"]`));
 
-/** Gera um usuário único para cada execução. */
+/**
+ * Gera um usuário único para cada execução.
+ * O telefone é obrigatório no cadastro e precisa ser um celular válido: é ele
+ * que habilita a autorização de notificações por WhatsApp.
+ */
 Cypress.Commands.add("novoUsuario", (extra = {}) => {
   const ts = Date.now() + Math.floor(Math.random() * 1000);
   return cy.wrap({
@@ -17,6 +21,7 @@ Cypress.Commands.add("novoUsuario", (extra = {}) => {
     senha: "Senha@123",
     cep: Cypress.env("cepValido"),
     cultura: "cafe",
+    telefone: "(35) 99999-0000",
     ...extra,
   });
 });
@@ -62,12 +67,59 @@ Cypress.Commands.add("aguardarDashboard", () => {
   cy.pegar("kpi-valor").eq(1).should("have.text", "1");
 });
 
+/**
+ * Série de preços do mercado para o gráfico e o simulador de venda.
+ * Um ponto por mês, do início do ano corrente até o mês atual, com preços
+ * previsíveis (R$ 2.000 + R$ 50 por mês). O último preço é o que o painel usa
+ * como cotação atual, então os cenários podem calcular a receita esperada.
+ */
+export function serieDeMercado() {
+  const hoje = new Date();
+  const ano = hoje.getUTCFullYear();
+  const historico = [];
+  for (let mes = 0; mes <= hoje.getUTCMonth(); mes++) {
+    historico.push({
+      data: `${ano}-${String(mes + 1).padStart(2, "0")}-15`,
+      preco: 2000 + mes * 50,
+    });
+  }
+  const projecao = [1, 2, 3].map((n) => ({
+    data: `${ano + 1}-${String(n).padStart(2, "0")}-15`,
+    preco: 2800 + n * 50,
+  }));
+
+  return {
+    cultura: "cafe",
+    unidade: "saca 60kg (arábica)",
+    fonte: "Cepea/Esalq — Indicador do café arábica (série simulada no teste)",
+    historico,
+    projecao,
+    anosProjecao: 1,
+    tendenciaAnual: 0.08,
+    metodoProjecao: "tendencia+sazonalidade",
+  };
+}
+
 /** Intercepta as chamadas de dados do dashboard com fixtures determinísticas. */
-Cypress.Commands.add("simularDadosDoPainel", ({ alertas = "alertas-vazio.json", clima = true, mercado = true } = {}) => {
+Cypress.Commands.add("simularDadosDoPainel", ({ alertas = "alertas-vazio.json", clima = true, mercado = true, noticias = "noticias-cafe.json" } = {}) => {
   cy.intercept("GET", "**/api/alertas/*", { fixture: alertas }).as("alertas");
   if (clima) cy.intercept("GET", "**/api/clima", { fixture: "clima-7dias.json" }).as("clima");
   if (mercado) {
+    // A série real vai de 2010 até hoje (milhares de pontos diários) e muda a
+    // cada dia. Aqui ela é gerada com preços fixos, mas ancorada no ano
+    // corrente: o gráfico recorta por ano e depois pela janela do período
+    // escolhido, então datas fixas num ano passado deixariam o gráfico vazio.
+    cy.intercept("GET", "**/api/mercado/*/serie", { body: serieDeMercado() }).as("serie");
     cy.intercept("GET", "**/api/mercado/*/analise", { fixture: "analise-cafe.json" }).as("analise");
     cy.intercept("GET", "**/api/mercado/cotacoes*", { fixture: "cotacoes.json" }).as("cotacoes");
+  }
+  // As notícias vêm de RSS de veículos externos: sem fixture, a lista mudaria
+  // a cada execução e os cenários não teriam o que afirmar. A página pede a
+  // cultura do cadastro, então cada uma tem a sua resposta — o intercept mais
+  // específico vem depois porque o Cypress casa as rotas da última para a
+  // primeira.
+  if (noticias) {
+    cy.intercept("GET", "**/api/noticias*", { fixture: noticias }).as("noticias");
+    cy.intercept("GET", "**/api/noticias?cultura=soja*", { fixture: "noticias-soja.json" }).as("noticiasSoja");
   }
 });

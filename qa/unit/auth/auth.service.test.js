@@ -90,15 +90,37 @@ describe("auth - sessão e consultas", () => {
 });
 
 describe("auth - atualizações", () => {
+  // atualizarPerfil lê telefone e cidade atuais antes de gravar, então são
+  // duas consultas: a de leitura e o UPDATE.
   test("atualizarPerfil devolve o usuário atualizado", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [{ id: 1, nome: "Novo", email: "n@n.com", criadoEm: "t" }] });
+    pool.query
+      .mockResolvedValueOnce({ rows: [{ telefone: "+5535999990000", cidade: "Lavras - MG" }] })
+      .mockResolvedValueOnce({ rows: [{ id: 1, nome: "Novo", email: "n@n.com", criadoEm: "t" }] });
     const r = await auth.atualizarPerfil(1, { nome: "Novo", email: "N@n.com" });
     expect(r.nome).toBe("Novo");
-    expect(pool.query.mock.calls[0][1]).toEqual(["Novo", "N@n.com", 1]);
+    expect(pool.query.mock.calls[1][1]).toEqual(["Novo", "N@n.com", "+5535999990000", "Lavras - MG", 1]);
+  });
+
+  test("atualizarPerfil preserva telefone e cidade quando não vêm no payload", async () => {
+    pool.query
+      .mockResolvedValueOnce({ rows: [{ telefone: "+5535988880000", cidade: "Itajubá - MG" }] })
+      .mockResolvedValueOnce({ rows: [{ id: 1 }] });
+    await auth.atualizarPerfil(1, { nome: "N", email: "n@n.com" });
+    expect(pool.query.mock.calls[1][1].slice(2, 4)).toEqual(["+5535988880000", "Itajubá - MG"]);
+  });
+
+  test("atualizarPerfil limpa o telefone quando enviado vazio", async () => {
+    pool.query
+      .mockResolvedValueOnce({ rows: [{ telefone: "+5535988880000", cidade: "Itajubá - MG" }] })
+      .mockResolvedValueOnce({ rows: [{ id: 1 }] });
+    await auth.atualizarPerfil(1, { nome: "N", email: "n@n.com", telefone: "" });
+    expect(pool.query.mock.calls[1][1][2]).toBeNull();
   });
 
   test("atualizarPerfil retorna null quando o usuário não existe", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [] });
+    pool.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] });
     expect(await auth.atualizarPerfil(9, { nome: "N", email: "n@n.com" })).toBeNull();
   });
 
@@ -110,12 +132,14 @@ describe("auth - atualizações", () => {
     await expect(auth.atualizarPerfil(1, { nome: "N", email: "n@n.com" })).rejects.toThrow("boom");
   });
 
+  // O consentimento de notificação saiu desta tabela e passou a viver no
+  // módulo de notificações; aqui ficam só cultura e unidade.
   test("atualizarPreferencias faz upsert e devolve as preferências", async () => {
-    const prefs = { culturaFavorita: "soja", unidadeTemperatura: "celsius", notificacoes: false };
+    const prefs = { culturaFavorita: "soja", unidadeTemperatura: "celsius" };
     pool.query.mockResolvedValueOnce({ rows: [prefs] });
     expect(await auth.atualizarPreferencias(1, prefs)).toEqual(prefs);
     expect(pool.query.mock.calls[0][0]).toMatch(/ON CONFLICT/);
-    expect(pool.query.mock.calls[0][1]).toEqual([1, "soja", "celsius", false]);
+    expect(pool.query.mock.calls[0][1]).toEqual([1, "soja", "celsius"]);
   });
 
   test("atualizarLocalizacao devolve a linha ou null", async () => {

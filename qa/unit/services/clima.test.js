@@ -113,7 +113,23 @@ describe("openmeteo.buscarClimaOpenMeteo", () => {
     expect(c.probabilidadeChuva7dias).toBe(70);
     expect(c.ventoMaximoKmh).toBe(46);
     expect(c.evapotranspiracao7dias).toBe(7);
-    expect(c.diasSemChuva).toBe(4); // 0, 0.5, null e 0.99 < 1mm
+    // Sequência seca contada de trás para frente: 0.99 e null ficam abaixo de
+    // 1 mm, e os 5 mm anteriores interrompem a contagem.
+    expect(c.diasSemChuva).toBe(2);
+  });
+
+  test("a estiagem conta só os dias secos consecutivos até ontem", async () => {
+    const seca = { daily: { precipitation_sum: [20, 0, 0, 0, 0] } };
+    mockFetch(resposta({ json: previsao }), resposta({ json: seca }));
+    const c = await carregar("services/openmeteo.js").buscarClimaOpenMeteo(-22.25, -45.7);
+    expect(c.diasSemChuva).toBe(4);
+  });
+
+  test("chuva recente zera a contagem de estiagem", async () => {
+    const choveuOntem = { daily: { precipitation_sum: [0, 0, 0, 0, 12] } };
+    mockFetch(resposta({ json: previsao }), resposta({ json: choveuOntem }));
+    const c = await carregar("services/openmeteo.js").buscarClimaOpenMeteo(-22.25, -45.7);
+    expect(c.diasSemChuva).toBe(0);
   });
 
   test("descreve cada dia com descrição e ícone coerentes com a chuva", async () => {

@@ -4,7 +4,7 @@ const { chamarClaude } = require("./market");
 
 const db = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "insumos.json"), "utf-8"));
 
-const API_KEY = (process.env.ANTHROPIC_API_KEY || "").trim() || undefined;
+const anthropic = require("./anthropic");
 
 const NOMES_CATEGORIA = {
   fungicida: "fungicidas",
@@ -46,8 +46,8 @@ async function gerarInsightCompra(categoria) {
     })
     .join("\n");
 
-  if (!API_KEY) {
-    return gerarInsightSimulado(categoria, nomeCategoria, insumos);
+  if (!anthropic.chaveConfigurada()) {
+    return { ...gerarInsightSimulado(categoria, nomeCategoria, insumos), ia: anthropic.estadoFalha({ codigo: "nao_configurada" }) };
   }
 
   const prompt =
@@ -71,8 +71,9 @@ async function gerarInsightCompra(categoria) {
       geradoEm: new Date().toISOString(),
     };
   } catch (erro) {
-    console.error("[insumosIA] Falha ao chamar Claude, usando fallback simulado:", erro.message);
-    return gerarInsightSimulado(categoria, nomeCategoria, insumos);
+    const ia = anthropic.estadoFalha(erro);
+    console.error("[insumosIA] IA indisponível:", ia.codigo);
+    return { ...gerarInsightSimulado(categoria, nomeCategoria, insumos), ia };
   }
 }
 

@@ -37,6 +37,6 @@ Funcionalidade: Painel - Tendência de mercado
     Então a receita simulada é "R$ 0,00"
     E o simulador está com 0 sacas
 
-  Cenário: Exibe o resumo e as notícias da curadoria
+  Cenário: Exibe o resumo da análise e as fontes que ela usou
     Então o resumo de mercado é "Resumo de teste: o preço do café arábica apresentou tendência de alta nas últimas semanas."
-    E a curadoria lista 3 notícias, incluindo "Câmbio favorece exportadores brasileiros"
+    E as fontes usadas da análise são "Fonte A · Fonte B · Fonte C"

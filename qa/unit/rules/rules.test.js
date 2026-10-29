@@ -47,7 +47,19 @@ describe("rules.avaliarAlertas - café: geada", () => {
     const [alerta] = avaliarAlertas("cafe", "vegetativo", clima({ temperaturaMinima: 1 }));
     expect(alerta.mensagem).toContain("1°C");
     expect(alerta.recomendacao).toMatch(/proteção contra geada/);
-    expect(alerta.janela).toBe("próximas 48h");
+    // Sem previsão diária no clima informado, a janela cai no texto genérico.
+    expect(alerta.janela).toBe("próximos dias");
+  });
+
+  test("com previsão diária, a janela cita os dias de risco", () => {
+    const previsaoDiaria = [
+      { data: "2026-07-10", tempMin: 8 },
+      { data: "2026-07-11", tempMin: 1 },
+      { data: "2026-07-12", tempMin: 0 },
+    ];
+    const [alerta] = avaliarAlertas("cafe", "vegetativo", clima({ temperaturaMinima: 1, previsaoDiaria }));
+    expect(alerta.janela).not.toBe("próximos dias");
+    expect(alerta.janela).toMatch(/\d/);
   });
 });
 

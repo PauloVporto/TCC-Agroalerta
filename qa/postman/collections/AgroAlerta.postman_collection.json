@@ -30,7 +30,7 @@
                       "",
                       "pm.test(\"informa modos de clima, IA e mapas\", function () {",
                       "    const body = pm.response.json();",
-                      "    pm.expect(body).to.have.all.keys('status', 'modoClima', 'modoIA', 'modoMapas');",
+                      "    pm.expect(body).to.have.all.keys('status', 'modoClima', 'modoIA', 'modoMapas', 'modoEmail', 'modoWhatsapp', 'monitoramentoClimatico');",
                       "    pm.expect(['real', 'simulado']).to.include(body.modoClima);",
                       "    pm.expect(body.modoMapas).to.eql('nominatim');",
                       "});",
@@ -244,7 +244,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"nome\": \"Teste QA AgroAlerta\",\n  \"email\": \"{{email}}\",\n  \"senha\": \"{{senha}}\",\n  \"cep\": \"{{cep}}\",\n  \"cultura\": \"cafe\"\n}",
+                  "raw": "{\n  \"nome\": \"Teste QA AgroAlerta\",\n  \"email\": \"{{email}}\",\n  \"senha\": \"{{senha}}\",\n  \"cep\": \"{{cep}}\",\n  \"cultura\": \"cafe\",\n  \"telefone\": \"(35) 99999-0000\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -364,7 +364,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"nome\": \"Teste QA AgroAlerta\",\n  \"email\": \"{{email}}\",\n  \"senha\": \"123\",\n  \"cep\": \"{{cep}}\",\n  \"cultura\": \"cafe\"\n}",
+                  "raw": "{\n  \"nome\": \"Teste QA AgroAlerta\",\n  \"email\": \"{{email}}\",\n  \"senha\": \"123\",\n  \"cep\": \"{{cep}}\",\n  \"cultura\": \"cafe\",\n  \"telefone\": \"(35) 99999-0000\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -424,7 +424,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"nome\": \"Teste QA AgroAlerta\",\n  \"email\": \"{{email}}\",\n  \"senha\": \"{{senha}}\",\n  \"cep\": \"123\",\n  \"cultura\": \"cafe\"\n}",
+                  "raw": "{\n  \"nome\": \"Teste QA AgroAlerta\",\n  \"email\": \"{{email}}\",\n  \"senha\": \"{{senha}}\",\n  \"cep\": \"123\",\n  \"cultura\": \"cafe\",\n  \"telefone\": \"(35) 99999-0000\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -484,7 +484,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"nome\": \"Teste QA AgroAlerta\",\n  \"email\": \"{{email}}\",\n  \"senha\": \"{{senha}}\",\n  \"cep\": \"{{cep}}\",\n  \"cultura\": \"cafe\"\n}",
+                  "raw": "{\n  \"nome\": \"Teste QA AgroAlerta\",\n  \"email\": \"{{email}}\",\n  \"senha\": \"{{senha}}\",\n  \"cep\": \"{{cep}}\",\n  \"cultura\": \"cafe\",\n  \"telefone\": \"(35) 99999-0000\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -545,7 +545,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"nome\": \"Teste QA AgroAlerta\",\n  \"email\": \"{{email2}}\",\n  \"senha\": \"{{senha}}\",\n  \"cep\": \"{{cep}}\",\n  \"cultura\": \"cafe\"\n}",
+                  "raw": "{\n  \"nome\": \"Teste QA AgroAlerta\",\n  \"email\": \"{{email2}}\",\n  \"senha\": \"{{senha}}\",\n  \"cep\": \"{{cep}}\",\n  \"cultura\": \"cafe\",\n  \"telefone\": \"(35) 99999-0000\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1255,7 +1255,6 @@
                       "pm.test(\"traz preferências padrão\", function () {",
                       "    const body = pm.response.json();",
                       "    pm.expect(body.unidadeTemperatura).to.eql('celsius');",
-                      "    pm.expect(body.notificacoes).to.be.a('boolean');",
                       "    pm.expect(['cafe', 'soja', 'milho', 'cana', 'feijao']).to.include(body.culturaFavorita);",
                       "});",
                       "",
@@ -1879,7 +1878,6 @@
                       "    const body = pm.response.json();",
                       "    pm.expect(body.culturaFavorita).to.eql('soja');",
                       "    pm.expect(body.unidadeTemperatura).to.eql('fahrenheit');",
-                      "    pm.expect(body.notificacoes).to.eql(false);",
                       "});",
                       "",
                       "pm.test(\"Content-Type é JSON\", function () {",
@@ -1919,7 +1917,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"culturaFavorita\": \"soja\",\n  \"unidadeTemperatura\": \"fahrenheit\",\n  \"notificacoes\": false\n}",
+                  "raw": "{\n  \"culturaFavorita\": \"soja\",\n  \"unidadeTemperatura\": \"fahrenheit\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2108,25 +2106,27 @@
               }
             },
             {
-              "name": "400 - notificações não booleano",
+              "name": "200 - campo notificacoes é ignorado nesta rota",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.test(\"Status 400\", function () {",
-                      "    pm.response.to.have.status(400);",
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
                       "});",
                       "",
-                      "pm.test(\"Corpo traz a mensagem de erro esperada\", function () {",
+                      "pm.test(\"Salva cultura e unidade, ignorando notificacoes\", function () {",
                       "    const body = pm.response.json();",
-                      "    pm.expect(body).to.have.property('erro');",
-                      "    pm.expect(body.erro).to.match(/Preferências inválidas/);",
+                      "    pm.expect(body.culturaFavorita).to.eql('cafe');",
+                      "    pm.expect(body.unidadeTemperatura).to.eql('celsius');",
+                      "    pm.expect(body).to.not.have.property('notificacoes');",
                       "});",
                       "",
+                      "// O consentimento de notificação agora é salvo em",
+                      "// PUT /api/notificacoes/preferencias (ver a pasta Notificacoes).",
                       "pm.test(\"Content-Type é JSON\", function () {",
-                      "    pm.response.to.have.header('Content-Type');",
                       "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
                       "});",
                       "",
@@ -2763,7 +2763,7 @@
                       "pm.test(\"talhão inicial usa a cultura escolhida no registro\", function () {",
                       "    const body = pm.response.json();",
                       "    pm.expect(body[0].cultura).to.eql('cafe');",
-                      "    pm.expect(body[0].fase).to.eql('vegetativo');",
+                      "    pm.expect(body[0].fase).to.eql('plantio');",
                       "});",
                       "",
                       "pm.test(\"Content-Type é JSON\", function () {",
@@ -3243,7 +3243,7 @@
                       "pm.test(\"campos alterados\", function () {",
                       "    const body = pm.response.json();",
                       "    pm.expect(body.nome).to.eql('Talhão QA Editado');",
-                      "    pm.expect(body.fase).to.eql('enchimento_graos');",
+                      "    pm.expect(body.fase).to.eql('floracao');",
                       "});",
                       "",
                       "pm.test(\"cultura não muda\", function () {",
@@ -3289,7 +3289,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"nome\": \"Talhão QA Editado\",\n  \"fase\": \"enchimento_graos\"\n}",
+                  "raw": "{\n  \"nome\": \"Talhão QA Editado\",\n  \"fase\": \"floracao\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3547,6 +3547,58 @@
                       "language": "json"
                     }
                   }
+                }
+              }
+            },
+            {
+              "name": "400 - fase inválida",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Lista as fases aceitas\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.include('plantio, floracao, colheita');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fase\": \"vegetativo\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/talhoes/{{talhaoId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "talhoes",
+                    "{{talhaoId}}"
+                  ]
                 }
               }
             }
@@ -4529,7 +4581,7 @@
                       "",
                       "pm.test(\"sempre traz as 3 chaves (valor ou null)\", function () {",
                       "    const body = pm.response.json();",
-                      "    pm.expect(body).to.have.all.keys('ptax', 'icbr', 'cotacaoInternacional');",
+                      "    pm.expect(body).to.have.all.keys('ptax', 'icbr', 'icbrSeries', 'cotacaoInternacional');",
                       "});",
                       "",
                       "pm.test(\"PTAX, quando disponível, tem compra e venda numéricas\", function () {",
@@ -4547,8 +4599,8 @@
                       "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
                       "});",
                       "",
-                      "pm.test(\"Responde em menos de 8s\", function () {",
-                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "pm.test(\"Responde em menos de 20s (depende de API externa)\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(20000);",
                       "});"
                     ]
                   }
@@ -4593,8 +4645,8 @@
                       "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
                       "});",
                       "",
-                      "pm.test(\"Responde em menos de 8s\", function () {",
-                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "pm.test(\"Responde em menos de 20s (depende de API externa)\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(20000);",
                       "});"
                     ]
                   }
@@ -4658,8 +4710,8 @@
                       "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
                       "});",
                       "",
-                      "pm.test(\"Responde em menos de 8s\", function () {",
-                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "pm.test(\"Responde em menos de 20s (depende de API externa)\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(20000);",
                       "});"
                     ]
                   }
@@ -4705,8 +4757,8 @@
                       "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
                       "});",
                       "",
-                      "pm.test(\"Responde em menos de 8s\", function () {",
-                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "pm.test(\"Responde em menos de 20s (depende de API externa)\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(20000);",
                       "});"
                     ]
                   }
@@ -4982,6 +5034,2207 @@
       ]
     },
     {
+      "name": "Noticias",
+      "description": "Notícias por cultura, lidas dos RSS do Canal Rural e do g1 Agronegócios. Depende de internet. O primeiro cenário aquece o cache de 3 horas, por isso ele tem orçamento de tempo maior que o seguinte.",
+      "item": [
+        {
+          "name": "GET /api/noticias",
+          "item": [
+            {
+              "name": "200 - notícias de café com resumo e link",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"estrutura da resposta\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.include.keys('cultura', 'total', 'noticias');",
+                      "    pm.expect(body.cultura).to.eql('cafe');",
+                      "    pm.expect(body.noticias).to.be.an('array');",
+                      "    pm.expect(body.total).to.eql(body.noticias.length);",
+                      "});",
+                      "",
+                      "pm.test(\"cada notícia traz título, resumo e link para a matéria\", function () {",
+                      "    const body = pm.response.json();",
+                      "    // Sem resumo e sem link a página de notícias não se sustenta: é o",
+                      "    // motivo de o projeto ter trocado o Google News pelos RSS dos veículos.",
+                      "    pm.expect(body.noticias.length, 'os feeds devolveram notícias').to.be.above(0);",
+                      "    body.noticias.forEach(function (n) {",
+                      "        pm.expect(n).to.include.keys('titulo', 'resumo', 'link', 'fonte', 'dataTexto', 'publicadoEm');",
+                      "        pm.expect(n.titulo).to.be.a('string').and.not.empty;",
+                      "        pm.expect(n.resumo.length, 'resumo de: ' + n.titulo).to.be.above(40);",
+                      "        pm.expect(n.resumo.length).to.be.at.most(320);",
+                      "        pm.expect(n.link).to.match(/^https?:\\/\\//);",
+                      "        pm.expect(['Canal Rural', 'g1 Agronegócios']).to.include(n.fonte);",
+                      "    });",
+                      "});",
+                      "",
+                      "pm.test(\"não repete manchete e devolve no máximo 12\", function () {",
+                      "    const body = pm.response.json();",
+                      "    const titulos = body.noticias.map(function (n) { return n.titulo.toLowerCase(); });",
+                      "    pm.expect(new Set(titulos).size).to.eql(titulos.length);",
+                      "    pm.expect(body.noticias.length).to.be.at.most(12);",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é JSON\", function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 20s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(20000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias?cultura=cafe",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ],
+                  "query": [
+                    {
+                      "key": "cultura",
+                      "value": "cafe"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - segunda chamada da mesma cultura vem do cache",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"resposta igual à da primeira chamada\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.cultura).to.eql('cafe');",
+                      "    pm.expect(body.total).to.be.a('number');",
+                      "});",
+                      "",
+                      "// A requisição anterior já aqueceu o cache de 3 horas, então esta não",
+                      "// deve mais esperar os feeds externos.",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias?cultura=cafe",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ],
+                  "query": [
+                    {
+                      "key": "cultura",
+                      "value": "cafe"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - notícias de soja",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"responde com a cultura pedida\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.cultura).to.eql('soja');",
+                      "    pm.expect(body.noticias).to.be.an('array');",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é JSON\", function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 20s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(20000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias?cultura=soja",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ],
+                  "query": [
+                    {
+                      "key": "cultura",
+                      "value": "soja"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - sem o parâmetro cultura assume café",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"cultura padrão é café\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.cultura).to.eql('cafe');",
+                      "    pm.expect(body).to.have.property('total');",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é JSON\", function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "400 - cultura não suportada",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"o erro diz quais culturas valem\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.have.property('erro');",
+                      "    pm.expect(body.erro).to.match(/Cultura não suportada/);",
+                      "    pm.expect(body.erro).to.include('cafe');",
+                      "    pm.expect(body.erro).to.include('soja');",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é JSON\", function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias?cultura=abacaxi",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ],
+                  "query": [
+                    {
+                      "key": "cultura",
+                      "value": "abacaxi"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "400 - cultura fora do cadastro (milho)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// A rota cobre só as culturas que o cadastro oferece: café e soja.",
+                      "pm.test(\"Status 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"o erro lista apenas café e soja\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.erro).to.match(/Cultura não suportada/);",
+                      "    pm.expect(body.erro).to.include('cafe');",
+                      "    pm.expect(body.erro).to.include('soja');",
+                      "    pm.expect(body.erro).to.not.include('milho');",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é JSON\", function () {",
+                      "    pm.response.to.have.header('Content-Type');",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/noticias?cultura=milho",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "noticias"
+                  ],
+                  "query": [
+                    {
+                      "key": "cultura",
+                      "value": "milho"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Relatorios",
+      "item": [
+        {
+          "name": "GET /api/relatorios/:tipo",
+          "item": [
+            {
+              "name": "200 - relatório de alertas em PDF",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 40s (depende de API externa)\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(40000);",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é PDF\", function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');",
+                      "});",
+                      "",
+                      "pm.test(\"Vem como anexo com nome de arquivo\", function () {",
+                      "    const cd = pm.response.headers.get('Content-Disposition');",
+                      "    pm.expect(cd).to.include('attachment');",
+                      "    pm.expect(cd).to.include('.pdf');",
+                      "});",
+                      "",
+                      "pm.test(\"O corpo é mesmo um PDF\", function () {",
+                      "    pm.expect(pm.response.text().startsWith('%PDF-')).to.be.true;",
+                      "    pm.expect(pm.response.responseSize).to.be.above(1000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/relatorios/alertas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "relatorios",
+                    "alertas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - relatório de insumos em PDF",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 40s (depende de API externa)\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(40000);",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é PDF\", function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');",
+                      "});",
+                      "",
+                      "pm.test(\"Vem como anexo com nome de arquivo\", function () {",
+                      "    const cd = pm.response.headers.get('Content-Disposition');",
+                      "    pm.expect(cd).to.include('attachment');",
+                      "    pm.expect(cd).to.include('.pdf');",
+                      "});",
+                      "",
+                      "pm.test(\"O corpo é mesmo um PDF\", function () {",
+                      "    pm.expect(pm.response.text().startsWith('%PDF-')).to.be.true;",
+                      "    pm.expect(pm.response.responseSize).to.be.above(1000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/relatorios/insumos",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "relatorios",
+                    "insumos"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - relatório de mercado em PDF",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 40s (depende de API externa)\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(40000);",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é PDF\", function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');",
+                      "});",
+                      "",
+                      "pm.test(\"Vem como anexo com nome de arquivo\", function () {",
+                      "    const cd = pm.response.headers.get('Content-Disposition');",
+                      "    pm.expect(cd).to.include('attachment');",
+                      "    pm.expect(cd).to.include('.pdf');",
+                      "});",
+                      "",
+                      "pm.test(\"O corpo é mesmo um PDF\", function () {",
+                      "    pm.expect(pm.response.text().startsWith('%PDF-')).to.be.true;",
+                      "    pm.expect(pm.response.responseSize).to.be.above(1000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/relatorios/mercado",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "relatorios",
+                    "mercado"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - relatório de validacoes em PDF",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 40s (depende de API externa)\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(40000);",
+                      "});",
+                      "",
+                      "pm.test(\"Content-Type é PDF\", function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');",
+                      "});",
+                      "",
+                      "pm.test(\"Vem como anexo com nome de arquivo\", function () {",
+                      "    const cd = pm.response.headers.get('Content-Disposition');",
+                      "    pm.expect(cd).to.include('attachment');",
+                      "    pm.expect(cd).to.include('.pdf');",
+                      "});",
+                      "",
+                      "pm.test(\"O corpo é mesmo um PDF\", function () {",
+                      "    pm.expect(pm.response.text().startsWith('%PDF-')).to.be.true;",
+                      "    pm.expect(pm.response.responseSize).to.be.above(1000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/relatorios/validacoes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "relatorios",
+                    "validacoes"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "404 - tipo de relatório desconhecido",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica que o tipo não existe\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.eql('Tipo de relatório desconhecido.');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/relatorios/inventado",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "relatorios",
+                    "inventado"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "401 - sem token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde JSON, não PDF\", function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "    pm.expect(pm.response.json()).to.have.property('erro');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/relatorios/alertas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "relatorios",
+                    "alertas"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notificacoes",
+      "item": [
+        {
+          "name": "GET /api/notificacoes/preferencias",
+          "item": [
+            {
+              "name": "200 - resumo dos canais",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Traz e-mail e WhatsApp\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.have.property('email');",
+                      "    pm.expect(body).to.have.property('whatsapp');",
+                      "});",
+                      "",
+                      "pm.test(\"Conta nova começa sem autorização\", function () {",
+                      "    pm.expect(pm.response.json().email.consentido).to.be.false;",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/preferencias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "preferencias"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "401 - sem token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/preferencias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "preferencias"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/notificacoes/preferencias",
+          "item": [
+            {
+              "name": "200 - autoriza e-mail com nível mínimo",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"E-mail fica autorizado no nível pedido\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.email.consentido).to.be.true;",
+                      "    pm.expect(body.email.nivelMinimo).to.eql('alto');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/preferencias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "preferencias"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": {\n    \"consentido\": true,\n    \"nivelMinimo\": \"alto\"\n  },\n  \"whatsapp\": {\n    \"consentido\": false,\n    \"nivelMinimo\": \"medio\"\n  }\n}"
+                }
+              }
+            },
+            {
+              "name": "200 - a autorização fica salva",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Mantém o que foi salvo na requisição anterior\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.email.consentido).to.be.true;",
+                      "    pm.expect(body.email.nivelMinimo).to.eql('alto');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/preferencias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "preferencias"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "400 - nível mínimo fora da lista",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Diz quais valores são aceitos\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.include('nivelMinimo');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/preferencias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "preferencias"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": {\n    \"consentido\": true,\n    \"nivelMinimo\": \"baixo\"\n  },\n  \"whatsapp\": {\n    \"consentido\": false,\n    \"nivelMinimo\": \"medio\"\n  }\n}"
+                }
+              }
+            },
+            {
+              "name": "400 - corpo incompleto",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Exige os dois canais\", function () {",
+                      "    pm.expect(pm.response.json()).to.have.property('erro');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/preferencias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "preferencias"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": {\n    \"consentido\": true,\n    \"nivelMinimo\": \"medio\"\n  }\n}"
+                }
+              }
+            },
+            {
+              "name": "401 - sem token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/preferencias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "preferencias"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/notificacoes/categorias",
+          "item": [
+            {
+              "name": "200 - lista as categorias climáticas",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde JSON com as categorias\", function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "    pm.expect(pm.response.json()).to.be.an('object');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/categorias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "categorias"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "401 - sem token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/categorias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "categorias"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/notificacoes/historico",
+          "item": [
+            {
+              "name": "200 - conta nova ainda não tem envios",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Devolve a lista de envios\", function () {",
+                      "    pm.expect(pm.response.json().envios).to.be.an('array');",
+                      "});",
+                      "",
+                      "pm.test(\"Sem envios para quem acabou de se cadastrar\", function () {",
+                      "    pm.expect(pm.response.json().envios).to.have.lengthOf(0);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/historico",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "historico"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - respeita o limite informado",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Nunca devolve mais que o limite\", function () {",
+                      "    pm.expect(pm.response.json().envios.length).to.be.at.most(5);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/historico?limite=5",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "historico"
+                  ],
+                  "query": [
+                    {
+                      "key": "limite",
+                      "value": "5"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "401 - sem token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notificacoes/historico",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notificacoes",
+                    "historico"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "403 - conta de produtor não acessa o painel administrativo",
+          "item": [
+            {
+              "name": "403 - estado do WhatsApp",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica que a rota é só de administrador\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.include('administrador');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/whatsapp",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "whatsapp"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "403 - resumo dos envios",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica que a rota é só de administrador\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.include('administrador');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/notificacoes/resumo",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "notificacoes",
+                    "resumo"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "403 - histórico de envios",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica que a rota é só de administrador\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.include('administrador');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/notificacoes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "notificacoes"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "403 - lista de agricultores",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica que a rota é só de administrador\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.include('administrador');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/agricultores",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "agricultores"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "403 - logs do sistema",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica que a rota é só de administrador\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.include('administrador');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/logs",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "logs"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "401 - sem token",
+          "item": [
+            {
+              "name": "401 - estado do WhatsApp",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/whatsapp",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "whatsapp"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Insumos-Fornecedor",
+      "item": [
+        {
+          "name": "Preparação",
+          "item": [
+            {
+              "name": "201 - cria conta de fornecedor",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.environment.set('emailFornecedor', 'qa.fornecedor.' + Date.now() + '@agroalerta.test');"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Devolve token do fornecedor\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.token).to.be.a('string');",
+                      "    pm.environment.set('tokenFornecedor', body.token);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Fornecedor QA\",\n  \"email\": \"{{emailFornecedor}}\",\n  \"senha\": \"{{senha}}\",\n  \"cep\": \"{{cep}}\",\n  \"telefone\": \"(35) 98888-0000\",\n  \"papel\": \"fornecedor\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/registrar",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "registrar"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/insumos",
+          "item": [
+            {
+              "name": "201 - fornecedor publica uma oferta",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Devolve a oferta criada\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.id).to.be.a('number');",
+                      "    pm.expect(Number(body.preco)).to.eql(150.5);",
+                      "    pm.environment.set('ofertaId', body.id);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Adubo QA 20kg\",\n  \"categoria\": \"fertilizante\",\n  \"unidade\": \"saco\",\n  \"preco\": 150.5,\n  \"cidade\": \"Itajubá\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/insumos",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "insumos"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "400 - sem preço válido",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Aponta os campos obrigatórios\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.include('preço');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/insumos",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "insumos"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Adubo QA\",\n  \"categoria\": \"fertilizante\",\n  \"unidade\": \"saco\",\n  \"preco\": 0,\n  \"cidade\": \"Itajubá\"\n}"
+                }
+              }
+            },
+            {
+              "name": "403 - produtor não publica oferta",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica que é só para fornecedor\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.include('fornecedor');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/insumos",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "insumos"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Adubo QA\",\n  \"categoria\": \"fertilizante\",\n  \"unidade\": \"saco\",\n  \"preco\": 10,\n  \"cidade\": \"Itajubá\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/insumos/meus",
+          "item": [
+            {
+              "name": "200 - fornecedor vê as próprias ofertas",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"A oferta publicada aparece na lista\", function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.be.an('array').that.is.not.empty;",
+                      "    pm.expect(body.map(function (o) { return o.id; })).to.include(Number(pm.environment.get('ofertaId')));",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/insumos/meus",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "insumos",
+                    "meus"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "403 - produtor não acessa",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/insumos/meus",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "insumos",
+                    "meus"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/insumos/:id",
+          "item": [
+            {
+              "name": "204 - fornecedor remove a própria oferta",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 204\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Resposta sem corpo\", function () {",
+                      "    pm.expect(pm.response.text()).to.be.empty;",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/insumos/{{ofertaId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "insumos",
+                    "{{ofertaId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "404 - remover de novo não encontra",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Informa que a oferta não existe\", function () {",
+                      "    pm.expect(pm.response.json().erro).to.eql('Oferta não encontrada.');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/insumos/{{ofertaId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "insumos",
+                    "{{ofertaId}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Talhões bloqueados para fornecedor",
+          "item": [
+            {
+              "name": "403 - fornecedor não lista talhões",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica quais contas podem gerenciar talhões\", function () {",
+                      "    const erro = pm.response.json().erro;",
+                      "    pm.expect(erro).to.include('produtor');",
+                      "    pm.expect(erro).to.include('administrador');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/talhoes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "talhoes"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "403 - fornecedor não cadastra talhão",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica quais contas podem gerenciar talhões\", function () {",
+                      "    const erro = pm.response.json().erro;",
+                      "    pm.expect(erro).to.include('produtor');",
+                      "    pm.expect(erro).to.include('administrador');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/talhoes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "talhoes"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Talhão QA\",\n  \"cultura\": \"cafe\",\n  \"fase\": \"plantio\",\n  \"cep\": \"{{cep}}\"\n}"
+                }
+              }
+            },
+            {
+              "name": "403 - fornecedor não edita talhão",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica quais contas podem gerenciar talhões\", function () {",
+                      "    const erro = pm.response.json().erro;",
+                      "    pm.expect(erro).to.include('produtor');",
+                      "    pm.expect(erro).to.include('administrador');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/talhoes/{{talhaoId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "talhoes",
+                    "{{talhaoId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nome\": \"Tentativa\"\n}"
+                }
+              }
+            },
+            {
+              "name": "403 - fornecedor não exclui talhão",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 403\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Explica quais contas podem gerenciar talhões\", function () {",
+                      "    const erro = pm.response.json().erro;",
+                      "    pm.expect(erro).to.include('produtor');",
+                      "    pm.expect(erro).to.include('administrador');",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/talhoes/{{talhaoId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "talhoes",
+                    "{{talhaoId}}"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Docs",
+      "item": [
+        {
+          "name": "GET /api-docs",
+          "item": [
+            {
+              "name": "200 - especificação OpenAPI",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"É um documento OpenAPI 3\", function () {",
+                      "    pm.expect(pm.response.json().openapi).to.match(/^3\\./);",
+                      "});",
+                      "",
+                      "pm.test(\"Documenta as rotas da API\", function () {",
+                      "    const paths = Object.keys(pm.response.json().paths);",
+                      "    pm.expect(paths.length).to.be.at.least(20);",
+                      "    pm.expect(paths).to.include('/auth/login');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api-docs.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-docs.json"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "200 - página do Swagger UI",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Entrega HTML\", function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api-docs/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-docs",
+                    ""
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Limpeza",
       "item": [
         {
@@ -5229,6 +7482,55 @@
                       "language": "json"
                     }
                   }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/auth/conta (fornecedor)",
+          "item": [
+            {
+              "name": "204 - remove a conta de fornecedor criada no teste",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 204\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});",
+                      "",
+                      "pm.test(\"Responde em menos de 8s\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(8000);",
+                      "});",
+                      "",
+                      "pm.test(\"Conta de fornecedor removida\", function () {",
+                      "    pm.expect(pm.response.text()).to.be.empty;",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{tokenFornecedor}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/conta",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "conta"
+                  ]
                 }
               }
             }

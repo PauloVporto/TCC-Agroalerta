@@ -1,0 +1,30 @@
+{
+  "cultura": "cafe",
+  "total": 3,
+  "noticias": [
+    {
+      "titulo": "Preço do café recua e fecha a semana em queda no Brasil",
+      "resumo": "Queda das cotações em Nova York pressiona os preços do café no mercado brasileiro, enquanto produtores seguem atentos ao clima nas regiões de Minas Gerais.",
+      "link": "https://www.canalrural.com.br/agricultura/cafe/preco-do-cafe-recua/",
+      "fonte": "Canal Rural",
+      "dataTexto": "23 de out. de 2026",
+      "publicadoEm": "2026-10-23T12:03:00.000Z"
+    },
+    {
+      "titulo": "Exportação de café bate recorde no trimestre",
+      "resumo": "Volume embarcado superou o do mesmo período do ano passado, segundo a Cecafé, com o café arábica puxando os números do agronegócio brasileiro.",
+      "link": "https://g1.globo.com/economia/agronegocios/noticia/2026/10/22/exportacao-de-cafe.ghtml",
+      "fonte": "g1 Agronegócios",
+      "dataTexto": "22 de out. de 2026",
+      "publicadoEm": "2026-10-22T09:30:00.000Z"
+    },
+    {
+      "titulo": "Rabobank vê cenário favorável para a safra de café 2027/28",
+      "resumo": "Chuvas acima da média nas regiões produtoras favorecem o potencial produtivo, enquanto os custos de produção seguem pressionados pelos fertilizantes.",
+      "link": "https://www.canalrural.com.br/agricultura/cafe/rabobank-safra-2027-28/",
+      "fonte": "Canal Rural",
+      "dataTexto": "21 de out. de 2026",
+      "publicadoEm": "2026-10-21T15:45:00.000Z"
+    }
+  ]
+}

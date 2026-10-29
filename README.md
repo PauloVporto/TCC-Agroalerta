@@ -172,6 +172,9 @@ npm test
 A pasta [`qa/`](qa/README.md) reúne a suíte de qualidade: **Cypress + Cucumber + Mochawesome** (frontend),
 **Postman + Newman** (API) e **Jest** com cobertura (unitários do backend). Veja `qa/README.md` para executar cada uma.
 
+As duas suítes se complementam: `backend/tests/` cobre integração contra um Postgres real (fila de notificações,
+webhooks, migrações) e `qa/` cobre o contrato HTTP das rotas, os fluxos pelo navegador e as unidades de serviço.
+
 ## Próximos passos sugeridos (para o desenvolvimento do TCC)
 
 - [x] Escolher e integrar API de clima (Open-Meteo; OpenWeather opcional)
