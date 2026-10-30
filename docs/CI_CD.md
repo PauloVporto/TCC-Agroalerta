@@ -67,9 +67,9 @@ No Node 20, a tabela do `--experimental-test-coverage` soma os próprios arquivo
 Node 22.5. Por isso o `npm run test:cobertura` também grava `coverage/lcov.info`, e a esteira calcula a cobertura
 somando as linhas, branches e funções dos arquivos fora de `tests/`.
 
-| Medição em 2026-10-30 (Node 20.20.2, 334 testes) | Linhas | Branches | Funções |
+| Execução de referência (seção 9; Node 20.20.2, 334 testes) | Linhas | Branches | Funções |
 |---|---:|---:|---:|
-| Tabela do Node 20 (inclui os arquivos de teste) | 88,42% | 94,75% | 91,55% |
+| Tabela do Node 20 (inclui os arquivos de teste) | 88,42% | 94,75% | 91,62% |
 | **Código da aplicação** (lcov, sem `tests/`) | **81,45%** (7.205/8.846) | **93,06%** (1.865/2.004) | **83,89%** (531/633) |
 
 O limite proposto, **80% / 90% / 80%**, é o valor medido arredondado para baixo, com folga de 1,5 a 4 pontos: barra
@@ -126,7 +126,7 @@ git ls-files 'backend/*.js' 'backend/*.cjs' 'frontend/*.js' | xargs -n 1 node --
 (cd backend && npm audit --omit=dev --audit-level=high)
 
 # 1.2 e 1.3 (o 1.3 precisa de TEST_DATABASE_URL; ver "Testes" no README)
-cd backend && npm ci && npm test && npm run test:cobertura
+(cd backend && npm ci && npm test && npm run test:cobertura)
 
 # 1.4
 npm ci --prefix backend && npm ci --prefix qa/unit && (cd qa/unit && npm run test:cov)
@@ -227,9 +227,9 @@ padrão do GHCR. Para baixar as imagens sem login, o dono muda a visibilidade em
 - **Serviços externos sem chave são chamados de verdade no estágio 2:** ViaCEP e Nominatim (cadastro e troca de
   CEP), Open-Meteo e INMET (alertas do talhão), RSS do Canal Rural e do g1 (notícias), Banco Central e Stooq
   (cotações) e o unpkg (React e Babel carregados pelo navegador). O Cypress simula clima, alertas, mercado e
-  notícias com `cy.intercept`; o Newman, não. Uma indisponibilidade desses serviços reprova o estágio 2 sem defeito no produto;
-  os relatórios e os logs dos contêineres mostram qual chamada falhou. Simular essas fontes exigiria mudar os
-  testes, o que a esteira não faz.
+  notícias com `cy.intercept`; o Newman, não. Uma indisponibilidade desses serviços reprova o estágio 2 sem
+  defeito no produto; os relatórios e os logs dos contêineres mostram qual chamada falhou. Simular essas fontes
+  exigiria mudar os testes, o que a esteira não faz.
 - **Sem linter:** o projeto não tem ESLint configurado; a análise estática se limita à sintaxe e à regra de QA.
 - **Node 20 está fora de suporte desde 2026-04-30.** A esteira acompanha os Dockerfiles; migrar Dockerfiles e
   esteira para uma versão LTS (22 ou 24) fica como trabalho futuro. No Node 22.5 ou mais novo, a própria tabela de
@@ -238,3 +238,64 @@ padrão do GHCR. Para baixar as imagens sem login, o dono muda a visibilidade em
   trabalho futuro.
 - **Escopo dos testes de sistema:** o Cypress roda só no Electron, sem matriz de navegadores; não há testes de carga
   nem de segurança dinâmica (DAST).
+
+## 9. Execução de referência
+
+Primeira execução completa da esteira, aprovada:
+
+| Item | Valor |
+|---|---|
+| Execução | [CI/CD #1](https://github.com/PauloVporto/TCC-Agroalerta/actions/runs/41086635185) |
+| Evento | `pull_request` do [PR #14](https://github.com/PauloVporto/TCC-Agroalerta/pull/14) (`feature/ci-cd` → `main`) |
+| Commit | [`08e4325`](https://github.com/PauloVporto/TCC-Agroalerta/commit/08e4325c57446295adda4b22521b7fbb55c403aa) |
+| Data | 2026-10-30, das 13h05 às 13h09 (horário de Brasília) |
+| Duração total | 4 min 34 s |
+| Ambiente | `ubuntu-24.04`, Node 20.20.2, `postgres:16-alpine`, Cypress 13.17.0 (Electron 118, headless) |
+| Modo da aplicação | `GET /api/health`: `modoIA=simulado`, `modoEmail=simulado`, `modoWhatsapp=desativado`, `monitoramentoClimatico=desligado` |
+
+O 3.1 não roda em pull request (aparece como *skipped*): a publicação no GHCR acontece no primeiro push na `main`
+depois do merge.
+
+### 9.1 Por job
+
+| Job | Status | Duração | Ferramenta |
+|---|---|---:|---|
+| 1.1 Análise estática e segurança | aprovado (2 alertas do `npm audit` em QA) | 21 s | `node --check`, npm audit |
+| 1.2 Testes unitários do backend | aprovado | 18 s | node:test |
+| 1.3 Testes de integração e cobertura do backend | aprovado | 1 min 04 s | node:test + PostgreSQL 16 |
+| 1.4 Testes unitários de QA | aprovado | 26 s | Jest + Supertest |
+| 1.5 Build das imagens Docker | aprovado | 21 s | Docker Compose |
+| 2.3 Testes de API | aprovado | 1 min 03 s | Postman + Newman |
+| 2.4 Testes de interface | aprovado | 3 min 21 s | Cypress + Cucumber |
+| 3.1 Publicação das imagens no GHCR | não se aplica (pull request) | — | Docker + GHCR |
+
+### 9.2 Por suíte
+
+| Suíte | Executados | Aprovados | Reprovados | Ignorados |
+|---|---:|---:|---:|---:|
+| Backend: unitários (node:test, job 1.2) | 199 | 199 | 0 | 0 |
+| Backend: unitários + integração (node:test, job 1.3) | 334 | 334 | 0 | 0 |
+| QA: unitários (Jest, 18 arquivos) | 405 | 405 | 0 | 0 |
+| API (Newman): requisições | 136 | 136 | 0 | — |
+| API (Newman): asserções | 524 | 524 | 0 | 0 |
+| Interface (Cypress + Cucumber, 12 features) | 95 | 95 | 0 | 0 |
+
+- O job 1.3 executa de novo os 199 unitários junto com os 135 de integração, para medir a cobertura total.
+- O Cypress executa 95 cenários a partir de 85 declarados (`check:asserts`): cada `Esquema do Cenário` vira um
+  cenário por linha de exemplo. Nenhum precisou da nova tentativa que a configuração permite (`retries.runMode: 1`).
+
+### 9.3 Cobertura
+
+| Suíte | Statements | Branches | Functions | Lines | Mínimo exigido |
+|---|---:|---:|---:|---:|---|
+| Jest (módulos do `collectCoverageFrom`) | 96,2% (3.901/4.055) | 89,35% (848/949) | 95,45% (105/110) | 96,2% (3.901/4.055) | 85 / 70 / 85 / 85 |
+| Backend, unitários + integração (código da aplicação, sem `tests/`) | — | 93,06% (1.865/2.004) | 83,89% (531/633) | 81,45% (7.205/8.846) | branches 90, funções 80, linhas 80 |
+
+O lcov do node:test não separa statements de linhas. O `npm audit` dessa execução é o da tabela da seção 3.2.
+
+### 9.4 Artefatos
+
+`npm-audit`, `cobertura-backend`, `relatorio-jest`, `relatorio-api` e `relatorio-interface` ficam disponíveis até
+**2027-01-28** (retenção padrão de 90 dias), e `imagens-docker` até 2026-11-06. Para anexar ao TCC, baixe-os antes
+dessas datas na página da execução (*Artifacts*) ou com
+`gh run download 41086635185 --repo PauloVporto/TCC-Agroalerta`.
