@@ -171,6 +171,134 @@ test("calcularAssertividade: índice = média ÷ 5, acerto objetivo e satisfató
   assert.ok(r.geral.acertoObjetivo.ic95[0] < r.geral.acertoObjetivo.pct && r.geral.acertoObjetivo.ic95[1] > r.geral.acertoObjetivo.pct);
 });
 
+test("compararNotas: diferença, viés, concordância e Spearman", () => {
+  const r = M.compararNotas([5, 4, 3, 5], [5, 5, 3, 4]);
+  assert.equal(r.n, 4);
+  assert.equal(r.diffMediaAbs, 0.5);
+  assert.equal(r.vies, 0); // +0 -1 +0 +1
+  assert.equal(r.concordanciaExata, 50);
+  assert.equal(r.dentroDe1, 100);
+  assert.equal(M.compararNotas([1, 2, 3, 4], [10, 20, 30, 40]).spearman, 1);
+  assert.equal(M.compararNotas([1, 2, 3, 4], [4, 3, 2, 1]).spearman, -1);
+  // série constante: correlação indefinida, não NaN
+  assert.equal(M.compararNotas([5, 5, 5], [5, 4, 5]).spearman, null);
+  assert.equal(M.compararNotas([], []).n, 0);
+});
+
+test("comparar-humano: lê CSV com tabulação e em Windows-1252, e valida as notas", () => {
+  const fs = require("node:fs");
+  const os = require("node:os");
+  const path = require("node:path");
+  const H = require("../avaliacao-ia/comparar-humano");
+  const arquivo = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "humano-")), "p.csv");
+  const texto = "cenario\tresposta_do_claude\tcoerencia_1a5\n C01\tNível geral: baixo\t5,0\n";
+  fs.writeFileSync(arquivo, Buffer.from(texto, "latin1")); // acentos em Windows-1252, não UTF-8
+  assert.match(H.lerTexto(arquivo), /Nível geral/);
+  const { separador, linhas } = H.lerCsv(H.lerTexto(arquivo));
+  assert.equal(separador, "\t");
+  assert.equal(linhas.length, 1);
+  assert.equal(H.nota("5,0"), 5);
+  assert.equal(H.nota(" 4 "), 4);
+  assert.equal(H.nota("6"), null);
+  assert.equal(H.nota(""), null);
+  assert.equal(H.nota("abc"), null);
+});
+
+// Cenário mínimo no formato de respostas.json, com notas do juiz diferentes em cada execução.
+const cenarioFalso = (id, modulo, juiz1, juiz2, consistencia) => {
+  const notas = (v) => ({ coerencia: v, clareza: v, relevancia: v, ausenciaInvencao: v });
+  return {
+    id, modulo, categoria: "x", descricao: "Cenário " + id, gabarito: "Nenhum risco esperado; nível geral baixo.",
+    dadosEntrada: "Dados do " + id + "\n- linha 2", excluido: false, notas: { consistencia },
+    execucoes: [
+      { execucao: 1, excluida: false, textoAvaliado: "Resposta um do " + id + "\nRiscos: nenhum", juiz: { notas: notas(juiz1) } },
+      { execucao: 2, excluida: false, textoAvaliado: "Resposta dois do " + id + " & <b>", juiz: { notas: notas(juiz2) } },
+    ],
+  };
+};
+
+test("documento Word: gera os cenários com as duas respostas e lê de volta as notas digitadas", async () => {
+  const V = require("../avaliacao-ia/validacao-docx");
+  const amostra = [cenarioFalso("C01", "clima", 5, 4, 5), cenarioFalso("MC01", "mercado", 4, 4, 3)];
+  const preenchida = { r1: { coerencia: 5, clareza: 4, relevancia: 5, ausenciaInvencao: 3 }, r2: { coerencia: 4, clareza: 4, relevancia: 4, ausenciaInvencao: 4 } };
+  const buffer = await V.gerarBuffer(amostra, { rodada: "teste", avaliador: "Fulana", data: "02/11/2026", preenchidas: { C01: { ...preenchida, consistencia: 5, observacoes: "ok & <ok>" } } });
+
+  // O texto das duas respostas e dos dados está no documento (é isso que o avaliador lê).
+  const JSZip = require("jszip");
+  const xml = await (await JSZip.loadAsync(buffer)).file("word/document.xml").async("string");
+  assert.match(xml, /Resposta um do C01/);
+  assert.match(xml, /Resposta dois do C01 &amp; &lt;b&gt;/);
+  assert.match(xml, /Dados do MC01/);
+  // Avaliação cega: nenhuma nota nem justificativa do juiz entra no documento.
+  const comJustificativa = cenarioFalso("Z99", "clima", 1, 2, 1);
+  comJustificativa.execucoes[0].juiz.justificativas = { coerencia: "SEGREDO-DO-JUIZ" };
+  const bufferJuiz = await V.gerarBuffer([comJustificativa]);
+  const xmlJuiz = await (await JSZip.loadAsync(bufferJuiz)).file("word/document.xml").async("string");
+  assert.doesNotMatch(xmlJuiz, /SEGREDO-DO-JUIZ/);
+
+  const lido = await V.lerRespostas(buffer);
+  assert.deepEqual(lido.avaliador, { nome: "Fulana", data: "02/11/2026" });
+  assert.deepEqual(lido.itens.map((i) => i.cenario), ["C01", "MC01"]);
+  const c01 = lido.itens[0];
+  assert.equal(c01.respostas[0].notas.ausenciaInvencao, "3");
+  assert.equal(c01.respostas[1].notas.coerencia, "4");
+  assert.equal(c01.consistencia, "5");
+  assert.equal(c01.observacoes, "ok & <ok>");
+  assert.equal(lido.itens[1].respostas[0].notas.coerencia, ""); // não preenchido
+
+  // Caractere digitado por engano no rótulo (como "6Consistência...") não pode esconder a nota.
+  const zip = await JSZip.loadAsync(buffer);
+  const xmlOriginal = await zip.file("word/document.xml").async("string");
+  const xmlComErro = xmlOriginal.replace(/>Consistência entre as duas respostas \(1 a 5\)</, ">6Consistência entre as duas respostas (1 a 5)<");
+  assert.notEqual(xmlComErro, xmlOriginal);
+  zip.file("word/document.xml", xmlComErro);
+  const lidoComErro = await V.lerRespostas(await zip.generateAsync({ type: "nodebuffer" }));
+  assert.equal(lidoComErro.itens[0].consistencia, "5");
+});
+
+test("comparar-humano com Word: Resposta 1 × execução 1, Resposta 2 × execução 2, e consistência", async () => {
+  const fs = require("node:fs");
+  const os = require("node:os");
+  const path = require("node:path");
+  const V = require("../avaliacao-ia/validacao-docx");
+  const H = require("../avaliacao-ia/comparar-humano");
+  const cenarios = [cenarioFalso("C01", "clima", 5, 3, 5), cenarioFalso("MC01", "mercado", 4, 4, 3)];
+  const r1 = { coerencia: 5, clareza: 5, relevancia: 5, ausenciaInvencao: 5 };
+  const r2 = { coerencia: 4, clareza: 4, relevancia: 4, ausenciaInvencao: 4 };
+  const arquivo = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "docx-")), "v.docx");
+  fs.writeFileSync(arquivo, await V.gerarBuffer(cenarios, { preenchidas: { C01: { r1, r2, consistencia: 5 } } }));
+
+  const av = await H.lerAvaliador(arquivo);
+  assert.equal(av.formato, "docx");
+  assert.equal(H.temNotas(av), true);
+  const r = H.comparar(cenarios, av);
+
+  // Só o C01 foi preenchido: MC01 vira aviso, e há 4 notas × 2 respostas + 1 de consistência.
+  assert.equal(r.cenarios, 1);
+  assert.equal(r.notas, 9);
+  assert.match(r.avisos[0], /1 cenário\(s\) sem nenhuma nota preenchida, ignorados: MC01/);
+  // Resposta 1: humano 5 × juiz 5 (exec 1) = diferença 0. Resposta 2: humano 4 × juiz 3 (exec 2) = +1.
+  assert.equal(r.porExecucao[1].diffMediaAbs, 0);
+  assert.equal(r.porExecucao[2].vies, 1);
+  // Consistência: humano 5 × consistência calculada do cenário (5).
+  assert.equal(r.porCriterio.consistencia.n, 1);
+  assert.equal(r.porCriterio.consistencia.diffMediaAbs, 0);
+  assert.equal(r.porCriterio.coerencia.n, 2);
+});
+
+test("comparar-humano com Word em branco: nada a comparar e temNotas é falso", async () => {
+  const V = require("../avaliacao-ia/validacao-docx");
+  const H = require("../avaliacao-ia/comparar-humano");
+  const fs = require("node:fs");
+  const os = require("node:os");
+  const path = require("node:path");
+  const arquivo = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "docx-")), "v.docx");
+  fs.writeFileSync(arquivo, await V.gerarBuffer([cenarioFalso("C01", "clima", 5, 5, 5)]));
+  const av = await H.lerAvaliador(arquivo);
+  assert.equal(H.temNotas(av), false);
+  assert.equal(H.comparar([cenarioFalso("C01", "clima", 5, 5, 5)], av).notas, 0);
+});
+
 test("calcularAssertividade ignora cenários excluídos e não quebra sem nenhum cenário válido", () => {
   const r = M.calcularAssertividade({ clima: [{ excluido: true, execucoes: [] }] });
   assert.deepEqual(r.modulos, {});

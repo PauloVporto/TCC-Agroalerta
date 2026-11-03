@@ -284,6 +284,13 @@ async function principal() {
   fs.writeFileSync(path.join(ctx.pasta, "resumo.json"), JSON.stringify({ meta, clima: clima && { resumo: clima.resumo, objetivo: clima.objetivo }, mercado: mercado && { resumo: mercado.resumo, objetivo: mercado.objetivo } }, null, 2));
   fs.writeFileSync(path.join(ctx.pasta, "resultados.csv"), relatorio.planilhaResultados(todos));
   fs.writeFileSync(path.join(ctx.pasta, "validacao-humana.csv"), relatorio.planilhaHumana(todos));
+  try {
+    // Documento Word com as duas respostas de cada cenário; as bibliotecas são de desenvolvimento.
+    const docx = require("./validacao-docx");
+    fs.writeFileSync(path.join(ctx.pasta, "validacao-humana.docx"), await docx.gerarBuffer(relatorio.selecionarAmostra(todos), { rodada: ctx.carimbo }));
+  } catch (erro) {
+    console.warn("Documento Word da validação humana não gerado (" + erro.message + "). Rode: npm run ia:docx-validacao");
+  }
   fs.writeFileSync(path.join(ctx.pasta, "relatorio.md"), relatorio.gerarRelatorio({ meta, clima, mercado }));
 
   console.log("\nResultados em: " + ctx.pasta);

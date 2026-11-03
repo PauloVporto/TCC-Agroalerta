@@ -1,0 +1,141 @@
+{
+  "avaliador": "validacao-humana.docx",
+  "nomeAvaliador": "Iury Teixeira de Souza",
+  "formato": "docx",
+  "cenarios": 20,
+  "notas": 180,
+  "geral": {
+    "n": 180,
+    "diffMediaAbs": 0.22,
+    "vies": 0.15,
+    "concordanciaExata": 66.7,
+    "dentroDe1": 98.9,
+    "spearman": -0.02
+  },
+  "porCriterio": {
+    "coerencia": {
+      "n": 40,
+      "diffMediaAbs": 0.08,
+      "vies": 0.07,
+      "concordanciaExata": 92.5,
+      "dentroDe1": 97.5,
+      "spearman": -0.04
+    },
+    "clareza": {
+      "n": 40,
+      "diffMediaAbs": 0.24,
+      "vies": 0.17,
+      "concordanciaExata": 60,
+      "dentroDe1": 97.5,
+      "spearman": 0.26
+    },
+    "relevancia": {
+      "n": 40,
+      "diffMediaAbs": 0.3,
+      "vies": 0.24,
+      "concordanciaExata": 60,
+      "dentroDe1": 100,
+      "spearman": -0.09
+    },
+    "ausenciaInvencao": {
+      "n": 40,
+      "diffMediaAbs": 0.28,
+      "vies": 0.28,
+      "concordanciaExata": 72.5,
+      "dentroDe1": 100,
+      "spearman": null
+    },
+    "consistencia": {
+      "n": 20,
+      "diffMediaAbs": 0.17,
+      "vies": -0.17,
+      "concordanciaExata": 30,
+      "dentroDe1": 100,
+      "spearman": null
+    }
+  },
+  "porModulo": {
+    "clima": {
+      "n": 90,
+      "diffMediaAbs": 0.1,
+      "vies": 0.01,
+      "concordanciaExata": 75.6,
+      "dentroDe1": 100,
+      "spearman": 0.01
+    },
+    "mercado": {
+      "n": 90,
+      "diffMediaAbs": 0.34,
+      "vies": 0.29,
+      "concordanciaExata": 57.8,
+      "dentroDe1": 97.8,
+      "spearman": -0.02
+    }
+  },
+  "porExecucao": {
+    "1": {
+      "n": 80,
+      "diffMediaAbs": 0.18,
+      "vies": 0.14,
+      "concordanciaExata": 75,
+      "dentroDe1": 100,
+      "spearman": -0.03
+    },
+    "2": {
+      "n": 80,
+      "diffMediaAbs": 0.27,
+      "vies": 0.24,
+      "concordanciaExata": 67.5,
+      "dentroDe1": 97.5,
+      "spearman": 0.14
+    }
+  },
+  "porCenario": {
+    "n": 20,
+    "diffMediaAbs": 0.18,
+    "vies": 0.15,
+    "concordanciaExata": 5,
+    "dentroDe1": 100,
+    "spearman": 0.01
+  },
+  "maioresDiferencas": [
+    {
+      "cenario": "MS10",
+      "humano": 5,
+      "juiz": 4.33,
+      "obs": "",
+      "dif": 0.67
+    },
+    {
+      "cenario": "MC07",
+      "humano": 4.96,
+      "juiz": 4.33,
+      "obs": "A resposta 2 não apresenta tanta clareza para um produtor conseguir entender.",
+      "dif": 0.63
+    },
+    {
+      "cenario": "MC10",
+      "humano": 4.94,
+      "juiz": 4.56,
+      "obs": "A resposta 1 é muito complicada em relação a 2.",
+      "dif": 0.38
+    },
+    {
+      "cenario": "MS04",
+      "humano": 4.98,
+      "juiz": 4.67,
+      "obs": "",
+      "dif": 0.31
+    },
+    {
+      "cenario": "MS07",
+      "humano": 4.98,
+      "juiz": 4.67,
+      "obs": "A resposta da 2 foi muito longa para um resumo.",
+      "dif": 0.31
+    }
+  ],
+  "avisos": [
+    "Critério 'Ausência de informações inventadas': o avaliador deu a mesma nota (5) em todos os cenários; a correlação fica indefinida e a comparação diz pouco sobre a capacidade de discriminar."
+  ]
+}

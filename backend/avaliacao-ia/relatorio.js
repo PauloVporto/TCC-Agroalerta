@@ -235,18 +235,24 @@ function planilhaResultados(cenarios) {
   return csv(colunas, linhas);
 }
 
-function planilhaHumana(cenarios, porModulo = 10) {
-  const colunas = ["modulo", "cenario", "descricao", "dados_enviados", "resposta_do_claude", "coerencia_1a5", "clareza_1a5", "relevancia_1a5", "ausencia_invencao_1a5", "observacoes"];
-  const linhas = [];
+// Amostra sistemática (um a cada N) de `porModulo` cenários válidos por módulo, para a validação humana.
+function selecionarAmostra(cenarios, porModulo = 10) {
+  const amostra = [];
   for (const modulo of ["clima", "mercado"]) {
     const validos = cenarios.filter((c) => c.modulo === modulo && !c.excluido);
     const passo = Math.max(1, Math.floor(validos.length / porModulo));
-    validos.filter((_, i) => i % passo === 0).slice(0, porModulo).forEach((c) => {
-      const e = c.execucoes.find((x) => !x.excluida);
-      linhas.push({ modulo, cenario: c.id, descricao: c.descricao, dados_enviados: c.dadosEntrada, resposta_do_claude: e.textoAvaliado || e.textoBruto });
-    });
+    amostra.push(...validos.filter((_, i) => i % passo === 0).slice(0, porModulo));
   }
+  return amostra;
+}
+
+function planilhaHumana(cenarios, porModulo = 10) {
+  const colunas = ["modulo", "cenario", "descricao", "dados_enviados", "resposta_do_claude", "coerencia_1a5", "clareza_1a5", "relevancia_1a5", "ausencia_invencao_1a5", "observacoes"];
+  const linhas = selecionarAmostra(cenarios, porModulo).map((c) => {
+    const e = c.execucoes.find((x) => !x.excluida);
+    return { modulo: c.modulo, cenario: c.id, descricao: c.descricao, dados_enviados: c.dadosEntrada, resposta_do_claude: e.textoAvaliado || e.textoBruto };
+  });
   return csv(colunas, linhas);
 }
 
-module.exports = { gerarRelatorio, planilhaResultados, planilhaHumana, csv, arred };
+module.exports = { gerarRelatorio, planilhaResultados, planilhaHumana, selecionarAmostra, csv, arred };

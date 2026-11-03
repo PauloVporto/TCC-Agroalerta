@@ -266,7 +266,52 @@ function calcularAssertividade({ clima = [], mercado = [] }) {
   return { modulos, geral };
 }
 
+// ── Concordância entre avaliador humano e juiz ───────────────────────────────
+
+// Postos médios (empates recebem a média dos postos), para a correlação de Spearman.
+function postos(valores) {
+  const idx = valores.map((v, i) => [v, i]).sort((a, b) => a[0] - b[0]);
+  const r = new Array(valores.length);
+  for (let i = 0; i < idx.length;) {
+    let j = i;
+    while (j + 1 < idx.length && idx[j + 1][0] === idx[i][0]) j++;
+    const medio = (i + j) / 2 + 1;
+    for (let k = i; k <= j; k++) r[idx[k][1]] = medio;
+    i = j + 1;
+  }
+  return r;
+}
+
+function pearson(a, b) {
+  const ma = media(a), mb = media(b);
+  const num = soma(a.map((x, i) => (x - ma) * (b[i] - mb)));
+  const den = Math.sqrt(soma(a.map((x) => (x - ma) ** 2)) * soma(b.map((y) => (y - mb) ** 2)));
+  return den === 0 ? null : num / den;
+}
+
+/**
+ * Compara notas de duas fontes para os mesmos itens (ex.: humano × juiz).
+ * vies = média(a − b): positivo quando `a` é mais generoso que `b`.
+ * spearman é null quando uma das séries não varia (correlação indefinida).
+ */
+function compararNotas(a, b) {
+  const n = Math.min(a.length, b.length);
+  if (!n) return { n: 0, diffMediaAbs: null, vies: null, concordanciaExata: null, dentroDe1: null, spearman: null };
+  const x = a.slice(0, n), y = b.slice(0, n);
+  const d = x.map((v, i) => v - y[i]);
+  const rho = pearson(postos(x), postos(y));
+  return {
+    n,
+    diffMediaAbs: arred(media(d.map(Math.abs))),
+    vies: arred(media(d)),
+    concordanciaExata: arred((d.filter((v) => v === 0).length / n) * 100, 1),
+    dentroDe1: arred((d.filter((v) => Math.abs(v) <= 1).length / n) * 100, 1),
+    spearman: rho == null ? null : arred(rho, 2),
+  };
+}
+
 module.exports = {
+  compararNotas,
   calcularAssertividade,
   CRITERIOS, LIMITE_MEDIA_SATISFATORIO, LIMITE_NOTA_MINIMA,
   arred, media, desvio, wilson, jaccard,

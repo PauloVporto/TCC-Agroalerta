@@ -18,7 +18,9 @@
     "test:e2e:clima": "node tests/e2e/notificacoes-dashboard.browser.cjs",
     "ia:diagnostico": "node scripts/diagnosticar-ia.js",
     "ia:avaliar": "node avaliacao-ia/executar.js",
-    "ia:relatorio-pdf": "node avaliacao-ia/gerar-pdf.js"
+    "ia:relatorio-pdf": "node avaliacao-ia/gerar-pdf.js",
+    "ia:comparar-humano": "node avaliacao-ia/comparar-humano.js",
+    "ia:docx-validacao": "node avaliacao-ia/validacao-docx.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -28,5 +30,9 @@
     "pg": "^8.12.0",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "docx": "^9.15.1",
+    "jszip": "^3.10.2"
   }
 }
