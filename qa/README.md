@@ -90,16 +90,17 @@ Com esse escopo, o limite mínimo é **85% de linhas, statements e funções, e 
 ```bash
 cd qa/postman && npm install
 npm test                # coleção inteira -> reports/newman-relatorio.html
-npm run test:publico    # só rotas sem login (Health, Insumos, Mercado)
+npm run test:publico    # só rotas sem login (Health, Insumos, Mercado, Noticias)
 ```
 
 A coleção `collections/AgroAlerta.postman_collection.json` está organizada como
 **Recurso › `MÉTODO /rota` › cenário** e pode ser importada no Postman junto com
-`environments/local.postman_environment.json`. São **126 requisições** e **487 asserções**, em 13 pastas:
+`environments/local.postman_environment.json`. São **136 requisições** e **524 asserções**, em 14 pastas:
 
 | Pasta | Cobre |
 |---|---|
 | Health, Auth, Clima, Talhoes, Alertas, Insumos, Mercado | CRUD, permissões e erros das rotas do produtor |
+| Noticias | notícias por cultura (RSS do Canal Rural e do g1) com resumo e link, cache e 400 para cultura fora do cadastro |
 | Relatorios | os 4 tipos de PDF (`Content-Type`, `Content-Disposition`, assinatura `%PDF-`), 404 e 401 |
 | Notificacoes | preferências por canal, categorias, histórico e os 400/401 de cada uma |
 | Admin | 403 para conta de produtor em todas as rotas `/api/admin/**` |
@@ -142,3 +143,18 @@ cypress/
 
 > **Windows/VS Code:** se o Cypress falhar com `bad option: --smoke-test`, a variável `ELECTRON_RUN_AS_NODE` está
 > definida no terminal. O `npm test` já a remove; ao usar `npx cypress ...` direto, rode `Remove-Item Env:ELECTRON_RUN_AS_NODE`.
+
+## Na esteira de CI/CD
+
+As três frentes rodam na esteira do GitHub Actions ([`docs/CI_CD.md`](../docs/CI_CD.md)) com os mesmos comandos
+desta página, sem chaves de API:
+
+| Frente | Estágio da esteira | Ambiente |
+|---|---|---|
+| `npm run check:asserts` (Cypress) | 1 · análise estática | só lê os `.feature`: reprova cenário com menos de 2 verificações |
+| Jest (`npm run test:cov`) | 1 · integração contínua | só Node, com banco, rede e IA simulados; os limites do `jest.config.js` reprovam a execução |
+| Newman (`npm test`) | 2 · testes de sistema | aplicação completa no Docker Compose, banco novo, modos simulados |
+| Cypress (`npm test`) | 2 · testes de sistema | idem, numa instância própria: as duas suítes não compartilham banco |
+
+Os relatórios (HTML e cobertura do Jest, Newman htmlextra, Mochawesome e capturas de tela) ficam como artefatos
+de cada execução, em *Actions › execução › Artifacts*.

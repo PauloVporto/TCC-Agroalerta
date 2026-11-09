@@ -1,0 +1,442 @@
+# Esteira de CI/CD do AgroAlerta. Descrição completa, critérios e limitações: docs/CI_CD.md.
+#
+#   Estágio 1 - integração contínua: jobs 1.1 a 1.5, em paralelo.
+#   Estágio 2 - testes de sistema: só se todo o estágio 1 passar. A aplicação completa
+#               sobe com Docker Compose, num banco novo e descartável para cada suíte.
+#   Estágio 3 - entrega contínua: só em push na main e só se o estágio 2 passar.
+#               Publica no GHCR exatamente as imagens construídas no 1.5 e testadas no 2.
+#
+# Não há segredo obrigatório: sem chaves de API a aplicação roda nos modos simulados, e a
+# publicação usa o GITHUB_TOKEN que o próprio GitHub fornece. As actions estão fixadas pelo
+# SHA do commit (a versão fica no comentário ao lado).
+
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Um push novo na mesma branch (ou no mesmo PR) cancela a execução anterior em andamento.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash # com pipefail: "npm test | tee" falha quando os testes falham
+
+env:
+  NODE_VERSION: "20" # a mesma dos Dockerfiles (node:20-alpine)
+  COMPOSE_PROJECT_NAME: agroalerta # nomeia as imagens agroalerta-backend e agroalerta-frontend
+
+jobs:
+  # ------------------------------------------------------------------ Estágio 1
+
+  analise-estatica:
+    name: 1.1 Análise estática e segurança
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # O projeto não tem linter configurado. A checagem de sintaxe pega, por exemplo, um
+      # merge mal resolvido num arquivo que nenhum teste carrega.
+      - name: Sintaxe do JavaScript do backend e do frontend (node --check)
+        run: git ls-files 'backend/*.js' 'backend/*.cjs' 'frontend/*.js' | xargs -n 1 node --check
+
+      - name: Regra de QA - ao menos 2 verificações por cenário Gherkin
+        working-directory: qa/cypress
+        run: npm run check:asserts
+
+      # Registra as quatro auditorias. Só o backend bloqueia (passo seguinte): as dependências
+      # dele vão para a imagem publicada, enquanto as de QA são ferramentas de teste que rodam
+      # apenas neste runner descartável.
+      - name: npm audit - registro do resultado
+        run: |
+          mkdir -p relatorios/npm-audit
+          {
+            echo "### npm audit"
+            echo
+            echo "| Pacote | Críticas | Altas | Moderadas | Baixas | Regra |"
+            echo "|---|---:|---:|---:|---:|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for pacote in backend qa/unit qa/postman qa/cypress; do
+            arquivo="relatorios/npm-audit/${pacote//\//-}.json"
+            if [ "$pacote" = backend ]; then
+              opcoes="--omit=dev"; regra="bloqueia em alta ou crítica"
+            else
+              opcoes=""; regra="só alerta"
+            fi
+            (cd "$pacote" && npm audit --json $opcoes > "$GITHUB_WORKSPACE/$arquivo") || true
+            jq -r --arg pacote "$pacote" --arg regra "$regra" \
+              '.metadata.vulnerabilities | "| \($pacote) | \(.critical) | \(.high) | \(.moderate) | \(.low) | \($regra) |"' \
+              "$arquivo" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$pacote" != backend ] && jq -e '.metadata.vulnerabilities | .critical + .high > 0' "$arquivo" > /dev/null; then
+              echo "::warning title=npm audit ($pacote)::vulnerabilidades altas ou críticas em ferramenta de teste; não bloqueia (ver docs/CI_CD.md)"
+            fi
+          done
+
+      - name: npm audit - backend (bloqueia em alta ou crítica)
+        working-directory: backend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Anexar o resultado do npm audit
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: npm-audit
+          path: relatorios/npm-audit/
+
+  backend-unitarios:
+    name: 1.2 Testes unitários do backend (node:test)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependências (npm ci)
+        working-directory: backend
+        run: npm ci
+
+      - name: npm test
+        working-directory: backend
+        run: npm test | tee "$RUNNER_TEMP/saida-testes.txt"
+
+      - name: Resumo
+        if: always()
+        run: |
+          {
+            echo "### Backend - testes unitários (node:test)"
+            echo '```'
+            grep -E '^(#|ℹ) (tests|pass|fail|cancelled|skipped|todo) [0-9]+$' "$RUNNER_TEMP/saida-testes.txt" || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  backend-integracao:
+    name: 1.3 Testes de integração e cobertura do backend (node:test + PostgreSQL 16)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: agroalerta_teste # as suítes só aceitam banco com nome terminado em _teste
+          POSTGRES_USER: agroalerta
+          POSTGRES_PASSWORD: agroalerta
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U agroalerta -d agroalerta_teste"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://agroalerta:agroalerta@localhost:5432/agroalerta_teste
+      # Limites propostos a partir da cobertura medida em 2026-10-30 no Node 20
+      # (81,45% linhas, 93,06% branches, 83,89% funções); ver docs/CI_CD.md.
+      COBERTURA_MINIMA_LINHAS: 80
+      COBERTURA_MINIMA_BRANCHES: 90
+      COBERTURA_MINIMA_FUNCOES: 80
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependências (npm ci)
+        working-directory: backend
+        run: npm ci
+
+      - name: Unitários + integração com cobertura (npm run test:cobertura)
+        working-directory: backend
+        run: |
+          mkdir -p coverage
+          npm run test:cobertura | tee coverage/saida-testes.txt
+
+      # O Node 20 não tem --test-coverage-exclude e soma os próprios arquivos de teste na
+      # linha "all files" da tabela. A cobertura da aplicação sai do lcov, sem tests/.
+      - name: Critério de cobertura (código da aplicação, sem tests/)
+        working-directory: backend
+        run: |
+          read -r linhas branches funcoes < <(awk -F: '
+            /^SF:/ { aplicacao = ($2 !~ /(^|\/)tests\//) }
+            aplicacao && /^LF:/ { lf += $2 }
+            aplicacao && /^LH:/ { lh += $2 }
+            aplicacao && /^BRF:/ { brf += $2 }
+            aplicacao && /^BRH:/ { brh += $2 }
+            aplicacao && /^FNF:/ { fnf += $2 }
+            aplicacao && /^FNH:/ { fnh += $2 }
+            END { printf "%.2f %.2f %.2f\n", 100 * lh / lf, 100 * brh / brf, 100 * fnh / fnf }
+          ' coverage/lcov.info)
+          {
+            echo "### Backend - unitários + integração (node:test)"
+            echo '```'
+            grep -E '^(#|ℹ) (tests|pass|fail|cancelled|skipped|todo) [0-9]+$' coverage/saida-testes.txt
+            echo '```'
+            echo "Cobertura do código da aplicação (\`coverage/lcov.info\`, sem \`tests/\`):"
+            echo
+            echo "| Métrica | Medido | Mínimo |"
+            echo "|---|---:|---:|"
+            echo "| Linhas | $linhas% | $COBERTURA_MINIMA_LINHAS% |"
+            echo "| Branches | $branches% | $COBERTURA_MINIMA_BRANCHES% |"
+            echo "| Funções | $funcoes% | $COBERTURA_MINIMA_FUNCOES% |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          awk -v l="$linhas" -v b="$branches" -v f="$funcoes" \
+              -v ml="$COBERTURA_MINIMA_LINHAS" -v mb="$COBERTURA_MINIMA_BRANCHES" -v mf="$COBERTURA_MINIMA_FUNCOES" \
+              'BEGIN { exit !(l >= ml && b >= mb && f >= mf) }' \
+            || { echo "::error::Cobertura do backend abaixo do mínimo"; exit 1; }
+
+      - name: Anexar o relatório de cobertura
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cobertura-backend
+          path: backend/coverage/
+
+  qa-unitarios:
+    name: 1.4 Testes unitários de QA (Jest + Supertest)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            qa/unit/package-lock.json
+
+      # O Jest resolve express, pg e as demais dependências em backend/node_modules
+      # (modulePaths do jest.config.js), por isso os dois pacotes são instalados.
+      - name: Instalar dependências (npm ci no backend e em qa/unit)
+        run: |
+          npm ci --prefix backend
+          npm ci --prefix qa/unit
+
+      - name: Jest com cobertura (limites do jest.config.js)
+        working-directory: qa/unit
+        run: npm run test:cov 2>&1 | tee "$RUNNER_TEMP/saida-jest.txt"
+
+      - name: Resumo
+        if: always()
+        run: |
+          {
+            echo "### QA - testes unitários (Jest + Supertest)"
+            echo '```'
+            grep -E '^(Test Suites|Tests|Statements|Branches|Functions|Lines) *:' "$RUNNER_TEMP/saida-jest.txt" || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Anexar os relatórios do Jest
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-jest
+          path: |
+            qa/unit/coverage/
+            qa/unit/reports/
+
+  build-imagens:
+    name: 1.5 Build das imagens Docker
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # O docker-compose.yml lê backend/.env. O .env.example só tem os valores padrão
+      # (chaves vazias, envios desligados), que mantêm a aplicação nos modos simulados.
+      - name: Criar backend/.env a partir do .env.example
+        run: cp backend/.env.example backend/.env
+
+      - name: docker compose build
+        run: docker compose build
+
+      - name: Exportar as imagens para os estágios 2 e 3
+        run: |
+          docker save --output imagens.tar agroalerta-backend agroalerta-frontend
+          {
+            echo "### Imagens construídas"
+            echo '```'
+            docker image inspect --format '{{index .RepoTags 0}}  {{.Id}}  {{.Size}} bytes' agroalerta-backend agroalerta-frontend
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: imagens-docker
+          path: imagens.tar
+          retention-days: 7
+
+  # ------------------------------------------------------------------ Estágio 2
+
+  testes-sistema:
+    name: ${{ matrix.nome }}
+    needs: [analise-estatica, backend-unitarios, backend-integracao, qa-unitarios, build-imagens]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false # uma suíte reprovada não interrompe a outra: os dois relatórios saem
+      matrix:
+        include:
+          - suite: api
+            nome: 2.3 Testes de API (Postman + Newman)
+            pasta: qa/postman
+          - suite: interface
+            nome: 2.4 Testes de interface (Cypress + Cucumber)
+            pasta: qa/cypress
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: imagens-docker
+
+      - name: 2.1 Subir a aplicação completa (banco novo e descartável)
+        run: |
+          docker load --input imagens.tar
+          cp backend/.env.example backend/.env
+          docker compose up --detach --no-build
+
+      - name: 2.2 Aguardar backend e frontend responderem
+        run: |
+          curl --fail --silent --show-error --retry 60 --retry-delay 2 --retry-all-errors \
+            http://localhost:3001/api/health | tee "$RUNNER_TEMP/saude.json"
+          echo
+          jq --exit-status '.status == "ok"' "$RUNNER_TEMP/saude.json"
+          curl --fail --silent --show-error --retry 30 --retry-delay 2 --retry-all-errors \
+            --output /dev/null http://localhost:5173/
+          jq -r '"Aplicação no ar (GET /api/health): " + (to_entries | map("\(.key)=\(.value)") | join(", "))' \
+            "$RUNNER_TEMP/saude.json" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ matrix.pasta }}/package-lock.json
+      - name: Cache do binário do Cypress
+        if: matrix.suite == 'interface'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('qa/cypress/package-lock.json') }}
+
+      - name: Instalar dependências (npm ci)
+        working-directory: ${{ matrix.pasta }}
+        run: npm ci
+
+      - name: Executar a suíte (npm test)
+        working-directory: ${{ matrix.pasta }}
+        run: npm test
+
+      - name: Resumo (Newman)
+        if: always() && matrix.suite == 'api'
+        working-directory: qa/postman
+        run: |
+          [ -f reports/newman-relatorio.json ] || exit 0
+          {
+            echo "### Postman/Newman"
+            echo
+            echo "| Item | Executados | Reprovados |"
+            echo "|---|---:|---:|"
+            jq -r '.run.stats | "| Requisições | \(.requests.total) | \(.requests.failed) |", "| Asserções | \(.assertions.total) | \(.assertions.failed) |"' \
+              reports/newman-relatorio.json
+            jq -r '.run.failures[] | "- \(.source.name // "?"): \(.error.test // "") \(.error.message)"' reports/newman-relatorio.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Resumo (Cypress)
+        if: always() && matrix.suite == 'interface'
+        working-directory: qa/cypress
+        run: |
+          [ -f reports/mochawesome-merged.json ] || exit 0
+          {
+            echo "### Cypress + Cucumber"
+            echo
+            echo "| Cenários | Aprovados | Reprovados | Pendentes | Ignorados |"
+            echo "|---:|---:|---:|---:|---:|"
+            jq -r '.stats | "| \(.tests) | \(.passes) | \(.failures) | \(.pending) | \(.skipped) |"' reports/mochawesome-merged.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 2.5 Coletar os logs dos contêineres
+        if: failure()
+        run: docker compose logs --no-color --timestamps > logs-conteineres.txt
+      - name: Anexar os logs dos contêineres
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: logs-conteineres-${{ matrix.suite }}
+          path: logs-conteineres.txt
+
+      - name: Anexar os relatórios da suíte
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-${{ matrix.suite }}
+          path: ${{ matrix.pasta }}/reports/
+
+      - name: 2.5 Derrubar o ambiente
+        if: always()
+        run: docker compose down --volumes --remove-orphans
+
+  # ------------------------------------------------------------------ Estágio 3
+
+  publicar-imagens:
+    name: 3.1 Publicação das imagens no GHCR
+    needs: testes-sistema
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: imagens-docker
+
+      - name: Carregar as imagens aprovadas nos estágios 1 e 2
+        run: docker load --input imagens.tar
+
+      - name: Login no GitHub Container Registry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Publicar com as tags latest e o SHA do commit
+        run: |
+          prefixo="ghcr.io/${GITHUB_REPOSITORY,,}" # o registro exige nome em minúsculas
+          echo "### Imagens publicadas" >> "$GITHUB_STEP_SUMMARY"
+          for servico in backend frontend; do
+            for tag in "$GITHUB_SHA" latest; do
+              docker tag "agroalerta-$servico" "$prefixo/$servico:$tag"
+              docker push "$prefixo/$servico:$tag"
+            done
+            digest=$(docker image inspect --format '{{index .RepoDigests 0}}' "$prefixo/$servico:$GITHUB_SHA")
+            echo "- \`$prefixo/$servico\`: tags \`$GITHUB_SHA\` e \`latest\` (\`$digest\`)" >> "$GITHUB_STEP_SUMMARY"
+          done

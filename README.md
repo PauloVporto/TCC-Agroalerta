@@ -1,5 +1,7 @@
 # AgroAlerta
 
+[![CI/CD](https://github.com/PauloVporto/TCC-Agroalerta/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/PauloVporto/TCC-Agroalerta/actions/workflows/ci-cd.yml)
+
 Protótipo do TCC — Sistema de Monitoramento Climático de Safras com
 Recomendação Inteligente de Insumos e Análise de Mercado via IA.
 
@@ -164,8 +166,34 @@ Configuração, testes reais, ativação, limites de custo e diagnóstico:
 
 ```bash
 cd backend
-npm test
+npm test                 # unitários (node:test)
+npm run test:cobertura   # unitários + integração contra um PostgreSQL real, com cobertura
 ```
+
+Os testes de integração exigem `TEST_DATABASE_URL` apontando para um banco cujo nome termine em `_teste`
+(as suítes apagam os dados entre um teste e outro). Um PostgreSQL descartável basta:
+
+```bash
+docker run -d --name agroalerta-teste -p 55432:5432 -e POSTGRES_DB=agroalerta_teste \
+  -e POSTGRES_USER=agroalerta -e POSTGRES_PASSWORD=agroalerta postgres:16-alpine
+TEST_DATABASE_URL=postgres://agroalerta:agroalerta@127.0.0.1:55432/agroalerta_teste npm run test:cobertura
+```
+
+A cobertura sai no console e em `backend/coverage/lcov.info`.
+
+## Integração e entrega contínuas (CI/CD)
+
+A esteira [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml) roda no GitHub Actions a cada push e
+pull request na `main` (e manualmente, em *Actions › CI/CD › Run workflow*), sem nenhuma chave de API:
+
+| Estágio | O que roda | Quando |
+|---|---|---|
+| 1. Integração contínua | sintaxe, regra de QA e `npm audit` · unitários do backend · integração + cobertura (PostgreSQL 16) · Jest · build das imagens | sempre, jobs em paralelo |
+| 2. Testes de sistema | Postman/Newman (API) e Cypress + Cucumber (interface), cada suíte com a aplicação completa no Docker Compose e um banco novo | se o estágio 1 passar |
+| 3. Entrega contínua | publica no GitHub Container Registry as imagens testadas, com as tags `latest` e o SHA do commit | só em push na `main`, se o estágio 2 passar |
+
+Cada execução guarda os relatórios como artefatos (cobertura, HTML do Jest, do Newman e do Cypress,
+`npm audit`). Critérios de aprovação, decisões e limitações: [`docs/CI_CD.md`](docs/CI_CD.md).
 
 ## Testes (QA)
 
