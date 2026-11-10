@@ -11,9 +11,6 @@ const anthropic = require("./anthropic");
 const NOMES_CULTURA = {
   cafe: "café arábica",
   soja: "soja",
-  milho: "milho",
-  cana: "cana-de-açúcar / açúcar",
-  feijao: "feijão carioca",
 };
 
 function montarContextoLlm({ cultura, clima, mercado, historicoInterno }) {
@@ -143,11 +140,31 @@ function temChaveLlm() {
   return anthropic.chaveConfigurada();
 }
 
-function promptAlertaProdutor({ talhao, clima, previsao, alertas }) {
-  const dias = (previsao || [])
+// Linhas de apoio ao prompt de tendência: só fatos com fonte e data, sem instruções.
+function contextoMercadoComplementar({ ptax, cotacao } = {}) {
+  const linhas = [];
+  if (ptax && ptax.cotacaoVenda) {
+    linhas.push("Câmbio (PTAX venda, Banco Central): R$ " + ptax.cotacaoVenda + " por US$ 1 em " + String(ptax.dataHora || "").slice(0, 10) + ".");
+  }
+  if (cotacao && cotacao.valorAtual != null) {
+    linhas.push(
+      "Bolsa internacional (" + (cotacao.fonte || "fonte desconhecida") + (cotacao.simbolo ? ", " + cotacao.simbolo : "") + "): " +
+        cotacao.valorAtual + " " + (cotacao.unidade || "") + " em " + cotacao.data + "."
+    );
+  }
+  return linhas.join("\n");
+}
+
+// Resume a previsão diária do Open-Meteo (campos reais: tempMin, chuvaMm, descricao).
+function resumoPrevisaoDiaria(previsao) {
+  return (previsao || [])
     .slice(0, 7)
-    .map((d) => d.data + ": " + d.condicao + ", " + d.chuvaMm + " mm, min " + d.temperaturaMinima + "°C")
+    .map((d) => d.data + ": " + d.descricao + ", " + d.chuvaMm + " mm, mín " + d.tempMin + "°C")
     .join("; ");
+}
+
+function promptAlertaProdutor({ talhao, clima, previsao, alertas }) {
+  const dias = resumoPrevisaoDiaria(previsao);
   const lista = (alertas || []).map((a) => a.titulo + " (" + a.nivel + "): " + a.mensagem).join(" | ") || "nenhum alerta do motor de regras";
   return (
     "Você é o AgroAlerta, assistente do produtor rural no Sul de Minas. " +
@@ -197,6 +214,8 @@ function promptProjecaoMercado(contexto, pontos) {
 module.exports = {
   NOMES_CULTURA,
   montarContextoLlm,
+  contextoMercadoComplementar,
+  resumoPrevisaoDiaria,
   promptAnaliseMercado,
   promptAlertaProdutor,
   promptProjecaoMercado,

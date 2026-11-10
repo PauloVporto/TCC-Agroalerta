@@ -20,7 +20,8 @@
     "ia:avaliar": "node avaliacao-ia/executar.js",
     "ia:relatorio-pdf": "node avaliacao-ia/gerar-pdf.js",
     "ia:comparar-humano": "node avaliacao-ia/comparar-humano.js",
-    "ia:docx-validacao": "node avaliacao-ia/validacao-docx.js"
+    "ia:docx-validacao": "node avaliacao-ia/validacao-docx.js",
+    "ia:prompts": "node avaliacao-ia/exportar-prompts.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

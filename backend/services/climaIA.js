@@ -19,7 +19,7 @@ const NIVEIS = ["baixo", "medio", "alto"];
 const ORDEM_NIVEL = { baixo: 0, medio: 1, alto: 2 };
 const CACHE_MS = 30 * 60 * 1000;
 
-const NOMES_CULTURA = { cafe: "café arábica", soja: "soja", milho: "milho", cana: "cana-de-açúcar", feijao: "feijão" };
+const { NOMES_CULTURA, resumoPrevisaoDiaria } = require("./llm");
 
 // Converte o id da regra (ex.: "cafe_geada", "cana_estiagem_prolongada") no tipo de risco.
 function tipoDoAlerta(idRegra) {
@@ -48,6 +48,10 @@ function montarContextoClima({ talhao, clima, alertas, alertasOficiais }) {
   ];
   if (typeof clima.evapotranspiracao7dias === "number") {
     linhas.push("- Evapotranspiração (ET0) prevista em 7 dias: " + clima.evapotranspiracao7dias + " mm");
+  }
+  // Só em produção: os cenários da avaliação não trazem previsão diária, então o prompt avaliado não muda.
+  if (Array.isArray(clima.previsaoDiaria) && clima.previsaoDiaria.length) {
+    linhas.push("Previsão diária: " + resumoPrevisaoDiaria(clima.previsaoDiaria));
   }
   linhas.push("Alertas calculados pelo motor de regras (avaliação determinística da cultura e fase):");
   if (alertas && alertas.length) {
@@ -93,6 +97,9 @@ function validarAnalise(json) {
   return { nivelGeral: json.nivelGeral, resumo: json.resumo.trim(), riscos, recomendacoes };
 }
 
+const temPrevisao = (entrada) => Array.isArray(entrada.clima.previsaoDiaria) && entrada.clima.previsaoDiaria.length > 0;
+const versaoDoPrompt = (entrada) => (temPrevisao(entrada) ? PROMPT_CLIMA_VERSAO + "+previsao" : PROMPT_CLIMA_VERSAO);
+
 async function interpretarClimaComIA(entrada) {
   const contexto = montarContextoClima(entrada);
   const prompt = promptAnaliseClimatica(contexto);
@@ -110,7 +117,7 @@ async function interpretarClimaComIA(entrada) {
     respostaId: dados.id,
     requestId,
     uso: dados.usage || null,
-    promptVersao: PROMPT_CLIMA_VERSAO,
+    promptVersao: versaoDoPrompt(entrada),
     contexto,
     prompt,
   };
@@ -138,7 +145,7 @@ async function gerarAnaliseClimatica(entrada, { forcar = false } = {}) {
     origem: "simulado",
     analise: analiseDeterministica(entrada),
     ia,
-    promptVersao: PROMPT_CLIMA_VERSAO,
+    promptVersao: versaoDoPrompt(entrada),
     geradoEm,
   });
 

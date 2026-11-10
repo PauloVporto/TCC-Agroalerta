@@ -9,10 +9,9 @@ const mercadoData = JSON.parse(
 const anthropic = require("./anthropic");
 const { extrairJson } = require("./jsonIA");
 
-const NOMES_CULTURA = {
-  cafe: "café arábica",
-  soja: "soja",
-};
+const { NOMES_CULTURA, contextoMercadoComplementar } = require("./llm");
+const { buscarPtax } = require("./bcb");
+const { buscarCotacaoStooq } = require("./stooq");
 
 // Fallback estático: usado apenas quando o Google News RSS falha completamente
 const NOTICIAS_FALLBACK = {
@@ -70,7 +69,8 @@ function resumirSerie(serie) {
   };
 }
 
-function montarPromptTendencia({ cultura, unidade, serie }) {
+// Sem contexto complementar o texto é idêntico ao avaliado (mercado-v2); com ele, a versão ganha "+ctx".
+function montarPromptTendencia({ cultura, unidade, serie, contextoComplementar }) {
   const r = resumirSerie(serie);
   const nome = NOMES_CULTURA[cultura] || cultura;
   const L = LIMIAR_TENDENCIA_PCT;
@@ -92,7 +92,10 @@ function montarPromptTendencia({ cultura, unidade, serie }) {
     "Observações: " + r.n + " (de " + r.dataInicio + " a " + r.dataFim + ")\n" +
     "Preço inicial: " + r.precoInicio + "; preço final: " + r.precoFim + "; variação: " + r.variacaoPercentual + "%\n" +
     "Mínimo: " + r.minimo.preco + " em " + r.minimo.data + "; máximo: " + r.maximo.preco + " em " + r.maximo.data + "\n" +
-    "Série: " + r.pontos.map((p) => p.data + "=" + p.preco).join("; ")
+    "Série: " + r.pontos.map((p) => p.data + "=" + p.preco).join("; ") +
+    (contextoComplementar
+      ? "\n\nContexto complementar (dados de apoio, não fazem parte da série; a tendência continua sendo a da série acima):\n" + contextoComplementar
+      : "")
   );
 }
 
@@ -100,8 +103,8 @@ function montarPromptTendencia({ cultura, unidade, serie }) {
  * Interpreta a série com Claude. LANÇA erro se a API falhar (não há fallback aqui),
  * para que a avaliação de assertividade nunca confunda resposta simulada com resposta do modelo.
  */
-async function interpretarSerieComIA({ cultura, unidade, serie }) {
-  const prompt = montarPromptTendencia({ cultura, unidade, serie });
+async function interpretarSerieComIA({ cultura, unidade, serie, contextoComplementar }) {
+  const prompt = montarPromptTendencia({ cultura, unidade, serie, contextoComplementar });
   const { texto, dados, requestId } = await anthropic.mensagens({
     model: anthropic.MODELO_ANALISE,
     max_tokens: 900,
@@ -120,9 +123,18 @@ async function interpretarSerieComIA({ cultura, unidade, serie }) {
     respostaId: dados.id,
     requestId,
     uso: dados.usage || null,
-    promptVersao: PROMPT_MERCADO_VERSAO,
+    promptVersao: contextoComplementar ? PROMPT_MERCADO_VERSAO + "+ctx" : PROMPT_MERCADO_VERSAO,
     prompt,
   };
+}
+
+// Câmbio e bolsa internacional como apoio; se as fontes falharem, a análise segue só com a série.
+async function buscarContextoComplementar(cultura) {
+  const [ptax, cotacao] = await Promise.allSettled([buscarPtax(), buscarCotacaoStooq(cultura)]);
+  return contextoMercadoComplementar({
+    ptax: ptax.status === "fulfilled" ? ptax.value : null,
+    cotacao: cotacao.status === "fulfilled" ? cotacao.value : null,
+  });
 }
 
 async function gerarAnaliseTendencia(cultura) {
@@ -152,7 +164,8 @@ async function gerarAnaliseTendencia(cultura) {
   }
 
   try {
-    const ia = await interpretarSerieComIA({ cultura, unidade: historico.unidade, serie: ultimosPrecos });
+    const contextoComplementar = await buscarContextoComplementar(cultura);
+    const ia = await interpretarSerieComIA({ cultura, unidade: historico.unidade, serie: ultimosPrecos, contextoComplementar });
 
     return {
       cultura,

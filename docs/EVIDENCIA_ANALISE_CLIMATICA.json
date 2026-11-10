@@ -1,0 +1,45 @@
+{
+  "descricao": "Evidência de uma chamada real à API da Anthropic pelo serviço de análise climática do AgroAlerta (backend/services/climaIA.js, a mesma função usada pela rota GET /api/alertas/:talhaoId/analise-ia). Não é resposta simulada: origem 'anthropic', com identificadores devolvidos pela API.",
+  "geradoEmUTC": "2026-11-10T15:20:07.158Z",
+  "duracaoMs": 3125,
+  "entrada": {
+    "talhao": { "nome": "Talhão de demonstração", "cultura": "cafe", "fase": "floracao" },
+    "clima": {
+      "fonte": "open-meteo",
+      "temperaturaMinima": 1.5,
+      "chuvaAcumulada7dias": 12,
+      "diasSemChuva": 3,
+      "probabilidadeChuva7dias": 40,
+      "ventoMaximoKmh": 18,
+      "evapotranspiracao7dias": 24
+    },
+    "alertasDoMotorDeRegras": [
+      { "id": "cafe_geada", "nivel": "alto", "titulo": "Risco de geada", "janela": "próximas 48h" }
+    ]
+  },
+  "resposta": {
+    "origem": "anthropic",
+    "modelo": "claude-haiku-4-5-20251001",
+    "requestId": "req_011CguUQ2Su68WyPsVCfuVB4",
+    "respostaId": "msg_011CguUQ38KdV9HpULxzqMep",
+    "promptVersao": "clima-v1",
+    "formatoValido": true,
+    "analise": {
+      "nivelGeral": "alto",
+      "resumo": "Alerta crítico de geada nos próximos 2 dias com temperatura mínima prevista de 1.5°C. O café em floração está vulnerável a danos severos. Monitore as condições e prepare medidas de proteção. Chuva prevista é insuficiente para aliviar a estiagem.",
+      "riscos": [
+        {
+          "tipo": "geada",
+          "nivel": "alto",
+          "justificativa": "Temperatura mínima prevista de 1.5°C nos próximos 2 dias representa risco alto de geada para café em floração."
+        }
+      ],
+      "recomendacoes": [
+        "Monitore a temperatura noturna nos próximos 2 dias",
+        "Prepare sistemas de proteção contra geada se disponível",
+        "Evite irrigação que possa potencializar danos",
+        "Acompanhe atualizações meteorológicas"
+      ]
+    }
+  }
+}

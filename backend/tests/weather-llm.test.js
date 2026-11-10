@@ -60,3 +60,35 @@ test("LLM monta contexto com clima, dólar e cotação", () => {
   assert.match(texto, /Mercado interno Brasil/);
   assert.match(texto, /Paridade internacional/);
 });
+
+test("llm.js: contexto complementar de mercado só traz fatos com fonte e data", () => {
+  const { contextoMercadoComplementar } = require("../services/llm");
+  const texto = contextoMercadoComplementar({
+    ptax: { cotacaoVenda: 5.4, dataHora: "2026-11-09 13:07:00" },
+    cotacao: { fonte: "Stooq", simbolo: "kc.f", valorAtual: 320.5, unidade: "US¢/lb", data: "2026-11-09" },
+  });
+  assert.match(texto, /PTAX venda/);
+  assert.match(texto, /2026-11-09/);
+  assert.match(texto, /kc\.f/);
+  assert.equal(contextoMercadoComplementar({}), "");
+});
+
+test("prompt de mercado: sem contexto fica igual ao avaliado; com contexto acrescenta bloco no fim", () => {
+  const { montarPromptTendencia } = require("../services/market");
+  const serie = [{ data: "2026-11-01", preco: 100 }, { data: "2026-11-02", preco: 103 }];
+  const base = montarPromptTendencia({ cultura: "cafe", unidade: "saca", serie });
+  const comCtx = montarPromptTendencia({ cultura: "cafe", unidade: "saca", serie, contextoComplementar: "Câmbio: R$ 5,4" });
+  assert.ok(comCtx.startsWith(base));
+  assert.match(comCtx.slice(base.length), /Contexto complementar[\s\S]*Câmbio: R\$ 5,4/);
+});
+
+test("prompt de clima: previsão diária só aparece quando existe", () => {
+  const { montarContextoClima } = require("../services/climaIA");
+  const talhao = { nome: "T", cultura: "feijao", fase: "floracao" };
+  const clima = { fonte: "open-meteo", temperaturaMinima: 5, chuvaAcumulada7dias: 1, diasSemChuva: 2, probabilidadeChuva7dias: 10, ventoMaximoKmh: 9 };
+  assert.doesNotMatch(montarContextoClima({ talhao, clima, alertas: [] }), /Previsão diária/);
+  const previsaoDiaria = [{ data: "2026-11-10", descricao: "Sol", chuvaMm: 0, tempMin: 5 }];
+  const ctx = montarContextoClima({ talhao, clima: { ...clima, previsaoDiaria }, alertas: [] });
+  assert.match(ctx, /Previsão diária: 2026-11-10: Sol, 0 mm, mín 5°C/);
+  assert.match(ctx, /\(feijão, fase/);
+});
