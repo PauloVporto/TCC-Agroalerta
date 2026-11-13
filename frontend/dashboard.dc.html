@@ -472,15 +472,6 @@
           <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #2F6E8F;">Notificações</span>
 
           <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer;">
-            <input data-cy="canal-email" type="checkbox" checked="{{ cNotifEmail }}" onChange="{{ onCNotifEmail }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
-            Autorizo receber alertas climáticos por e-mail.
-          </label>
-          <select data-cy="nivel-email" value="{{ cNivelEmail }}" onChange="{{ onCNivelEmail }}" disabled="{{ cNivelEmailDesativado }}" style="font-family: Archivo, sans-serif; font-size: 13px; color: #1A1A18; background: #FFFFFF; border: 1px solid #CFE0E8; padding: 9px 11px; margin-left: 25px;">
-            <option value="medio">Alertas de risco médio e alto</option>
-            <option value="alto">Somente alertas de risco alto</option>
-          </select>
-
-          <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #24505F; cursor: pointer;">
             <input data-cy="canal-whatsapp" type="checkbox" checked="{{ cNotifWhatsapp }}" onChange="{{ onCNotifWhatsapp }}" style="width: 15px; height: 15px; margin-top: 2px; accent-color: #2F6E8F; flex: none;" />
             Autorizo receber notificações pelo WhatsApp no celular cadastrado. Escolho as categorias abaixo.
           </label>
@@ -500,7 +491,7 @@
         <p>{{ climaConsentimento }}</p>
         <p>Boletim às 06h30, horário de Brasília. Cancele cada categoria independentemente. Autorize primeiro o WhatsApp para seu celular atual.</p>
 
-        <sc-for list="{{ climaCategorias }}" as="c" hint-placeholder-count="5">
+        <sc-for list="{{ climaCategorias }}" as="c" hint-placeholder-count="4">
           <label data-cy="categoria-item" style="display: flex; align-items: center; gap: 12px; padding: 8px 0;">
             <input type="checkbox" checked="{{ c.ativo }}" onChange="{{ c.mudar }}" disabled="{{ climaSalvando }}" data-categoria="{{ c.id }}" />
             {{ c.nome }}
@@ -552,7 +543,6 @@
           <option value="geada">Geada</option>
           <option value="chuva_intensa">Chuva</option>
           <option value="vento_forte">Vento</option>
-          <option value="calor_extremo">Calor</option>
         </select>
 
         <sc-for list="{{ climaHistorico }}" as="e" hint-placeholder-count="1">
@@ -562,7 +552,7 @@
       </sc-if>
 
       <section style="padding: 28px 32px; border-bottom: 1px solid #DDD8C9; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-        <sc-for list="{{ canaisNotificacao }}" as="c" hint-placeholder-count="2">
+        <sc-for list="{{ canaisNotificacao }}" as="c" hint-placeholder-count="1">
           <div data-cy="canal-card" style="border: 1px solid #DDD8C9; background: #FFFFFF; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 9px;">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
               <h2 style="font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 19px; margin: 0; color: #1A1A18; letter-spacing: -0.01em;">{{ c.titulo }}</h2>
@@ -1547,7 +1537,7 @@ class Component extends DCLogic {
   }
   _propsClimaNotificacoes() {
     const s=this.state,d=s._climaDados,p=s._climaPrefs;
-    const nomes={boletim_diario:'Receber boletim diário',geada:'Receber alertas de geada',chuva_intensa:'Receber alertas de chuva intensa',vento_forte:'Receber alertas de vento forte',calor_extremo:'Receber alertas de calor extremo'};
+    const nomes={boletim_diario:'Receber boletim diário',geada:'Receber alertas de geada',chuva_intensa:'Receber alertas de chuva intensa',vento_forte:'Receber alertas de vento forte'};
     const valor=n=>Number.isFinite(n)?n.toLocaleString('pt-BR'):'Indisponível';
     return {
       produtorNotificacoes:s.papel==='produtor',climaSalvando:s._climaSalvando,climaFeedback:s._climaFeedback,
@@ -2069,7 +2059,7 @@ class Component extends DCLogic {
       email: { medio: 'Recebe alertas de risco médio e alto', alto: 'Recebe só alertas de risco alto' },
       whatsapp: { medio: 'Recebe alertas de geada de risco médio e alto', alto: 'Recebe só alertas de geada de risco alto' }
     };
-    const canaisNotificacao = !notif ? [] : [['email', 'E-mail'], ['whatsapp', 'WhatsApp']].map(function(par) {
+    const canaisNotificacao = !notif ? [] : [['whatsapp', 'WhatsApp']].map(function(par) {
       const c = notif[par[0]];
       const modo = MODO_CANAL[par[0]][c.modo] || { texto: c.modo, cor: '#6B4A34' };
       const outroNumero = par[0] === 'whatsapp' && c.autorizadoOutroNumero;
@@ -2355,8 +2345,7 @@ class Component extends DCLogic {
       avisoCadastroTexto: !s._avisoCadastro ? ''
         : (s._avisoCadastro.whatsapp
           ? 'Você autorizou o WhatsApp: a mensagem de boas-vindas sai do número oficial do Agro Alerta assim que os envios estiverem liberados, e o andamento aparece em Notificações.'
-          : 'Nenhuma notificação por WhatsApp foi autorizada. Para receber alertas de geada no celular, autorize em Configurar conta.')
-          + (s._avisoCadastro.email ? ' As notificações por e-mail também foram autorizadas.' : ''),
+          : 'Nenhuma notificação por WhatsApp foi autorizada. Para receber alertas de geada no celular, autorize em Configurar conta.'),
       fecharAvisoCadastro: () => this.setState({ _avisoCadastro: null }),
 
       navVisaoBg: this.navStyle('visao').bg, navVisaoFg: this.navStyle('visao').fg, navVisaoBar: this.navStyle('visao').bar,

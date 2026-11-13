@@ -1,7 +1,7 @@
 'use strict';
 (()=>{
  const $=id=>document.getElementById(id),base=window.AGROALERTA_API_BASE||'http://localhost:3001/api';
- const nomes={boletim_diario:'Boletim diário',geada:'Geada',chuva_intensa:'Chuva intensa',vento_forte:'Vento forte',calor_extremo:'Calor extremo'};
+ const nomes={boletim_diario:'Boletim diário',geada:'Geada',chuva_intensa:'Chuva intensa',vento_forte:'Vento forte'};
  async function api(path,method='GET',body){const r=await fetch(base+path,{method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+(sessionStorage.getItem('agroalerta_token')||'')},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(45000)});const d=await r.json();if(!r.ok)throw Error(r.status===401?'Entre no Agro Alerta para acessar suas preferências.':d.erro||'Não foi possível concluir.');return d;}
  const texto=(pai,tag,value)=>{const el=document.createElement(tag);el.textContent=value;pai.append(el);return el;};
  const v=n=>Number.isFinite(n)?n.toLocaleString('pt-BR'):'Indisponível';
